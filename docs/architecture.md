@@ -162,6 +162,7 @@ Infrastructure層のみで変換を行う。
 - フォルダ選択
 - URI永続化
 - 接続状態管理
+- OS既定画像フォルダ検出
 
 ### ImageRepository
 
@@ -170,6 +171,8 @@ Infrastructure層のみで変換を行う。
 - 画像列挙
 - 画像取得
 - metadata取得
+- ファイル名検索
+- 形式フィルター
 
 ### ThumbnailRepository
 
@@ -231,6 +234,10 @@ Image.memory(fullImage)
 | StateNotifierProvider | state管理 |
 | FutureProvider | async load |
 | StreamProvider | storage監視 |
+| SortStateProvider | ソート状態管理 |
+| SearchQueryProvider | 検索クエリ管理 |
+| GridSettingsProvider | グリッド列数等 |
+| AppSettingsProvider | アプリ設定管理 |
 
 ---
 
@@ -241,12 +248,14 @@ Image.memory(fullImage)
 - SelectStorageUseCase
 - PersistUriPermissionUseCase
 - WatchStorageConnectionUseCase
+- GetDefaultImageFoldersUseCase
 
 ## 15.2 Gallery
 
 - LoadFolderImagesUseCase
 - LoadThumbnailUseCase
 - SortImagesUseCase
+- SearchImagesUseCase
 
 ## 15.3 Viewer
 
@@ -288,6 +297,8 @@ StorageDisconnected
 ```
 
 UI層はOS例外を直接扱わない。
+
+StorageDisconnected例外を受けた場合、画面遷移ではなくインラインバナーで通知し、バックグラウンドで自動リトライする。キャッシュ済みサムネイルは切断中も表示を継続する。
 
 ---
 

@@ -37,6 +37,22 @@ Dart側へはDTO変換済みデータを返却する。
 - dart:io
 - Directory
 - File
+- file_picker (OS標準フォルダ選択ダイアログ)
+
+---
+
+## 10.3 OS既定画像フォルダ検出
+
+初回起動時に即座にギャラリーを表示するため、OS既定の画像フォルダを自動検出する。
+
+### Android
+- MediaStore経由で `DCIM/Camera`, `Pictures` 等の標準パスを自動取得
+- SAF権限が不要なMediaStore読み取りで初回表示を高速化
+- ユーザーがフォルダ変更時にSAF権限を取得
+
+### Windows
+- `Environment.SpecialFolder.MyPictures` を自動取得
+- OS標準フォルダ選択ダイアログ (`file_picker`) でフォルダ変更
 
 ---
 
@@ -81,7 +97,9 @@ Dart側へはDTO変換済みデータを返却する。
 - Windows USBドライブ対応
 - URI永続化
 - ストレージ切断検知
-- 再接続待機UI
+- 切断時インライン通知 & 自動リトライ
+- OS既定画像フォルダ自動検出
+- Windows OS標準フォルダ選択ダイアログ
 
 ## 5.5 対応画像形式
 

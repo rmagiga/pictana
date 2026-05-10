@@ -9,7 +9,9 @@
 - Windows USBドライブ対応
 - URI永続化
 - ストレージ切断検知
-- 再接続待機UI
+- 切断時インライン通知 & 自動リトライ
+- OS既定画像フォルダ自動検出
+- Windows OS標準フォルダ選択ダイアログ
 
 ## 5.2 フォルダ一覧
 - フォルダ階層表示
@@ -24,6 +26,10 @@
 - サムネイルキャッシュ
 - 高速スクロール
 - 画像形式判定
+- ソート（名前/日付/サイズ/種類）
+- 検索（ファイル名/種類フィルター）
+- レスポンシブグリッド列数
+- スクロール位置復元
 
 ## 5.4 画像ビューア
 - 単体表示
@@ -32,6 +38,7 @@
 - swipe
 - GIF自動再生
 - EXIF回転補正
+- 画像情報表示（ファイル名/サイズ/解像度/形式/日時）
 
 ## 5.5 対応画像形式
 - JPEG
@@ -40,6 +47,13 @@
 - GIF
 - HEIC
 - AVIF
+
+## 5.6 設定
+- テーマ（ダーク/ライト）
+- グリッド列数
+- サムネイルサイズ
+- キャッシュサイズ上限 / クリア
+- 表示順デフォルト
 
 ---
 
@@ -55,20 +69,26 @@
 - Android SAF
 - Windows filesystem
 - Repository abstraction
+- OS既定画像フォルダ検出
 
 ## Phase 3
 - Folder browser
 - Gallery grid
 - Thumbnail cache
+- レスポンシブグリッド
+- ソート機能
 
 ## Phase 4
 - Image viewer
 - zoom/pan
 - swipe
 - GIF support
+- 画像情報表示
 
 ## Phase 5
-- reconnect waiting
+- 検索機能
+- Settings画面
+- USB切断インライン通知 & 自動リトライ
 - cache optimization
 - memory tuning
 
@@ -85,3 +105,6 @@
 - GIF表示可能
 - zoom/pan安定
 - SAF権限永続化可能
+- ソート/検索が動作する
+- Settings項目が反映される
+- USB切断時にインライン通知が表示される
