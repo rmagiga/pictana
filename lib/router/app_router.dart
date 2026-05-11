@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import '../presentation/screens/folder_browser_screen.dart';
 import '../presentation/screens/gallery_grid_screen.dart';
 import '../presentation/screens/image_viewer_screen.dart';
+import '../presentation/screens/settings_screen.dart';
 import '../presentation/screens/splash_screen.dart';
 import '../presentation/screens/storage_selection_screen.dart';
 
@@ -60,12 +61,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.settings,
       name: 'settings',
-      builder: (context, state) {
-        // Phase 5で実装
-        return const Scaffold(
-          body: Center(child: Text('設定 (Phase 5)')),
-        );
-      },
+      builder: (context, state) => const SettingsScreen(),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(

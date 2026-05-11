@@ -48,7 +48,7 @@ class GalleryGridScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // TODO: Settings画面へ
+              context.push(AppRoutes.settings);
             },
           ),
         ],
