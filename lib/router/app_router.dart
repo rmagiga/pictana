@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 
 import '../presentation/screens/folder_browser_screen.dart';
 import '../presentation/screens/gallery_grid_screen.dart';
+import '../presentation/screens/image_viewer_screen.dart';
 import '../presentation/screens/splash_screen.dart';
 import '../presentation/screens/storage_selection_screen.dart';
 
@@ -51,10 +52,9 @@ final appRouter = GoRouter(
       path: '${AppRoutes.imageViewer}/:index',
       name: 'imageViewer',
       builder: (context, state) {
-        // Phase 4で実装
-        return const Scaffold(
-          body: Center(child: Text('画像ビューア (Phase 4)')),
-        );
+        final indexStr = state.pathParameters['index'] ?? '0';
+        final index = int.tryParse(indexStr) ?? 0;
+        return ImageViewerScreen(initialIndex: index);
       },
     ),
     GoRoute(

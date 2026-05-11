@@ -83,7 +83,7 @@ class GalleryGridScreen extends ConsumerWidget {
                         return ImageGridTile(
                           image: image,
                           onTap: () {
-                            // TODO: Image Viewer へ遷移 (Phase 4)
+                            context.push('${AppRoutes.imageViewer}/$index');
                           },
                         );
                       },
