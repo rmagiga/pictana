@@ -19,40 +19,6 @@ import '../../../domain/entities/image_entry.dart';
 import '../../../domain/repositories/thumbnail_repository.dart';
 import '../../database/app_database.dart';
 
-/// Worker Isolate へのメッセージ
-class _ThumbnailRequest {
-  const _ThumbnailRequest({
-    required this.filePath,
-    required this.targetSize,
-    required this.sendPort,
-  });
-  final String filePath;
-  final int targetSize;
-  final SendPort sendPort;
-}
-
-/// ワーカー Isolate エントリポイント（decode & resize）
-@pragma('vm:entry-point')
-void _thumbnailWorker(_ThumbnailRequest req) async {
-  try {
-    final bytes = await File(req.filePath).readAsBytes();
-
-    // Flutter の codec でデコード
-    final codec = await ui.instantiateImageCodec(
-      bytes,
-      targetWidth: req.targetSize,
-      targetHeight: req.targetSize,
-    );
-    final frame = await codec.getNextFrame();
-    final image = frame.image;
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
-
-    req.sendPort.send(byteData?.buffer.asUint8List());
-  } catch (e) {
-    req.sendPort.send(null);
-  }
-}
 
 /// Windows 向け ThumbnailRepository 実装
 class WindowsThumbnailRepository implements ThumbnailRepository {
@@ -143,30 +109,33 @@ class WindowsThumbnailRepository implements ThumbnailRepository {
   // private ヘルパー
   // ---------------------------------------------------------------------------
 
-  /// Isolate でサムネイルを生成する
+  /// サムネイルを生成する
+  /// 
+  /// 注意: Windows では Background Isolate での dart:ui (画像デコーダー) 使用に制限があるため、
+  /// (Exception: Failed to access the internal image decoder registry)
+  /// 現在はメイン Isolate で実行しています。
   Future<Uint8List?> _generateInIsolate(
     String filePath,
     int targetSize,
   ) async {
-    final receivePort = ReceivePort();
     try {
-      await Isolate.spawn(
-        _thumbnailWorker,
-        _ThumbnailRequest(
-          filePath: filePath,
-          targetSize: targetSize,
-          sendPort: receivePort.sendPort,
-        ),
-        onError: receivePort.sendPort,
+      final bytes = await File(filePath).readAsBytes();
+
+      // Flutter の codec でデコード
+      final codec = await ui.instantiateImageCodec(
+        bytes,
+        targetWidth: targetSize,
+        targetHeight: targetSize,
       );
-      final result = await receivePort.first;
-      if (result is Uint8List) return result;
-      return null;
+      final frame = await codec.getNextFrame();
+      final image = frame.image;
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+
+      return byteData?.buffer.asUint8List();
     } catch (e) {
-      appLogger.w('サムネイル生成 Isolate エラー: $filePath', error: e);
+      appLogger.w('サムネイル生成エラー: $filePath', error: e);
       return null;
-    } finally {
-      receivePort.close();
     }
   }
 
