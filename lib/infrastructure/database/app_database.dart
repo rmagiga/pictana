@@ -93,6 +93,10 @@ class AppDatabase extends _$AppDatabase {
 
   /// 全サムネイルキャッシュを削除する
   Future<int> clearThumbnailCache() => delete(thumbnailCaches).go();
+
+  /// 指定 URI のサムネイルキャッシュを無効化する
+  Future<int> invalidateThumbnailCache(String imageUri) =>
+      (delete(thumbnailCaches)..where((t) => t.imageUri.equals(imageUri))).go();
 }
 
 /// データベースファイルへの接続を開く
