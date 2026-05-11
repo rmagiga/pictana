@@ -31,20 +31,52 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+
+  # 状態管理 (§4.1)
+  flutter_riverpod: ^2.6.1
+  hooks_riverpod: ^2.6.1
+  flutter_hooks: ^0.21.2
+  riverpod_annotation: ^2.6.1
+
+  # 画像表示 (§4.2)
+  extended_image: ^9.0.0
+
+  # データベース (§4.3)
+  drift: ^2.23.1
+  sqlite3_flutter_libs: ^0.5.29
+
+  # キャッシュ (§4.5)
+  flutter_cache_manager: ^3.4.1
+
+  # Utility (§4.6)
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+  path: ^1.9.1
+  path_provider: ^2.1.5
+  collection: ^1.19.1
+  logger: ^2.5.0
+
+  # ストレージ選択 (§10.2)
+  file_picker: ^9.1.1
+
+  # ルーティング
+  go_router: ^15.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
   flutter_lints: ^6.0.0
+
+  # コード生成
+  build_runner: ^2.4.15
+  drift_dev: ^2.23.1
+  freezed: ^3.0.0
+  json_serializable: ^6.9.4
+  riverpod_generator: ^2.6.4
+  custom_lint: ^0.7.5
+  riverpod_lint: ^2.6.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
