@@ -7,6 +7,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../presentation/screens/folder_browser_screen.dart';
+import '../presentation/screens/gallery_grid_screen.dart';
 import '../presentation/screens/splash_screen.dart';
 import '../presentation/screens/storage_selection_screen.dart';
 
@@ -38,22 +40,12 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.folderBrowser,
       name: 'folderBrowser',
-      builder: (context, state) {
-        // Phase 3で実装
-        return const Scaffold(
-          body: Center(child: Text('フォルダブラウザ (Phase 3)')),
-        );
-      },
+      builder: (context, state) => const FolderBrowserScreen(),
     ),
     GoRoute(
       path: AppRoutes.galleryGrid,
       name: 'galleryGrid',
-      builder: (context, state) {
-        // Phase 3で実装
-        return const Scaffold(
-          body: Center(child: Text('ギャラリーグリッド (Phase 3)')),
-        );
-      },
+      builder: (context, state) => const GalleryGridScreen(),
     ),
     GoRoute(
       path: '${AppRoutes.imageViewer}/:index',
