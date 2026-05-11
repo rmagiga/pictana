@@ -6,7 +6,6 @@ library;
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -19,11 +18,9 @@ import '../../../domain/entities/image_entry.dart';
 import '../../../domain/repositories/thumbnail_repository.dart';
 import '../../database/app_database.dart';
 
-
 /// Windows 向け ThumbnailRepository 実装
 class WindowsThumbnailRepository implements ThumbnailRepository {
-  WindowsThumbnailRepository({required AppDatabase database})
-      : _db = database;
+  WindowsThumbnailRepository({required AppDatabase database}) : _db = database;
 
   final AppDatabase _db;
 
@@ -110,14 +107,11 @@ class WindowsThumbnailRepository implements ThumbnailRepository {
   // ---------------------------------------------------------------------------
 
   /// サムネイルを生成する
-  /// 
+  ///
   /// 注意: Windows では Background Isolate での dart:ui (画像デコーダー) 使用に制限があるため、
   /// (Exception: Failed to access the internal image decoder registry)
   /// 現在はメイン Isolate で実行しています。
-  Future<Uint8List?> _generateInIsolate(
-    String filePath,
-    int targetSize,
-  ) async {
+  Future<Uint8List?> _generateInIsolate(String filePath, int targetSize) async {
     try {
       final bytes = await File(filePath).readAsBytes();
 
