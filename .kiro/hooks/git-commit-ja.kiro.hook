@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "日本語コミット",
+  "description": "ステージされた変更を確認し、日本語のConventional Commitsメッセージを生成してコミットを実行します。",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "ステージされた変更を `git diff --cached` で確認し、変更内容に基づいて日本語のConventional Commits形式のコミットメッセージを生成して `git commit` を実行してください。メッセージ形式: `type(scope): 日本語の説明`。コミット前にメッセージをユーザーに提示して確認を取ってください。"
+  }
+}
