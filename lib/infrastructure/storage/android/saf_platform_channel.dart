@@ -5,8 +5,6 @@
 /// MissingPluginException を UnsupportedError に変換する。
 library;
 
-import 'dart:typed_data';
-
 import 'package:flutter/services.dart';
 
 import '../../../core/errors/app_exceptions.dart';
@@ -214,7 +212,7 @@ class SafPlatformChannel {
     }
   }
 
-  /// List<dynamic> を List<Map<String, dynamic>> にキャストする
+  /// `List<dynamic>` を `List<Map<String, dynamic>>` にキャストする
   List<Map<String, dynamic>> _castListOfMaps(List<dynamic>? list) {
     if (list == null) return [];
     return list.whereType<Map>().map((e) => e.cast<String, dynamic>()).toList();

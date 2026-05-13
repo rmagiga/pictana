@@ -15,7 +15,6 @@
 @Tags(['android-saf', 'property-test'])
 library;
 
-import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;

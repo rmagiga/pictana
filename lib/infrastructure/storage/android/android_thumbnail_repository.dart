@@ -163,7 +163,7 @@ class AndroidThumbnailRepository implements ThumbnailRepository {
   ///
   /// URI + サイズの組み合わせで一意に識別する。
   String _buildCacheKey(String uri, ThumbnailSize size) {
-    return '${uri}::${size.px}';
+    return '$uri::${size.px}';
   }
 
   /// ネイティブチャネル経由でサムネイルを生成する

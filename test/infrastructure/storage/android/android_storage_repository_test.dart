@@ -4,6 +4,8 @@
 /// AndroidStorageRepository の各メソッドを検証する。
 ///
 /// Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1
+library;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:optrig/core/errors/app_exceptions.dart';
 import 'package:optrig/domain/entities/entry_id.dart';
@@ -506,7 +508,6 @@ void main() {
 
     test('getStorageRoots 失敗時 — ストリームを終了させずスキップする', () async {
       // 2 つのイベントを送信し、1 つ目で getStorageRoots が失敗するケース
-      var callCount = 0;
       mockChannel.usbEventsStream = Stream.fromIterable([
         {
           'event': 'disconnected',
