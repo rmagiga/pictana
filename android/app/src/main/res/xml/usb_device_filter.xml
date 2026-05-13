@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- USB OTG マスストレージデバイス（USB メモリ、SD カードリーダー等）を検出するフィルタ -->
+<resources>
+    <!-- USB Mass Storage Class (class=0x08) -->
+    <usb-device class="8" />
+</resources>

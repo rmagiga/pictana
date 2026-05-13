@@ -38,29 +38,29 @@ class AppDatabase extends _$AppDatabase {
     required String uri,
     required String name,
     required String platformType,
-  }) =>
-      into(recentFolders).insertOnConflictUpdate(
-        RecentFoldersCompanion.insert(
-          uri: uri,
-          name: name,
-          platformType: platformType,
-          lastOpenedAt: DateTime.now(),
-        ),
-      );
+  }) => into(recentFolders).insertOnConflictUpdate(
+    RecentFoldersCompanion.insert(
+      uri: uri,
+      name: name,
+      platformType: platformType,
+      lastOpenedAt: DateTime.now(),
+    ),
+  );
 
   // --- AppSettings クエリ ---
 
   /// 設定値を取得する
   Future<String?> getSetting(String key) async {
-    final row = await (select(appSettings)..where((t) => t.key.equals(key))).getSingleOrNull();
+    final row = await (select(
+      appSettings,
+    )..where((t) => t.key.equals(key))).getSingleOrNull();
     return row?.value;
   }
 
   /// 設定値を保存する
-  Future<void> setSetting(String key, String value) =>
-      into(appSettings).insertOnConflictUpdate(
-        AppSettingsCompanion.insert(key: key, value: value),
-      );
+  Future<void> setSetting(String key, String value) => into(
+    appSettings,
+  ).insertOnConflictUpdate(AppSettingsCompanion.insert(key: key, value: value));
 
   /// 全設定を取得する（Map形式）
   Future<Map<String, String>> getAllSettings() async {
@@ -71,8 +71,9 @@ class AppDatabase extends _$AppDatabase {
   // --- ThumbnailCache クエリ ---
 
   /// 指定URIのサムネイルキャッシュを取得する
-  Future<ThumbnailCache?> getThumbnailCache(String imageUri) =>
-      (select(thumbnailCaches)..where((t) => t.imageUri.equals(imageUri))).getSingleOrNull();
+  Future<ThumbnailCache?> getThumbnailCache(String imageUri) => (select(
+    thumbnailCaches,
+  )..where((t) => t.imageUri.equals(imageUri))).getSingleOrNull();
 
   /// サムネイルキャッシュを保存する
   Future<void> upsertThumbnailCache({
@@ -80,16 +81,15 @@ class AppDatabase extends _$AppDatabase {
     required String cachePath,
     required int width,
     required int height,
-  }) =>
-      into(thumbnailCaches).insertOnConflictUpdate(
-        ThumbnailCachesCompanion.insert(
-          imageUri: imageUri,
-          cachePath: cachePath,
-          width: width,
-          height: height,
-          updatedAt: DateTime.now(),
-        ),
-      );
+  }) => into(thumbnailCaches).insertOnConflictUpdate(
+    ThumbnailCachesCompanion.insert(
+      imageUri: imageUri,
+      cachePath: cachePath,
+      width: width,
+      height: height,
+      updatedAt: DateTime.now(),
+    ),
+  );
 
   /// 全サムネイルキャッシュを削除する
   Future<int> clearThumbnailCache() => delete(thumbnailCaches).go();
@@ -97,6 +97,22 @@ class AppDatabase extends _$AppDatabase {
   /// 指定 URI のサムネイルキャッシュを無効化する
   Future<int> invalidateThumbnailCache(String imageUri) =>
       (delete(thumbnailCaches)..where((t) => t.imageUri.equals(imageUri))).go();
+
+  // --- RecentFolders 追加クエリ ---
+
+  /// 指定 URI の最近開いたフォルダを削除する
+  Future<int> deleteRecentFolderByUri(String uri) =>
+      (delete(recentFolders)..where((t) => t.uri.equals(uri))).go();
+
+  /// 指定プラットフォーム種別の最近開いたフォルダ数を取得する
+  Future<int> countRecentFoldersByPlatform(String platformType) async {
+    final count = recentFolders.uri.count();
+    final query = selectOnly(recentFolders)
+      ..addColumns([count])
+      ..where(recentFolders.platformType.equals(platformType));
+    final result = await query.getSingle();
+    return result.read(count) ?? 0;
+  }
 }
 
 /// データベースファイルへの接続を開く

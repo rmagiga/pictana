@@ -22,9 +22,8 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.optrig"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // Android 14+ (API 34) を対象。SAF + Scoped Storage 制約下で動作。
+        minSdk = 34
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -41,4 +40,13 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // SAF 操作をバックグラウンドスレッドで実行するためのコルーチンライブラリ
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    // DocumentFile.fromTreeUri() で SAF ツリー URI からファイル情報を取得
+    implementation("androidx.documentfile:documentfile:1.0.1")
+    // ActivityResultContracts.OpenDocumentTree() でフォルダ選択 Intent を起動
+    implementation("androidx.activity:activity-ktx:1.9.3")
 }
