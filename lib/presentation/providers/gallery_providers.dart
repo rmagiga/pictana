@@ -20,7 +20,9 @@ part 'gallery_providers.g.dart';
 // ---------------------------------------------------------------------------
 
 @riverpod
-LoadFolderImagesUseCase loadFolderImagesUseCase(LoadFolderImagesUseCaseRef ref) {
+LoadFolderImagesUseCase loadFolderImagesUseCase(
+  LoadFolderImagesUseCaseRef ref,
+) {
   return LoadFolderImagesUseCase(
     imageRepository: ref.watch(imageRepositoryProvider),
   );
@@ -56,18 +58,28 @@ class CurrentFolder extends _$CurrentFolder {
 /// ギャラリーのソート設定
 @Riverpod(keepAlive: true)
 class GallerySortOption extends _$GallerySortOption {
+  /// ユーザーが updateOption() で明示的に変更したかどうかのフラグ。
+  /// _loadInitial() の非同期完了時にユーザー設定を上書きしないためのガード。
+  bool _userHasUpdated = false;
+
   @override
   SortOption build() {
+    _userHasUpdated = false;
     _loadInitial();
     return SortOption.defaultOption;
   }
 
   Future<void> _loadInitial() async {
     final useCase = ref.read(sortImagesUseCaseProvider);
-    state = await useCase.loadSortOption();
+    final loaded = await useCase.loadSortOption();
+    // ユーザーが既に updateOption() で変更していた場合は DB 値で上書きしない
+    if (!_userHasUpdated) {
+      state = loaded;
+    }
   }
 
   Future<void> updateOption(SortOption newOption) async {
+    _userHasUpdated = true;
     state = newOption;
     final useCase = ref.read(sortImagesUseCaseProvider);
     await useCase.saveSortOption(newOption);
@@ -83,8 +95,35 @@ Stream<List<ImageEntry>> galleryImages(GalleryImagesRef ref) {
   final sortOption = ref.watch(gallerySortOptionProvider);
   final useCase = ref.watch(loadFolderImagesUseCaseProvider);
 
-  // キャンセル時のクリーンアップは Riverpod が自動で管理する
-  return useCase.execute(folder: folder, sort: sortOption);
+  // リポジトリから取得した Stream の各 emit をソートして返す。
+  // ソートオプション変更時は provider 全体が再構築されるため、
+  // 新しい sortOption が確実に適用される。
+  return useCase.execute(folder: folder, sort: sortOption).map((images) {
+    final sorted = List<ImageEntry>.of(images);
+    _sortImageEntries(sorted, sortOption);
+    return sorted;
+  });
+}
+
+/// Provider レベルでのソート適用（リポジトリ側のソートに加えて二重保証）
+void _sortImageEntries(List<ImageEntry> entries, SortOption sort) {
+  final asc = sort.isAscending;
+  entries.sort(
+    (a, b) => switch (sort.field) {
+      SortField.name =>
+        asc ? a.name.compareTo(b.name) : b.name.compareTo(a.name),
+      SortField.date =>
+        asc
+            ? a.modifiedAt.compareTo(b.modifiedAt)
+            : b.modifiedAt.compareTo(a.modifiedAt),
+      SortField.size =>
+        asc ? a.size.compareTo(b.size) : b.size.compareTo(a.size),
+      SortField.type =>
+        asc
+            ? a.extension.compareTo(b.extension)
+            : b.extension.compareTo(a.extension),
+    },
+  );
 }
 
 /// フォルダ内の画像総数

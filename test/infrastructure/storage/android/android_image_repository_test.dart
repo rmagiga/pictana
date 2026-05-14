@@ -146,13 +146,13 @@ void main() {
 
       final batches = await repository.getImages(folder: testFolder).toList();
 
-      // 3 バッチが emit されること
+      // 3 バッチが emit されること（累積方式）
       expect(batches.length, 3);
-      // 最初の 2 バッチは 50 件
+      // 累積リストが emit される: 50, 100, 120
       expect(batches[0].length, 50);
-      expect(batches[1].length, 50);
-      // 最後のバッチは 20 件
-      expect(batches[2].length, 20);
+      expect(batches[1].length, 100);
+      // 最後のバッチは累積 120 件
+      expect(batches[2].length, 120);
     });
 
     test('ちょうど 50 件の場合は 1 バッチ + 空バッチ確認で終了', () async {

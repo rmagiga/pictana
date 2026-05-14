@@ -212,7 +212,7 @@ void main() {
 
   group('selectFolder', () {
     test(
-      '成功時 — FolderEntry を返し、persistUriPermission と recordRecentFolder を呼ぶ',
+      '成功時 — FolderEntry を返す（persistUriPermission はネイティブ側で実行済み、recordRecentFolder は UseCase 側で呼ばれる）',
       () async {
         mockChannel.selectFolderResult = {
           'documentId': 'primary:DCIM/Camera',
@@ -232,15 +232,11 @@ void main() {
         expect(result.id.platformType, PlatformType.android);
         expect(result.parentId, isNull);
 
-        // persistUriPermission が呼ばれたことを確認
-        expect(mockChannel.persistUriPermissionCallCount, 1);
-        expect(mockChannel.lastPersistedUri, 'content://example/tree');
+        // persistUriPermission はネイティブ側で既に実行済みのため Dart 側では呼ばれない
+        expect(mockChannel.persistUriPermissionCallCount, 0);
 
-        // recordRecentFolder (DB upsert) が呼ばれたことを確認
-        expect(mockDb.upsertRecentFolderCallCount, 1);
-        expect(mockDb.lastUpsertUri, 'content://example/tree');
-        expect(mockDb.lastUpsertName, 'Camera');
-        expect(mockDb.lastUpsertPlatformType, 'android');
+        // recordRecentFolder は UseCase 側で呼ばれるため Repository では呼ばれない
+        expect(mockDb.upsertRecentFolderCallCount, 0);
       },
     );
 

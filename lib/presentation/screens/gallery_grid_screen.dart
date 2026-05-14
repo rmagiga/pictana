@@ -60,15 +60,15 @@ class GalleryGridScreen extends ConsumerWidget {
             child: imagesAsync.when(
               data: (images) {
                 if (images.isEmpty) {
-                  return const Center(
-                    child: Text('画像が見つかりません。'),
-                  );
+                  return const Center(child: Text('画像が見つかりません。'));
                 }
 
                 return LayoutBuilder(
                   builder: (context, constraints) {
                     // 画面幅に応じて列数を動的に変更
-                    final crossAxisCount = (constraints.maxWidth / 150).floor().clamp(3, 10);
+                    final crossAxisCount = (constraints.maxWidth / 150)
+                        .floor()
+                        .clamp(3, 10);
 
                     return GridView.builder(
                       padding: const EdgeInsets.all(4),
@@ -81,6 +81,7 @@ class GalleryGridScreen extends ConsumerWidget {
                       itemBuilder: (context, index) {
                         final image = images[index];
                         return ImageGridTile(
+                          key: ValueKey(image.uri),
                           image: image,
                           onTap: () {
                             context.push('${AppRoutes.imageViewer}/$index');
@@ -96,7 +97,11 @@ class GalleryGridScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.red,
+                    ),
                     const SizedBox(height: 16),
                     Text('エラーが発生しました: $e'),
                     const SizedBox(height: 16),

@@ -78,8 +78,9 @@ class AndroidImageRepository implements ImageRepository {
         }
       }
 
-      // 累積リストを emit（インクリメンタル表示）
+      // 累積リストをソートして emit（インクリメンタル表示）
       if (accumulated.isNotEmpty) {
+        _sortEntries(accumulated, sort);
         yield List.of(accumulated);
       }
 
@@ -121,6 +122,7 @@ class AndroidImageRepository implements ImageRepository {
       }
     }
 
+    _sortEntries(entries, sort);
     return entries;
   }
 
@@ -238,5 +240,26 @@ class AndroidImageRepository implements ImageRepository {
       return false;
     }
     return true;
+  }
+
+  /// ソートオプションに従ってエントリリストをソートする
+  void _sortEntries(List<ImageEntry> entries, SortOption sort) {
+    final asc = sort.isAscending;
+    entries.sort(
+      (a, b) => switch (sort.field) {
+        SortField.name =>
+          asc ? a.name.compareTo(b.name) : b.name.compareTo(a.name),
+        SortField.date =>
+          asc
+              ? a.modifiedAt.compareTo(b.modifiedAt)
+              : b.modifiedAt.compareTo(a.modifiedAt),
+        SortField.size =>
+          asc ? a.size.compareTo(b.size) : b.size.compareTo(a.size),
+        SortField.type =>
+          asc
+              ? a.extension.compareTo(b.extension)
+              : b.extension.compareTo(a.extension),
+      },
+    );
   }
 }
