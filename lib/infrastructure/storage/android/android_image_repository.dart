@@ -45,6 +45,7 @@ class AndroidImageRepository implements ImageRepository {
     final documentId = folder.id.rawValue;
 
     var offset = 0;
+    final accumulated = <ImageEntry>[];
 
     while (true) {
       List<Map<String, dynamic>> batch;
@@ -65,12 +66,11 @@ class AndroidImageRepository implements ImageRepository {
       if (batch.isEmpty) break;
 
       // Map → ImageEntry に変換し、フィルターを適用
-      final entries = <ImageEntry>[];
       for (final map in batch) {
         try {
           final entry = ImageEntryFromMap.fromChannelMap(map);
           if (_matchesFilter(entry, filter)) {
-            entries.add(entry);
+            accumulated.add(entry);
           }
         } catch (e) {
           // 個別エントリの変換エラーはスキップして継続（エラー耐性）
@@ -78,8 +78,9 @@ class AndroidImageRepository implements ImageRepository {
         }
       }
 
-      if (entries.isNotEmpty) {
-        yield entries;
+      // 累積リストを emit（インクリメンタル表示）
+      if (accumulated.isNotEmpty) {
+        yield List.of(accumulated);
       }
 
       // バッチサイズ未満 = 最終バッチ
@@ -206,9 +207,7 @@ class AndroidImageRepository implements ImageRepository {
     try {
       final tempPath = await _channel.getImageBytesViaFile(contentUri);
       if (tempPath.isEmpty) {
-        throw const DecodeFailedException(
-          message: '一時ファイルパスが空です',
-        );
+        throw const DecodeFailedException(message: '一時ファイルパスが空です');
       }
 
       final file = File(tempPath);

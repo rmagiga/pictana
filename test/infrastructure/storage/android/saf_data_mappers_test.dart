@@ -22,9 +22,10 @@ void main() {
       expect(entry.id.rawValue, 'primary:DCIM/Camera');
       expect(entry.id.platformType, PlatformType.android);
       expect(entry.name, 'Camera');
+      // treeUri が存在する場合は treeUri が uri として使用される
       expect(
         entry.uri,
-        'content://com.android.externalstorage.documents/tree/primary%3ADCIM/document/primary%3ADCIM%2FCamera',
+        'content://com.android.externalstorage.documents/tree/primary%3ADCIM',
       );
       expect(entry.parentId, isNull);
     });

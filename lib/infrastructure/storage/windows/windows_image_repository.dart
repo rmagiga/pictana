@@ -43,12 +43,11 @@ class WindowsImageRepository implements ImageRepository {
   }) async* {
     final dir = Directory(folder.uri);
     if (!await dir.exists()) {
-      throw StorageDisconnectedException(
-        message: '${folder.name} が見つかりません',
-      );
+      throw StorageDisconnectedException(message: '${folder.name} が見つかりません');
     }
 
-    final buffer = <ImageEntry>[];
+    final accumulated = <ImageEntry>[];
+    var emittedCount = 0;
     try {
       await for (final entity in dir.list(followLinks: false)) {
         if (entity is! File) continue;
@@ -56,11 +55,12 @@ class WindowsImageRepository implements ImageRepository {
         if (entry == null) continue;
         if (!_matchesFilter(entry, filter)) continue;
 
-        buffer.add(entry);
-        // 50件ごとに emit する（インクリメンタル表示）
-        if (buffer.length >= 50) {
-          yield List.of(buffer);
-          buffer.clear();
+        accumulated.add(entry);
+        // 50件ごとに累積リストを emit する（インクリメンタル表示）
+        if (accumulated.length - emittedCount >= 50) {
+          _sortEntries(accumulated, sort);
+          yield List.of(accumulated);
+          emittedCount = accumulated.length;
         }
       }
     } catch (e) {
@@ -68,8 +68,10 @@ class WindowsImageRepository implements ImageRepository {
       throw StorageDisconnectedException(cause: e);
     }
 
-    if (buffer.isNotEmpty) {
-      yield List.of(buffer);
+    // 最終バッチ（未 emit 分がある場合）をソートして emit
+    if (accumulated.length > emittedCount) {
+      _sortEntries(accumulated, sort);
+      yield List.of(accumulated);
     }
   }
 
@@ -83,9 +85,7 @@ class WindowsImageRepository implements ImageRepository {
   }) async {
     final dir = Directory(folder.uri);
     if (!await dir.exists()) {
-      throw StorageDisconnectedException(
-        message: '${folder.name} が見つかりません',
-      );
+      throw StorageDisconnectedException(message: '${folder.name} が見つかりません');
     }
 
     final allEntries = <ImageEntry>[];
@@ -122,8 +122,10 @@ class WindowsImageRepository implements ImageRepository {
     try {
       await for (final entity in dir.list(followLinks: false)) {
         if (entity is! File) continue;
-        final ext =
-            p.extension(entity.path).toLowerCase().replaceFirst('.', '');
+        final ext = p
+            .extension(entity.path)
+            .toLowerCase()
+            .replaceFirst('.', '');
         if (!_kSupportedExtensions.containsKey(ext)) continue;
         if (filter.nameQuery != null &&
             !p
@@ -142,10 +144,7 @@ class WindowsImageRepository implements ImageRepository {
   Future<ImageEntry> getImageMetadata(ImageEntry entry) async {
     final file = File(entry.uri);
     final stat = await file.stat();
-    return entry.copyWith(
-      size: stat.size,
-      modifiedAt: stat.modified,
-    );
+    return entry.copyWith(size: stat.size, modifiedAt: stat.modified);
   }
 
   @override
@@ -161,10 +160,7 @@ class WindowsImageRepository implements ImageRepository {
   // private ヘルパー
   // ---------------------------------------------------------------------------
 
-  Future<ImageEntry?> _fileToImageEntry(
-    File file,
-    EntryId parentId,
-  ) async {
+  Future<ImageEntry?> _fileToImageEntry(File file, EntryId parentId) async {
     final ext = p.extension(file.path).toLowerCase().replaceFirst('.', '');
     final mime = _kSupportedExtensions[ext];
     if (mime == null) return null;
@@ -189,9 +185,7 @@ class WindowsImageRepository implements ImageRepository {
 
   bool _matchesFilter(ImageEntry entry, ImageFilter filter) {
     if (filter.nameQuery != null &&
-        !entry.name
-            .toLowerCase()
-            .contains(filter.nameQuery!.toLowerCase())) {
+        !entry.name.toLowerCase().contains(filter.nameQuery!.toLowerCase())) {
       return false;
     }
     if (filter.mimeTypes != null &&
@@ -203,17 +197,21 @@ class WindowsImageRepository implements ImageRepository {
 
   void _sortEntries(List<ImageEntry> entries, SortOption sort) {
     final asc = sort.isAscending;
-    entries.sort((a, b) => switch (sort.field) {
-          SortField.name =>
-            asc ? a.name.compareTo(b.name) : b.name.compareTo(a.name),
-          SortField.date => asc
+    entries.sort(
+      (a, b) => switch (sort.field) {
+        SortField.name =>
+          asc ? a.name.compareTo(b.name) : b.name.compareTo(a.name),
+        SortField.date =>
+          asc
               ? a.modifiedAt.compareTo(b.modifiedAt)
               : b.modifiedAt.compareTo(a.modifiedAt),
-          SortField.size =>
-            asc ? a.size.compareTo(b.size) : b.size.compareTo(a.size),
-          SortField.type => asc
+        SortField.size =>
+          asc ? a.size.compareTo(b.size) : b.size.compareTo(a.size),
+        SortField.type =>
+          asc
               ? a.extension.compareTo(b.extension)
               : b.extension.compareTo(a.extension),
-        });
+      },
+    );
   }
 }

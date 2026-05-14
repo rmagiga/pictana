@@ -12,7 +12,7 @@ import '../../../domain/repositories/storage_repository.dart';
 /// ストレージ選択 UseCase
 class SelectStorageUseCase {
   const SelectStorageUseCase({required StorageRepository storageRepository})
-      : _repo = storageRepository;
+    : _repo = storageRepository;
 
   final StorageRepository _repo;
 
@@ -22,9 +22,6 @@ class SelectStorageUseCase {
   Future<FolderEntry?> execute() async {
     final folder = await _repo.selectFolder();
     if (folder == null) return null;
-
-    // SAF URI 権限の永続化（Android のみ有効）
-    await _repo.persistUriPermission(folder.uri);
 
     // 最近フォルダへ記録
     await _repo.recordRecentFolder(folder);

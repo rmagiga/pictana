@@ -56,11 +56,19 @@ object SafCommands {
             throw IllegalArgumentException("Invalid document tree URI: tree document ID is empty")
         }
 
-        // takePersistableUriPermission (READ + WRITE) を呼び出し
+        // takePersistableUriPermission — 実際に付与されたフラグのみで永続化する
+        // USB OTG 等では WRITE 権限が付与されない場合があるため、
+        // READ+WRITE で試行し、失敗したら READ のみで再試行する
         val contentResolver = activity.contentResolver
-        val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+        val rwFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
                 Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-        contentResolver.takePersistableUriPermission(uri, flags)
+        try {
+            contentResolver.takePersistableUriPermission(uri, rwFlags)
+        } catch (e: SecurityException) {
+            // WRITE 権限がない場合は READ のみで永続化
+            val rFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            contentResolver.takePersistableUriPermission(uri, rFlags)
+        }
 
         // DocumentFile を使って表示名を取得
         val documentFile = DocumentFile.fromTreeUri(activity, uri)

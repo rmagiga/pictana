@@ -28,10 +28,15 @@ extension FolderEntryFromMap on FolderEntry {
     EntryId? parentId,
   }) {
     final documentId = map['documentId'] as String;
+    // SAF ではフォルダ列挙・画像列挙に tree URI が必要。
+    // ネイティブ側は "treeUri" と "uri"(document URI) の両方を返すが、
+    // FolderEntry.uri には tree URI を格納する。
+    final treeUri = map['treeUri'] as String?;
+    final uri = treeUri ?? map['uri'] as String;
     return FolderEntry(
       id: EntryId.android(documentId),
       name: map['name'] as String,
-      uri: map['uri'] as String,
+      uri: uri,
       parentId: parentId,
     );
   }

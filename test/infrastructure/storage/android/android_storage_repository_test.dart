@@ -226,18 +226,19 @@ void main() {
 
         expect(result, isNotNull);
         expect(result!.name, 'Camera');
-        expect(result.uri, 'content://example/Camera');
+        // treeUri が存在する場合は treeUri が uri として使用される
+        expect(result.uri, 'content://example/tree');
         expect(result.id.rawValue, 'primary:DCIM/Camera');
         expect(result.id.platformType, PlatformType.android);
         expect(result.parentId, isNull);
 
         // persistUriPermission が呼ばれたことを確認
         expect(mockChannel.persistUriPermissionCallCount, 1);
-        expect(mockChannel.lastPersistedUri, 'content://example/Camera');
+        expect(mockChannel.lastPersistedUri, 'content://example/tree');
 
         // recordRecentFolder (DB upsert) が呼ばれたことを確認
         expect(mockDb.upsertRecentFolderCallCount, 1);
-        expect(mockDb.lastUpsertUri, 'content://example/Camera');
+        expect(mockDb.lastUpsertUri, 'content://example/tree');
         expect(mockDb.lastUpsertName, 'Camera');
         expect(mockDb.lastUpsertPlatformType, 'android');
       },

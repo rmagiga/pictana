@@ -76,9 +76,10 @@ class AndroidStorageRepository implements StorageRepository {
 
     final entry = FolderEntryFromMap.fromChannelMap(map);
 
-    // URI パーミッションを永続化し、DB に記録する
-    await persistUriPermission(entry.uri);
-    await recordRecentFolder(entry);
+    // ネイティブ側の SafCommands.selectFolder() で tree URI に対して
+    // takePersistableUriPermission が既に実行済みのため、
+    // Dart 側での再永続化は不要。
+    // recordRecentFolder は UseCase 側で呼ばれる。
 
     return entry;
   }
@@ -145,12 +146,51 @@ class AndroidStorageRepository implements StorageRepository {
   // ---------------------------------------------------------------------------
 
   /// DB の RecentFolder 行を FolderEntry に変換する
+  ///
+  /// DB には tree URI または document URI が保存されている可能性がある。
+  /// どちらの場合でも正しい tree URI と document ID を抽出する。
   FolderEntry _rowToFolderEntry(RecentFolder row) {
+    final uri = row.uri;
+    final treeUri = _extractTreeUri(uri);
+    final documentId = _extractDocumentId(uri);
     return FolderEntry(
-      id: EntryId.android(row.uri),
+      id: EntryId.android(documentId),
       name: row.name,
-      uri: row.uri,
+      uri: treeUri,
       parentId: null,
     );
+  }
+
+  /// URI から tree URI 部分を抽出する。
+  ///
+  /// document URI の場合: `.../tree/{id}/document/{id}` → `.../tree/{id}`
+  /// tree URI の場合: そのまま返す
+  String _extractTreeUri(String uri) {
+    final docSegment = '/document/';
+    final docIndex = uri.indexOf(docSegment);
+    if (docIndex > 0) {
+      return uri.substring(0, docIndex);
+    }
+    return uri;
+  }
+
+  /// URI から document ID を抽出する。
+  ///
+  /// document URI の場合: `.../document/{encodedId}` → デコード済み ID
+  /// tree URI の場合: `.../tree/{encodedId}` → デコード済み ID
+  String _extractDocumentId(String uri) {
+    final docSegment = '/document/';
+    final docIndex = uri.indexOf(docSegment);
+    if (docIndex >= 0) {
+      final encoded = uri.substring(docIndex + docSegment.length);
+      return Uri.decodeComponent(encoded);
+    }
+    final treeSegment = '/tree/';
+    final treeIndex = uri.indexOf(treeSegment);
+    if (treeIndex >= 0) {
+      final encoded = uri.substring(treeIndex + treeSegment.length);
+      return Uri.decodeComponent(encoded);
+    }
+    return uri;
   }
 }

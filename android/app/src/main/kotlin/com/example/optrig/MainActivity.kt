@@ -3,14 +3,14 @@ package com.example.optrig
 import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.CancellableContinuation
 
 /// FlutterActivity を拡張し、SAF 用 MethodChannel と USB 監視用 EventChannel を登録する
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
 
     companion object {
         private const val SAF_CHANNEL = "com.example.optrig/saf"

@@ -2,7 +2,7 @@ package com.example.optrig
 
 import android.content.Context
 import android.net.Uri
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.CoroutineScope
@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 /// MethodChannel ハンドラ — SAF 操作のディスパッチ
 /// 各メソッド呼び出しをコルーチンスコープ内で SafCommands に委譲する
 class SafMethodHandler(
-    private val activity: FlutterActivity,
+    private val activity: FlutterFragmentActivity,
     private val context: Context
 ) : MethodChannel.MethodCallHandler {
 
