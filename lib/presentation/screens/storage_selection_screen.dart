@@ -15,7 +15,7 @@ import '../../core/logging/app_logger.dart';
 import '../../router/app_router.dart';
 import '../providers/gallery_providers.dart';
 import '../providers/storage_providers.dart';
-import '../widgets/favorite_list_section.dart';
+import '../widgets/favorite_grid_section.dart';
 import '../widgets/favorite_navigation_handler.dart';
 
 class StorageSelectionScreen extends ConsumerWidget {
@@ -57,7 +57,7 @@ class StorageSelectionScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.only(top: 16.0),
               child: FavoriteNavigationHandler(
-                child: FavoriteListSection(
+                child: FavoriteGridSection(
                   onFolderTap: (folder) =>
                       handleFavoriteNavigation(context, ref, folder),
                 ),

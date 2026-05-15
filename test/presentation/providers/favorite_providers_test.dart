@@ -15,7 +15,6 @@ import 'package:optrig/core/errors/favorite_exceptions.dart';
 import 'package:optrig/domain/entities/favorite_folder.dart';
 import 'package:optrig/domain/repositories/favorite_repository.dart';
 import 'package:optrig/presentation/providers/favorite_toggle_provider.dart';
-import 'package:optrig/presentation/providers/favorite_toggle_state.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用フェイクリポジトリ

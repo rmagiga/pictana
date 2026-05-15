@@ -13,7 +13,6 @@ import 'package:optrig/domain/repositories/favorite_repository.dart';
 import 'package:optrig/domain/entities/favorite_folder.dart';
 import 'package:optrig/presentation/providers/favorite_helper_providers.dart';
 import 'package:optrig/presentation/providers/favorite_toggle_provider.dart';
-import 'package:optrig/presentation/providers/favorite_toggle_state.dart';
 import 'package:optrig/presentation/widgets/favorite_indicator.dart';
 
 // ---------------------------------------------------------------------------

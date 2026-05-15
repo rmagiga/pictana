@@ -21,7 +21,7 @@ import '../providers/gallery_providers.dart';
 
 /// お気に入りフォルダへのナビゲーション処理を提供するウィジェット
 ///
-/// [FavoriteListSection] の onFolderTap コールバックとして使用する
+/// [FavoriteGridSection] の onFolderTap コールバックとして使用する
 /// ナビゲーションロジックを子ウィジェットに提供する。
 /// ローディング中はオーバーレイインジケーターを表示し、
 /// 追加タップを無効化する。

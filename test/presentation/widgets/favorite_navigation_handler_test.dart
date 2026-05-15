@@ -148,7 +148,7 @@ FavoriteFolder createTestFavoriteFolder({
 /// テスト用のウィジェットツリーを構築する
 ///
 /// GoRouter と ProviderScope を含むテスト環境を提供する。
-Widget createTestWidget({
+Widget _createTestWidget({
   required FakeNavigateToFavoriteUseCase fakeUseCase,
   required _FakeFavoriteRepository fakeRepository,
   required Widget child,
@@ -190,7 +190,7 @@ void main() {
   group('FavoriteNavigationHandler', () {
     testWidgets('初期状態ではローディングインジケーターが表示されない', (tester) async {
       await tester.pumpWidget(
-        createTestWidget(
+        _createTestWidget(
           fakeUseCase: fakeUseCase,
           fakeRepository: fakeRepository,
           child: const FavoriteNavigationHandler(child: Text('子ウィジェット')),
@@ -207,7 +207,7 @@ void main() {
       final folder = createTestFavoriteFolder();
 
       await tester.pumpWidget(
-        createTestWidget(
+        _createTestWidget(
           fakeUseCase: fakeUseCase,
           fakeRepository: fakeRepository,
           child: Consumer(
@@ -232,7 +232,7 @@ void main() {
       fakeUseCase.setCompleter(completer);
 
       await tester.pumpWidget(
-        createTestWidget(
+        _createTestWidget(
           fakeUseCase: fakeUseCase,
           fakeRepository: fakeRepository,
           child: Consumer(
@@ -270,7 +270,7 @@ void main() {
       fakeUseCase.setCompleter(completer);
 
       await tester.pumpWidget(
-        createTestWidget(
+        _createTestWidget(
           fakeUseCase: fakeUseCase,
           fakeRepository: fakeRepository,
           child: Consumer(
@@ -312,7 +312,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
+        _createTestWidget(
           fakeUseCase: fakeUseCase,
           fakeRepository: fakeRepository,
           child: Consumer(
@@ -341,7 +341,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
+        _createTestWidget(
           fakeUseCase: fakeUseCase,
           fakeRepository: fakeRepository,
           child: Consumer(
@@ -379,7 +379,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
+        _createTestWidget(
           fakeUseCase: fakeUseCase,
           fakeRepository: fakeRepository,
           child: Consumer(
@@ -407,7 +407,7 @@ void main() {
       fakeUseCase.exceptionToThrow = Exception('予期しないエラー');
 
       await tester.pumpWidget(
-        createTestWidget(
+        _createTestWidget(
           fakeUseCase: fakeUseCase,
           fakeRepository: fakeRepository,
           child: Consumer(

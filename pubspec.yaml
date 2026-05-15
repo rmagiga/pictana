@@ -62,6 +62,7 @@ dependencies:
 
   # ルーティング
   go_router: ^15.1.2
+  shimmer: ^3.0.0
 
 dev_dependencies:
   flutter_test:

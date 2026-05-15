@@ -8,7 +8,6 @@
 /// - Property 2: URI ユニーク制約による登録の冪等性
 /// - Property 3: トグル操作による状態反転
 /// - Property 4: お気に入り一覧の登録日時降順ソート不変条件
-/// - Property 5: フォルダ名の切り詰め規則
 /// - Property 6: 処理中ロックによる連続タップ防止
 /// - Property 7: 削除の Undo によるリスト復元
 @Tags(['property-test', 'folder-favorites'])
@@ -21,7 +20,6 @@ import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
 import 'package:optrig/application/usecases/favorites/toggle_favorite_usecase.dart';
 import 'package:optrig/infrastructure/database/app_database.dart';
 import 'package:optrig/infrastructure/database/favorite_repository_impl.dart';
-import 'package:optrig/presentation/widgets/favorite_list_section.dart';
 
 // ---------------------------------------------------------------------------
 // カスタムジェネレータ
@@ -36,15 +34,6 @@ extension FavoriteGenerators on Any {
   /// 有効なフォルダ名を生成する（空文字列を除外）
   Generator<String> get validName =>
       any.nonEmptyLetters.map((s) => s.substring(0, s.length.clamp(0, 100)));
-
-  /// 任意の長さのフォルダ名を生成する（切り詰めテスト用）
-  Generator<String> get folderNameForTruncation => any
-      .intInRange(1, 200)
-      .map(
-        (length) => String.fromCharCodes(
-          List.generate(length, (i) => 0x3042 + (i % 50)), // ひらがな文字列
-        ),
-      );
 
   /// 複数の一意な URI と名前のペアを生成する（2〜10件）
   Generator<List<({String uri, String name})>> get uniqueFavoritePairs =>
@@ -303,28 +292,11 @@ void main() {
   });
 
   // =========================================================================
-  // Property 5: フォルダ名の切り詰め規則
+  // Property 5: フォルダ名の切り詰め規則（FavoriteGridSection 移行により削除）
   // =========================================================================
-  group('Feature: folder-favorites, Property 5: フォルダ名の切り詰め規則', () {
-    /// **Validates: Requirements 3.4**
-    ///
-    /// 任意のフォルダ名文字列に対して、60文字以下であればそのまま表示され、
-    /// 60文字を超える場合は先頭60文字に省略記号（…）を付加した文字列が表示される。
-    Glados(any.folderNameForTruncation).test('60文字以下はそのまま、60文字超は先頭60文字+省略記号', (
-      name,
-    ) {
-      final result = FavoriteListSection.truncateName(name);
-
-      if (name.length <= 60) {
-        // 60文字以下: そのまま表示
-        expect(result, name);
-      } else {
-        // 60文字超: 先頭60文字 + '…'
-        expect(result, '${name.substring(0, 60)}…');
-        expect(result.length, 61); // 60文字 + 省略記号1文字
-      }
-    });
-  });
+  // FavoriteGridSection では Flutter の Text ウィジェット（maxLines: 2 +
+  // TextOverflow.ellipsis）で名前の切り詰めを処理するため、
+  // 手動の truncateName ロジックは不要になった。
 
   // =========================================================================
   // Property 6: 処理中ロックによる連続タップ防止
