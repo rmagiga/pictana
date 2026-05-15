@@ -83,5 +83,28 @@ final thumbnailRepositoryProvider = Provider<ThumbnailRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef ThumbnailRepositoryRef = ProviderRef<ThumbnailRepository>;
+String _$favoriteRepositoryHash() =>
+    r'2d40dd54d51bace99f8598036f9eeb01b2dc208b';
+
+/// FavoriteRepository Provider
+///
+/// お気に入りフォルダの永続化を担当するリポジトリの DI 定義。
+/// [AppDatabase] を注入して [FavoriteRepositoryImpl] を生成する。
+///
+/// Copied from [favoriteRepository].
+@ProviderFor(favoriteRepository)
+final favoriteRepositoryProvider = Provider<FavoriteRepository>.internal(
+  favoriteRepository,
+  name: r'favoriteRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$favoriteRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef FavoriteRepositoryRef = ProviderRef<FavoriteRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

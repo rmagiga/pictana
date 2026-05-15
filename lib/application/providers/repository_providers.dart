@@ -6,10 +6,12 @@ library;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../domain/repositories/favorite_repository.dart';
 import '../../domain/repositories/image_repository.dart';
 import '../../domain/repositories/storage_repository.dart';
 import '../../domain/repositories/thumbnail_repository.dart';
 import '../../infrastructure/database/app_database.dart';
+import '../../infrastructure/database/favorite_repository_impl.dart';
 import '../../infrastructure/storage/common/platform_storage_factory.dart';
 
 part 'repository_providers.g.dart';
@@ -53,4 +55,14 @@ ThumbnailRepository thumbnailRepository(ThumbnailRepositoryRef ref) {
     // キャッシュマネージャのクリーンアップは不要（ファイルは残す）
   });
   return repo;
+}
+
+/// FavoriteRepository Provider
+///
+/// お気に入りフォルダの永続化を担当するリポジトリの DI 定義。
+/// [AppDatabase] を注入して [FavoriteRepositoryImpl] を生成する。
+@Riverpod(keepAlive: true)
+FavoriteRepository favoriteRepository(FavoriteRepositoryRef ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return FavoriteRepositoryImpl(db);
 }

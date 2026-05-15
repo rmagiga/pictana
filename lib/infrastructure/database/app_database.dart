@@ -9,20 +9,34 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'tables/app_settings_table.dart';
+import 'tables/favorite_folders_table.dart';
 import 'tables/recent_folders_table.dart';
 import 'tables/thumbnail_cache_table.dart';
 
 part 'app_database.g.dart';
 
 /// アプリ全体で使用するDriftデータベース
-@DriftDatabase(tables: [RecentFolders, ThumbnailCaches, AppSettings])
+@DriftDatabase(
+  tables: [RecentFolders, ThumbnailCaches, AppSettings, FavoriteFolders],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      // v1 → v2: お気に入りフォルダテーブルを追加
+      if (from < 2) {
+        await m.createTable(favoriteFolders);
+      }
+    },
+  );
 
   // --- RecentFolders クエリ ---
 

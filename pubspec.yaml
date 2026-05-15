@@ -75,10 +75,6 @@ dev_dependencies:
       url: https://github.com/MarcelGarus/glados
       path: glados
 
-dependency_overrides:
-  test_api: 0.7.10
-  analyzer: ^7.0.0
-
   # コード生成
   build_runner: ^2.4.15
   drift_dev: ^2.23.1
@@ -87,6 +83,10 @@ dependency_overrides:
   riverpod_generator: ^2.6.4
   custom_lint: ^0.7.5
   riverpod_lint: ^2.6.4
+
+dependency_overrides:
+  test_api: 0.7.10
+  analyzer: ^7.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

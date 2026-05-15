@@ -63,7 +63,7 @@ final sortImagesUseCaseProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SortImagesUseCaseRef = AutoDisposeProviderRef<SortImagesUseCase>;
-String _$galleryImagesHash() => r'9621308c130a7a21a7cb97ecc974fff973abb36a';
+String _$galleryImagesHash() => r'b7d0570ec9bdbf2915539dc1d4afe7a0823ea019';
 
 /// 指定フォルダの画像リスト (Stream ベースのインクリメンタル読み込み)
 ///
@@ -120,7 +120,7 @@ final currentFolderProvider =
     );
 
 typedef _$CurrentFolder = Notifier<FolderEntry?>;
-String _$gallerySortOptionHash() => r'936083cd81d466c8e79ba9a4cc7d6951407847b2';
+String _$gallerySortOptionHash() => r'e6374feada9b25b95aff251abda8631d08c540fe';
 
 /// ギャラリーのソート設定
 ///

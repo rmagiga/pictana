@@ -3,6 +3,8 @@
 /// ユーザーが明示的に開くフォルダを選択する画面。
 /// 起動時に既定フォルダが見つからなかった場合や、
 /// ユーザーが意図して他のフォルダを開きたい場合に表示される。
+/// お気に入りフォルダ一覧セクションを含み、登録済みフォルダへの
+/// クイックアクセスを提供する。
 library;
 
 import 'package:flutter/material.dart';
@@ -13,6 +15,8 @@ import '../../core/logging/app_logger.dart';
 import '../../router/app_router.dart';
 import '../providers/gallery_providers.dart';
 import '../providers/storage_providers.dart';
+import '../widgets/favorite_list_section.dart';
+import '../widgets/favorite_navigation_handler.dart';
 
 class StorageSelectionScreen extends ConsumerWidget {
   const StorageSelectionScreen({super.key});
@@ -32,9 +36,9 @@ class StorageSelectionScreen extends ConsumerWidget {
     } catch (e) {
       appLogger.e('フォルダ選択エラー', error: e);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('フォルダの選択に失敗しました: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('フォルダの選択に失敗しました: $e')));
       }
     }
   }
@@ -44,50 +48,64 @@ class StorageSelectionScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('フォルダを選択'),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.folder_open_rounded,
-                size: 96,
-                color: theme.colorScheme.primary.withAlpha(150),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                '画像フォルダが見つかりません',
-                style: theme.textTheme.headlineSmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '写真が保存されているフォルダを選択してください。',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+      appBar: AppBar(title: const Text('フォルダを選択'), centerTitle: true),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // お気に入りフォルダ一覧セクション
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: FavoriteNavigationHandler(
+                child: FavoriteListSection(
+                  onFolderTap: (folder) =>
+                      handleFavoriteNavigation(context, ref, folder),
                 ),
-                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 48),
-              FilledButton.icon(
-                onPressed: () => _selectFolder(context, ref),
-                icon: const Icon(Icons.create_new_folder_outlined),
-                label: const Text('フォルダを選択'),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
+            ),
+            const Divider(height: 32),
+            // フォルダ選択セクション
+            Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.folder_open_rounded,
+                    size: 96,
+                    color: theme.colorScheme.primary.withAlpha(150),
                   ),
-                  textStyle: theme.textTheme.titleMedium,
-                ),
+                  const SizedBox(height: 24),
+                  Text(
+                    '画像フォルダが見つかりません',
+                    style: theme.textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '写真が保存されているフォルダを選択してください。',
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 48),
+                  FilledButton.icon(
+                    onPressed: () => _selectFolder(context, ref),
+                    icon: const Icon(Icons.create_new_folder_outlined),
+                    label: const Text('フォルダを選択'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      textStyle: theme.textTheme.titleMedium,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

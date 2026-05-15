@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../router/app_router.dart';
 import '../providers/gallery_providers.dart';
+import '../widgets/favorite_indicator.dart';
 import '../widgets/image_grid_tile.dart';
 import '../widgets/sort_menu.dart';
 import '../widgets/storage_disconnect_banner.dart';
@@ -35,6 +36,9 @@ class GalleryGridScreen extends ConsumerWidget {
           ],
         ),
         actions: [
+          // お気に入りトグルボタン
+          if (folder != null)
+            FavoriteIndicator(uri: folder.uri, name: folder.name),
           // 検索ボタン (Phase 5)
           IconButton(
             icon: const Icon(Icons.search),

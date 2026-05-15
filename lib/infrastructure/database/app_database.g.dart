@@ -989,6 +989,315 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   }
 }
 
+class $FavoriteFoldersTable extends FavoriteFolders
+    with TableInfo<$FavoriteFoldersTable, FavoriteFolder> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FavoriteFoldersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _uriMeta = const VerificationMeta('uri');
+  @override
+  late final GeneratedColumn<String> uri = GeneratedColumn<String>(
+    'uri',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _registeredAtMeta = const VerificationMeta(
+    'registeredAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> registeredAt = GeneratedColumn<DateTime>(
+    'registered_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, uri, name, registeredAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'favorite_folders';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FavoriteFolder> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uri')) {
+      context.handle(
+        _uriMeta,
+        uri.isAcceptableOrUnknown(data['uri']!, _uriMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_uriMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('registered_at')) {
+      context.handle(
+        _registeredAtMeta,
+        registeredAt.isAcceptableOrUnknown(
+          data['registered_at']!,
+          _registeredAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_registeredAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FavoriteFolder map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FavoriteFolder(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      uri: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}uri'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      registeredAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}registered_at'],
+      )!,
+    );
+  }
+
+  @override
+  $FavoriteFoldersTable createAlias(String alias) {
+    return $FavoriteFoldersTable(attachedDatabase, alias);
+  }
+}
+
+class FavoriteFolder extends DataClass implements Insertable<FavoriteFolder> {
+  /// 主キー（自動インクリメント）
+  final int id;
+
+  /// フォルダ URI（ユニーク制約）
+  final String uri;
+
+  /// フォルダ表示名
+  final String name;
+
+  /// お気に入り登録日時
+  final DateTime registeredAt;
+  const FavoriteFolder({
+    required this.id,
+    required this.uri,
+    required this.name,
+    required this.registeredAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['uri'] = Variable<String>(uri);
+    map['name'] = Variable<String>(name);
+    map['registered_at'] = Variable<DateTime>(registeredAt);
+    return map;
+  }
+
+  FavoriteFoldersCompanion toCompanion(bool nullToAbsent) {
+    return FavoriteFoldersCompanion(
+      id: Value(id),
+      uri: Value(uri),
+      name: Value(name),
+      registeredAt: Value(registeredAt),
+    );
+  }
+
+  factory FavoriteFolder.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FavoriteFolder(
+      id: serializer.fromJson<int>(json['id']),
+      uri: serializer.fromJson<String>(json['uri']),
+      name: serializer.fromJson<String>(json['name']),
+      registeredAt: serializer.fromJson<DateTime>(json['registeredAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'uri': serializer.toJson<String>(uri),
+      'name': serializer.toJson<String>(name),
+      'registeredAt': serializer.toJson<DateTime>(registeredAt),
+    };
+  }
+
+  FavoriteFolder copyWith({
+    int? id,
+    String? uri,
+    String? name,
+    DateTime? registeredAt,
+  }) => FavoriteFolder(
+    id: id ?? this.id,
+    uri: uri ?? this.uri,
+    name: name ?? this.name,
+    registeredAt: registeredAt ?? this.registeredAt,
+  );
+  FavoriteFolder copyWithCompanion(FavoriteFoldersCompanion data) {
+    return FavoriteFolder(
+      id: data.id.present ? data.id.value : this.id,
+      uri: data.uri.present ? data.uri.value : this.uri,
+      name: data.name.present ? data.name.value : this.name,
+      registeredAt: data.registeredAt.present
+          ? data.registeredAt.value
+          : this.registeredAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FavoriteFolder(')
+          ..write('id: $id, ')
+          ..write('uri: $uri, ')
+          ..write('name: $name, ')
+          ..write('registeredAt: $registeredAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, uri, name, registeredAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FavoriteFolder &&
+          other.id == this.id &&
+          other.uri == this.uri &&
+          other.name == this.name &&
+          other.registeredAt == this.registeredAt);
+}
+
+class FavoriteFoldersCompanion extends UpdateCompanion<FavoriteFolder> {
+  final Value<int> id;
+  final Value<String> uri;
+  final Value<String> name;
+  final Value<DateTime> registeredAt;
+  const FavoriteFoldersCompanion({
+    this.id = const Value.absent(),
+    this.uri = const Value.absent(),
+    this.name = const Value.absent(),
+    this.registeredAt = const Value.absent(),
+  });
+  FavoriteFoldersCompanion.insert({
+    this.id = const Value.absent(),
+    required String uri,
+    required String name,
+    required DateTime registeredAt,
+  }) : uri = Value(uri),
+       name = Value(name),
+       registeredAt = Value(registeredAt);
+  static Insertable<FavoriteFolder> custom({
+    Expression<int>? id,
+    Expression<String>? uri,
+    Expression<String>? name,
+    Expression<DateTime>? registeredAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (uri != null) 'uri': uri,
+      if (name != null) 'name': name,
+      if (registeredAt != null) 'registered_at': registeredAt,
+    });
+  }
+
+  FavoriteFoldersCompanion copyWith({
+    Value<int>? id,
+    Value<String>? uri,
+    Value<String>? name,
+    Value<DateTime>? registeredAt,
+  }) {
+    return FavoriteFoldersCompanion(
+      id: id ?? this.id,
+      uri: uri ?? this.uri,
+      name: name ?? this.name,
+      registeredAt: registeredAt ?? this.registeredAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (uri.present) {
+      map['uri'] = Variable<String>(uri.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (registeredAt.present) {
+      map['registered_at'] = Variable<DateTime>(registeredAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FavoriteFoldersCompanion(')
+          ..write('id: $id, ')
+          ..write('uri: $uri, ')
+          ..write('name: $name, ')
+          ..write('registeredAt: $registeredAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -997,6 +1306,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
+  late final $FavoriteFoldersTable favoriteFolders = $FavoriteFoldersTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1005,6 +1317,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     recentFolders,
     thumbnailCaches,
     appSettings,
+    favoriteFolders,
   ];
 }
 
@@ -1564,6 +1877,189 @@ typedef $$AppSettingsTableProcessedTableManager =
       AppSetting,
       PrefetchHooks Function()
     >;
+typedef $$FavoriteFoldersTableCreateCompanionBuilder =
+    FavoriteFoldersCompanion Function({
+      Value<int> id,
+      required String uri,
+      required String name,
+      required DateTime registeredAt,
+    });
+typedef $$FavoriteFoldersTableUpdateCompanionBuilder =
+    FavoriteFoldersCompanion Function({
+      Value<int> id,
+      Value<String> uri,
+      Value<String> name,
+      Value<DateTime> registeredAt,
+    });
+
+class $$FavoriteFoldersTableFilterComposer
+    extends Composer<_$AppDatabase, $FavoriteFoldersTable> {
+  $$FavoriteFoldersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get uri => $composableBuilder(
+    column: $table.uri,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get registeredAt => $composableBuilder(
+    column: $table.registeredAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FavoriteFoldersTableOrderingComposer
+    extends Composer<_$AppDatabase, $FavoriteFoldersTable> {
+  $$FavoriteFoldersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get uri => $composableBuilder(
+    column: $table.uri,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get registeredAt => $composableBuilder(
+    column: $table.registeredAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FavoriteFoldersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FavoriteFoldersTable> {
+  $$FavoriteFoldersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get uri =>
+      $composableBuilder(column: $table.uri, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get registeredAt => $composableBuilder(
+    column: $table.registeredAt,
+    builder: (column) => column,
+  );
+}
+
+class $$FavoriteFoldersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FavoriteFoldersTable,
+          FavoriteFolder,
+          $$FavoriteFoldersTableFilterComposer,
+          $$FavoriteFoldersTableOrderingComposer,
+          $$FavoriteFoldersTableAnnotationComposer,
+          $$FavoriteFoldersTableCreateCompanionBuilder,
+          $$FavoriteFoldersTableUpdateCompanionBuilder,
+          (
+            FavoriteFolder,
+            BaseReferences<
+              _$AppDatabase,
+              $FavoriteFoldersTable,
+              FavoriteFolder
+            >,
+          ),
+          FavoriteFolder,
+          PrefetchHooks Function()
+        > {
+  $$FavoriteFoldersTableTableManager(
+    _$AppDatabase db,
+    $FavoriteFoldersTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FavoriteFoldersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FavoriteFoldersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FavoriteFoldersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> uri = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<DateTime> registeredAt = const Value.absent(),
+              }) => FavoriteFoldersCompanion(
+                id: id,
+                uri: uri,
+                name: name,
+                registeredAt: registeredAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String uri,
+                required String name,
+                required DateTime registeredAt,
+              }) => FavoriteFoldersCompanion.insert(
+                id: id,
+                uri: uri,
+                name: name,
+                registeredAt: registeredAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FavoriteFoldersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FavoriteFoldersTable,
+      FavoriteFolder,
+      $$FavoriteFoldersTableFilterComposer,
+      $$FavoriteFoldersTableOrderingComposer,
+      $$FavoriteFoldersTableAnnotationComposer,
+      $$FavoriteFoldersTableCreateCompanionBuilder,
+      $$FavoriteFoldersTableUpdateCompanionBuilder,
+      (
+        FavoriteFolder,
+        BaseReferences<_$AppDatabase, $FavoriteFoldersTable, FavoriteFolder>,
+      ),
+      FavoriteFolder,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1574,4 +2070,6 @@ class $AppDatabaseManager {
       $$ThumbnailCachesTableTableManager(_db, _db.thumbnailCaches);
   $$AppSettingsTableTableManager get appSettings =>
       $$AppSettingsTableTableManager(_db, _db.appSettings);
+  $$FavoriteFoldersTableTableManager get favoriteFolders =>
+      $$FavoriteFoldersTableTableManager(_db, _db.favoriteFolders);
 }
