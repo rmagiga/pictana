@@ -40,9 +40,12 @@ class FavoriteIndicator extends ConsumerWidget {
     // 実際の DB 状態を監視
     final actualFavoriteAsync = ref.watch(isFolderFavoriteProvider(uri));
 
-    // 表示状態の決定: 楽観的状態が優先、なければ DB 状態を使用
+    // 表示状態の決定: 楽観的状態は対象フォルダの場合のみ使用
+    final optimistic = toggleState.targetUri == uri
+        ? toggleState.optimisticIsFavorite
+        : null;
     final isFavorite =
-        toggleState.optimisticIsFavorite ??
+        optimistic ??
         actualFavoriteAsync.whenOrNull(data: (value) => value) ??
         false;
 

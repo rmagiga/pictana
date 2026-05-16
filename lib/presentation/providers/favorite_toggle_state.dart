@@ -15,6 +15,9 @@ abstract class FavoriteToggleState with _$FavoriteToggleState {
     /// 楽観的UI更新による表示状態（null の場合は実際のDB状態を使用）
     bool? optimisticIsFavorite,
 
+    /// 楽観的状態の対象フォルダ URI（どのフォルダに対する操作かを識別）
+    String? targetUri,
+
     /// エラーメッセージ
     String? errorMessage,
   }) = _FavoriteToggleState;

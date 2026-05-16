@@ -216,6 +216,28 @@ void main() {
         completer.complete();
         await toggleFuture;
       });
+
+      test('toggle() 呼び出し時に targetUri が渡した URI に設定される', () async {
+        const testUri = 'file:///test/target-folder';
+        final completer = Completer<void>();
+        fakeRepository.operationCompleter = completer;
+
+        // toggle を開始（完了を待たない）
+        final toggleFuture = container
+            .read(favoriteToggleProvider.notifier)
+            .toggle(uri: testUri, name: 'ターゲットフォルダ');
+
+        // isFavorite の確認後に状態が更新されるのを待つ
+        await Future<void>.delayed(Duration.zero);
+
+        final state = container.read(favoriteToggleProvider);
+        // targetUri が渡した URI に設定されていることを確認
+        expect(state.targetUri, equals(testUri));
+
+        // クリーンアップ
+        completer.complete();
+        await toggleFuture;
+      });
     });
 
     group('処理完了', () {
@@ -228,6 +250,23 @@ void main() {
         final state = container.read(favoriteToggleProvider);
         expect(state.isProcessing, isFalse);
       });
+
+      test(
+        'toggle 成功後に optimisticIsFavorite と targetUri が null にリセットされる',
+        () async {
+          // toggle を実行して成功させる
+          await container
+              .read(favoriteToggleProvider.notifier)
+              .toggle(uri: 'file:///test/folder', name: 'テスト');
+
+          final state = container.read(favoriteToggleProvider);
+          // 成功後は楽観的状態が不要になるため null にリセット
+          expect(state.optimisticIsFavorite, isNull);
+          expect(state.targetUri, isNull);
+          expect(state.isProcessing, isFalse);
+          expect(state.errorMessage, isNull);
+        },
+      );
     });
 
     group('処理中ロック', () {
@@ -313,6 +352,41 @@ void main() {
         expect(state.isProcessing, isFalse);
         expect(state.errorMessage, isNotNull);
         expect(state.errorMessage, contains('FavoriteLimitExceededException'));
+      });
+
+      test('エラー時のロールバックで targetUri が維持される', () async {
+        // エラー発生時、ロールバック後も targetUri が対象フォルダの URI を保持し、
+        // FavoriteIndicator が正しいフォルダでのみロールバック状態を表示できることを確認
+        const targetFolder = 'file:///test/error-folder';
+        fakeRepository.addException = Exception('ネットワークエラー');
+
+        await container
+            .read(favoriteToggleProvider.notifier)
+            .toggle(uri: targetFolder, name: 'エラーテスト');
+
+        final state = container.read(favoriteToggleProvider);
+        // ロールバック後も targetUri が維持される
+        expect(state.targetUri, equals(targetFolder));
+        expect(state.isProcessing, isFalse);
+        expect(state.optimisticIsFavorite, isFalse);
+        expect(state.errorMessage, isNotNull);
+      });
+
+      test('解除エラー時のロールバックでも targetUri が維持される', () async {
+        // 登録済みフォルダの解除でエラーが発生した場合も targetUri が維持される
+        const targetFolder = 'file:///test/registered-folder';
+        fakeRepository.seedFavorite(uri: targetFolder, name: '登録済み');
+        fakeRepository.removeException = Exception('DB削除エラー');
+
+        await container
+            .read(favoriteToggleProvider.notifier)
+            .toggle(uri: targetFolder, name: '登録済み');
+
+        final state = container.read(favoriteToggleProvider);
+        // ロールバック後も targetUri が維持される
+        expect(state.targetUri, equals(targetFolder));
+        expect(state.optimisticIsFavorite, isTrue);
+        expect(state.isProcessing, isFalse);
       });
 
       test('解除エラー時に登録済み状態にロールバックされる', () async {

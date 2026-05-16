@@ -48,6 +48,7 @@ class FavoriteToggle extends _$FavoriteToggle {
     state = state.copyWith(
       isProcessing: true,
       optimisticIsFavorite: optimisticValue,
+      targetUri: uri,
       errorMessage: null,
     );
 
@@ -56,8 +57,13 @@ class FavoriteToggle extends _$FavoriteToggle {
       final useCase = ToggleFavoriteUseCase(repository: repository);
       await useCase.execute(uri: uri, name: name);
 
-      // 成功: 処理中フラグを解除し、楽観的状態を維持
-      state = state.copyWith(isProcessing: false);
+      // 成功: 処理中フラグを解除し、楽観的状態をリセット
+      // DB が最新化されるため楽観的状態は不要
+      state = state.copyWith(
+        isProcessing: false,
+        optimisticIsFavorite: null,
+        targetUri: null,
+      );
 
       // お気に入り一覧を再取得して最新状態に更新
       ref.read(favoriteListProvider.notifier).refresh();
@@ -66,6 +72,7 @@ class FavoriteToggle extends _$FavoriteToggle {
       state = state.copyWith(
         isProcessing: false,
         optimisticIsFavorite: currentIsFavorite,
+        targetUri: uri,
         errorMessage: e.toString(),
       );
     }

@@ -16,7 +16,8 @@ mixin _$FavoriteToggleState {
 
 /// 処理中フラグ（連続タップ防止）
  bool get isProcessing;/// 楽観的UI更新による表示状態（null の場合は実際のDB状態を使用）
- bool? get optimisticIsFavorite;/// エラーメッセージ
+ bool? get optimisticIsFavorite;/// 楽観的状態の対象フォルダ URI（どのフォルダに対する操作かを識別）
+ String? get targetUri;/// エラーメッセージ
  String? get errorMessage;
 /// Create a copy of FavoriteToggleState
 /// with the given fields replaced by the non-null parameter values.
@@ -28,16 +29,16 @@ $FavoriteToggleStateCopyWith<FavoriteToggleState> get copyWith => _$FavoriteTogg
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FavoriteToggleState&&(identical(other.isProcessing, isProcessing) || other.isProcessing == isProcessing)&&(identical(other.optimisticIsFavorite, optimisticIsFavorite) || other.optimisticIsFavorite == optimisticIsFavorite)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FavoriteToggleState&&(identical(other.isProcessing, isProcessing) || other.isProcessing == isProcessing)&&(identical(other.optimisticIsFavorite, optimisticIsFavorite) || other.optimisticIsFavorite == optimisticIsFavorite)&&(identical(other.targetUri, targetUri) || other.targetUri == targetUri)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isProcessing,optimisticIsFavorite,errorMessage);
+int get hashCode => Object.hash(runtimeType,isProcessing,optimisticIsFavorite,targetUri,errorMessage);
 
 @override
 String toString() {
-  return 'FavoriteToggleState(isProcessing: $isProcessing, optimisticIsFavorite: $optimisticIsFavorite, errorMessage: $errorMessage)';
+  return 'FavoriteToggleState(isProcessing: $isProcessing, optimisticIsFavorite: $optimisticIsFavorite, targetUri: $targetUri, errorMessage: $errorMessage)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $FavoriteToggleStateCopyWith<$Res>  {
   factory $FavoriteToggleStateCopyWith(FavoriteToggleState value, $Res Function(FavoriteToggleState) _then) = _$FavoriteToggleStateCopyWithImpl;
 @useResult
 $Res call({
- bool isProcessing, bool? optimisticIsFavorite, String? errorMessage
+ bool isProcessing, bool? optimisticIsFavorite, String? targetUri, String? errorMessage
 });
 
 
@@ -65,11 +66,12 @@ class _$FavoriteToggleStateCopyWithImpl<$Res>
 
 /// Create a copy of FavoriteToggleState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? isProcessing = null,Object? optimisticIsFavorite = freezed,Object? errorMessage = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? isProcessing = null,Object? optimisticIsFavorite = freezed,Object? targetUri = freezed,Object? errorMessage = freezed,}) {
   return _then(_self.copyWith(
 isProcessing: null == isProcessing ? _self.isProcessing : isProcessing // ignore: cast_nullable_to_non_nullable
 as bool,optimisticIsFavorite: freezed == optimisticIsFavorite ? _self.optimisticIsFavorite : optimisticIsFavorite // ignore: cast_nullable_to_non_nullable
-as bool?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
+as bool?,targetUri: freezed == targetUri ? _self.targetUri : targetUri // ignore: cast_nullable_to_non_nullable
+as String?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -155,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isProcessing,  bool? optimisticIsFavorite,  String? errorMessage)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isProcessing,  bool? optimisticIsFavorite,  String? targetUri,  String? errorMessage)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FavoriteToggleState() when $default != null:
-return $default(_that.isProcessing,_that.optimisticIsFavorite,_that.errorMessage);case _:
+return $default(_that.isProcessing,_that.optimisticIsFavorite,_that.targetUri,_that.errorMessage);case _:
   return orElse();
 
 }
@@ -176,10 +178,10 @@ return $default(_that.isProcessing,_that.optimisticIsFavorite,_that.errorMessage
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isProcessing,  bool? optimisticIsFavorite,  String? errorMessage)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isProcessing,  bool? optimisticIsFavorite,  String? targetUri,  String? errorMessage)  $default,) {final _that = this;
 switch (_that) {
 case _FavoriteToggleState():
-return $default(_that.isProcessing,_that.optimisticIsFavorite,_that.errorMessage);case _:
+return $default(_that.isProcessing,_that.optimisticIsFavorite,_that.targetUri,_that.errorMessage);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +198,10 @@ return $default(_that.isProcessing,_that.optimisticIsFavorite,_that.errorMessage
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isProcessing,  bool? optimisticIsFavorite,  String? errorMessage)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isProcessing,  bool? optimisticIsFavorite,  String? targetUri,  String? errorMessage)?  $default,) {final _that = this;
 switch (_that) {
 case _FavoriteToggleState() when $default != null:
-return $default(_that.isProcessing,_that.optimisticIsFavorite,_that.errorMessage);case _:
+return $default(_that.isProcessing,_that.optimisticIsFavorite,_that.targetUri,_that.errorMessage);case _:
   return null;
 
 }
@@ -211,13 +213,15 @@ return $default(_that.isProcessing,_that.optimisticIsFavorite,_that.errorMessage
 
 
 class _FavoriteToggleState implements FavoriteToggleState {
-  const _FavoriteToggleState({this.isProcessing = false, this.optimisticIsFavorite, this.errorMessage});
+  const _FavoriteToggleState({this.isProcessing = false, this.optimisticIsFavorite, this.targetUri, this.errorMessage});
   
 
 /// 処理中フラグ（連続タップ防止）
 @override@JsonKey() final  bool isProcessing;
 /// 楽観的UI更新による表示状態（null の場合は実際のDB状態を使用）
 @override final  bool? optimisticIsFavorite;
+/// 楽観的状態の対象フォルダ URI（どのフォルダに対する操作かを識別）
+@override final  String? targetUri;
 /// エラーメッセージ
 @override final  String? errorMessage;
 
@@ -231,16 +235,16 @@ _$FavoriteToggleStateCopyWith<_FavoriteToggleState> get copyWith => __$FavoriteT
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FavoriteToggleState&&(identical(other.isProcessing, isProcessing) || other.isProcessing == isProcessing)&&(identical(other.optimisticIsFavorite, optimisticIsFavorite) || other.optimisticIsFavorite == optimisticIsFavorite)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FavoriteToggleState&&(identical(other.isProcessing, isProcessing) || other.isProcessing == isProcessing)&&(identical(other.optimisticIsFavorite, optimisticIsFavorite) || other.optimisticIsFavorite == optimisticIsFavorite)&&(identical(other.targetUri, targetUri) || other.targetUri == targetUri)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isProcessing,optimisticIsFavorite,errorMessage);
+int get hashCode => Object.hash(runtimeType,isProcessing,optimisticIsFavorite,targetUri,errorMessage);
 
 @override
 String toString() {
-  return 'FavoriteToggleState(isProcessing: $isProcessing, optimisticIsFavorite: $optimisticIsFavorite, errorMessage: $errorMessage)';
+  return 'FavoriteToggleState(isProcessing: $isProcessing, optimisticIsFavorite: $optimisticIsFavorite, targetUri: $targetUri, errorMessage: $errorMessage)';
 }
 
 
@@ -251,7 +255,7 @@ abstract mixin class _$FavoriteToggleStateCopyWith<$Res> implements $FavoriteTog
   factory _$FavoriteToggleStateCopyWith(_FavoriteToggleState value, $Res Function(_FavoriteToggleState) _then) = __$FavoriteToggleStateCopyWithImpl;
 @override @useResult
 $Res call({
- bool isProcessing, bool? optimisticIsFavorite, String? errorMessage
+ bool isProcessing, bool? optimisticIsFavorite, String? targetUri, String? errorMessage
 });
 
 
@@ -268,11 +272,12 @@ class __$FavoriteToggleStateCopyWithImpl<$Res>
 
 /// Create a copy of FavoriteToggleState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? isProcessing = null,Object? optimisticIsFavorite = freezed,Object? errorMessage = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? isProcessing = null,Object? optimisticIsFavorite = freezed,Object? targetUri = freezed,Object? errorMessage = freezed,}) {
   return _then(_FavoriteToggleState(
 isProcessing: null == isProcessing ? _self.isProcessing : isProcessing // ignore: cast_nullable_to_non_nullable
 as bool,optimisticIsFavorite: freezed == optimisticIsFavorite ? _self.optimisticIsFavorite : optimisticIsFavorite // ignore: cast_nullable_to_non_nullable
-as bool?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
+as bool?,targetUri: freezed == targetUri ? _self.targetUri : targetUri // ignore: cast_nullable_to_non_nullable
+as String?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
