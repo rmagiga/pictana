@@ -34,34 +34,34 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # 状態管理 (§4.1)
-  flutter_riverpod: ^2.6.1
-  hooks_riverpod: ^2.6.1
-  flutter_hooks: ^0.21.2
-  riverpod_annotation: ^2.6.1
+  flutter_riverpod: ^3.3.1
+  hooks_riverpod: ^3.3.1
+  flutter_hooks: ^0.21.3+1
+  riverpod_annotation: ^4.0.2
 
   # 画像表示 (§4.2)
-  extended_image: ^9.0.0
+  extended_image: ^10.0.1
 
   # データベース (§4.3)
-  drift: ^2.23.1
+  drift: ^2.31.0 # analyzer 9.x 制約 (flutter_test の meta 1.17.0 固定による)
   sqlite3_flutter_libs: ^0.5.29
 
   # キャッシュ (§4.5)
   flutter_cache_manager: ^3.4.1
 
   # Utility (§4.6)
-  freezed_annotation: ^3.0.0
-  json_annotation: ^4.9.0
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.11.0 # analyzer 9.x 制約 (json_serializable 6.13.x が要求)
   path: ^1.9.1
   path_provider: ^2.1.5
   collection: ^1.19.1
-  logger: ^2.5.0
+  logger: ^2.7.0
 
   # ストレージ選択 (§10.2)
-  file_picker: ^9.1.1
+  file_picker: ^11.0.2
 
   # ルーティング
-  go_router: ^15.1.2
+  go_router: ^17.2.3
   shimmer: ^3.0.0
 
 dev_dependencies:
@@ -77,17 +77,15 @@ dev_dependencies:
       path: glados
 
   # コード生成
-  build_runner: ^2.4.15
-  drift_dev: ^2.23.1
-  freezed: ^3.0.0
-  json_serializable: ^6.9.4
-  riverpod_generator: ^2.6.4
-  custom_lint: ^0.7.5
-  riverpod_lint: ^2.6.4
+  build_runner: ^2.15.0
+  drift_dev: ^2.31.0 # analyzer 9.x 制約 (flutter_test の meta 1.17.0 固定による)
+  freezed: ^3.2.5 # analyzer 9.x 制約 (>=9.0.0 <11.0.0)
+  json_serializable: ^6.11.0 # analyzer 9.x 制約 (>=9.0.0 <11.0.0)
+  riverpod_generator: ^4.0.3 # analyzer 9.x 制約 (^9.0.0)
+
 
 dependency_overrides:
-  test_api: 0.7.10
-  analyzer: ^7.0.0
+  test_api: 0.7.12
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

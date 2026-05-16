@@ -101,12 +101,12 @@ void main() {
 
           try {
             final notifier = container.read(
-              gridColumnSettingsNotifierProvider.notifier,
+              gridColumnSettingsProvider.notifier,
             );
 
             // 初期状態の検証
             final initialState = container.read(
-              gridColumnSettingsNotifierProvider,
+              gridColumnSettingsProvider,
             );
             expect(
               initialState.maxColumns >= initialState.minColumns + 2,
@@ -125,7 +125,7 @@ void main() {
                   await notifier.setMaxColumns(value);
               }
 
-              final state = container.read(gridColumnSettingsNotifierProvider);
+              final state = container.read(gridColumnSettingsProvider);
               expect(
                 state.maxColumns >= state.minColumns + 2,
                 isTrue,

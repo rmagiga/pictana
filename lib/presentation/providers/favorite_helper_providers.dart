@@ -15,7 +15,7 @@ part 'favorite_helper_providers.g.dart';
 /// [uri] に対してリポジトリの isFavorite を呼び出し、
 /// 登録済みであれば true を返す。
 @riverpod
-Future<bool> isFolderFavorite(IsFolderFavoriteRef ref, String uri) async {
+Future<bool> isFolderFavorite(Ref ref, String uri) async {
   final repository = ref.watch(favoriteRepositoryProvider);
   return repository.isFavorite(uri);
 }
@@ -24,7 +24,7 @@ Future<bool> isFolderFavorite(IsFolderFavoriteRef ref, String uri) async {
 ///
 /// お気に入りリストの件数表示（例: 「3 / 50」）に使用する。
 @riverpod
-Future<int> favoriteCount(FavoriteCountRef ref) async {
+Future<int> favoriteCount(Ref ref) async {
   final repository = ref.watch(favoriteRepositoryProvider);
   return repository.getFavoriteCount();
 }

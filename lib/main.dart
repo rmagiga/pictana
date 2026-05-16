@@ -17,9 +17,7 @@ void main() {
 
   runApp(
     // Riverpod の ProviderScope でルートをラップする (設計書 §14)
-    const ProviderScope(
-      child: OptrigApp(),
-    ),
+    const ProviderScope(child: OptrigApp()),
   );
 }
 
@@ -30,7 +28,7 @@ class OptrigApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // テーマモードを監視 (設計書 §5.6)
-    final themeMode = ref.watch(themeModeNotifierProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: 'Optrig',

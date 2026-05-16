@@ -1,18 +1,37 @@
 /// ギャラリーグリッド画面 (設計書 §18.3)
+///
+/// SearchBarWidget・FilterChipsWidget・FastScrollHandler を統合し、
+/// 検索・フィルター・高速スクロール機能を提供する。
+/// StorageMonitor と連携し、再接続検知時にフォルダ内容を自動再読み込みする。
 library;
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../application/usecases/gallery/search_controller.dart';
+import '../../application/usecases/storage/storage_monitor.dart';
+import '../../domain/entities/image_entry.dart';
+import '../../domain/entities/storage_monitor_state.dart';
 import '../../router/app_router.dart';
 import '../providers/gallery_providers.dart';
 import '../widgets/favorite_indicator.dart';
+import '../widgets/gallery/fast_scroll_handler.dart';
+import '../widgets/gallery/filter_chips_widget.dart';
+import '../widgets/gallery/search_bar_widget.dart';
 import '../widgets/image_grid_tile.dart';
 import '../widgets/sort_menu.dart';
 import '../widgets/storage_disconnect_banner.dart';
 
-class GalleryGridScreen extends ConsumerWidget {
+/// ギャラリーグリッド画面
+///
+/// 検索バー・種類フィルターチップ・高速スクロール（Windows）を統合し、
+/// SearchController Provider の filteredImages を反映する。
+/// 検索結果 0 件時は「検索結果がありません」メッセージを表示する。
+class GalleryGridScreen extends HookConsumerWidget {
   const GalleryGridScreen({super.key});
 
   @override
@@ -20,6 +39,51 @@ class GalleryGridScreen extends ConsumerWidget {
     final folder = ref.watch(currentFolderProvider);
     final imagesAsync = ref.watch(galleryImagesProvider);
     final countAsync = ref.watch(galleryImageCountProvider);
+    final searchFilterState = ref.watch(searchControllerProvider);
+
+    // 高速スクロール用 ScrollController
+    final scrollController = useScrollController();
+
+    // 再接続後の再読み込み中フラグ
+    final isReloading = useState(false);
+
+    // ストレージ再接続検知時にフォルダ内容を自動再読み込み (Req 15.2, 15.3, 15.4)
+    ref.listen<StorageMonitorState>(storageMonitorProvider, (previous, next) {
+      // バナーが表示中 → 非表示に変化 = 再接続検知
+      if (previous != null &&
+          previous.isBannerVisible &&
+          !next.isBannerVisible &&
+          !next.maxRetryReached) {
+        // galleryImagesProvider を invalidate して再読み込みをトリガー (Req 15.3)
+        ref.invalidate(galleryImagesProvider);
+        ref.invalidate(galleryImageCountProvider);
+        isReloading.value = true;
+      }
+    });
+
+    // 再読み込み失敗時はバナー再表示 + リトライ再開 (Req 15.4)
+    ref.listen<AsyncValue<List<ImageEntry>>>(galleryImagesProvider, (
+      previous,
+      next,
+    ) {
+      if (!isReloading.value) return;
+
+      // ローディング中は待機
+      if (next.isLoading) return;
+
+      // 結果が確定したのでフラグをリセット
+      isReloading.value = false;
+
+      if (next.hasError) {
+        // 再読み込み失敗: バナー再表示 + リトライ再開
+        final monitorState = ref.read(storageMonitorProvider);
+        if (monitorState.disconnectedRoot != null) {
+          ref
+              .read(storageMonitorProvider.notifier)
+              .startRetryPolling(monitorState.disconnectedRoot!);
+        }
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -28,7 +92,7 @@ class GalleryGridScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(folder?.name ?? 'Optrig Gallery'),
-            if (countAsync.valueOrNull != null)
+            if (countAsync.value != null)
               Text(
                 '${countAsync.value} items',
                 style: Theme.of(context).textTheme.bodySmall,
@@ -39,13 +103,16 @@ class GalleryGridScreen extends ConsumerWidget {
           // お気に入りトグルボタン
           if (folder != null)
             FavoriteIndicator(uri: folder.uri, name: folder.name),
-          // 検索ボタン (Phase 5)
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // TODO: 検索UIのトグル
-            },
-          ),
+          // 検索アイコンボタン (Req 11.1)
+          // 折りたたみ時のみ AppBar に表示
+          if (!searchFilterState.isSearchBarExpanded)
+            IconButton(
+              icon: const Icon(Icons.search),
+              tooltip: '検索',
+              onPressed: () {
+                ref.read(searchControllerProvider.notifier).toggleSearchBar();
+              },
+            ),
           // ソートメニュー
           const SortMenu(),
           // 設定ボタン
@@ -60,11 +127,48 @@ class GalleryGridScreen extends ConsumerWidget {
       body: Column(
         children: [
           const StorageDisconnectBanner(), // USB切断時のみ表示される
+          // 検索バーウィジェット (Req 11.1, 11.5)
+          // 展開時のみ表示
+          if (searchFilterState.isSearchBarExpanded)
+            SearchBarWidget(
+              isExpanded: true,
+              onToggle: () {
+                ref.read(searchControllerProvider.notifier).toggleSearchBar();
+              },
+              onQueryChanged: (query) {
+                ref.read(searchControllerProvider.notifier).updateQuery(query);
+              },
+              onClear: () {
+                ref.read(searchControllerProvider.notifier).clearAll();
+              },
+            ),
+          // 種類フィルターチップ (Req 12.1, 12.5)
+          // 検索バーが展開されている場合のみ表示
+          if (searchFilterState.isSearchBarExpanded)
+            FilterChipsWidget(
+              selectedMimeType: searchFilterState.selectedMimeType,
+              onMimeTypeSelected: (mimeType) {
+                ref
+                    .read(searchControllerProvider.notifier)
+                    .updateMimeTypeFilter(mimeType);
+              },
+            ),
           Expanded(
             child: imagesAsync.when(
               data: (images) {
-                if (images.isEmpty) {
-                  return const Center(child: Text('画像が見つかりません。'));
+                // SearchController の filteredImages を適用 (Req 11.2, 12.2)
+                final filteredImages = ref.watch(
+                  filteredImagesProvider(images: images),
+                );
+
+                // 検索結果 0 件時のメッセージ表示 (Req 11.5, 12.5)
+                if (filteredImages.isEmpty) {
+                  return _buildEmptyResultMessage(
+                    context,
+                    isFiltered:
+                        searchFilterState.query.isNotEmpty ||
+                        searchFilterState.selectedMimeType != null,
+                  );
                 }
 
                 return LayoutBuilder(
@@ -74,16 +178,22 @@ class GalleryGridScreen extends ConsumerWidget {
                         .floor()
                         .clamp(3, 10);
 
-                    return GridView.builder(
+                    final gridView = GridView.builder(
+                      controller: scrollController,
+                      // Windows: FastScrollHandler がスクロールを制御するため
+                      // ポインターシグナルによるスクロールを無効化 (Req 13.1)
+                      physics: Platform.isWindows
+                          ? const FastScrollPhysics()
+                          : null,
                       padding: const EdgeInsets.all(4),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: crossAxisCount,
                         crossAxisSpacing: 4,
                         mainAxisSpacing: 4,
                       ),
-                      itemCount: images.length,
+                      itemCount: filteredImages.length,
                       itemBuilder: (context, index) {
-                        final image = images[index];
+                        final image = filteredImages[index];
                         return ImageGridTile(
                           key: ValueKey(image.uri),
                           image: image,
@@ -93,6 +203,16 @@ class GalleryGridScreen extends ConsumerWidget {
                         );
                       },
                     );
+
+                    // Windows: FastScrollHandler でマウスホイール高速スクロール (Req 13.1)
+                    if (Platform.isWindows) {
+                      return FastScrollHandler(
+                        scrollController: scrollController,
+                        child: gridView,
+                      );
+                    }
+
+                    return gridView;
                   },
                 );
               },
@@ -125,6 +245,44 @@ class GalleryGridScreen extends ConsumerWidget {
         onPressed: () => context.go(AppRoutes.storageSelection),
         tooltip: '別のフォルダを開く',
         child: const Icon(Icons.folder_open),
+      ),
+    );
+  }
+
+  /// 検索結果 0 件時のメッセージウィジェットを構築する
+  ///
+  /// [isFiltered] が true の場合は検索/フィルター適用中のメッセージを表示し、
+  /// false の場合はフォルダ内に画像がない旨のメッセージを表示する。
+  Widget _buildEmptyResultMessage(
+    BuildContext context, {
+    required bool isFiltered,
+  }) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            isFiltered ? Icons.search_off : Icons.image_not_supported_outlined,
+            size: 64,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            isFiltered ? '検索結果がありません' : '画像が見つかりません。',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          if (isFiltered) ...[
+            const SizedBox(height: 8),
+            Text(
+              '検索条件を変更してください',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

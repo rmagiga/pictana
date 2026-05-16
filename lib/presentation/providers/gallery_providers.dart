@@ -20,23 +20,21 @@ part 'gallery_providers.g.dart';
 // ---------------------------------------------------------------------------
 
 @riverpod
-LoadFolderImagesUseCase loadFolderImagesUseCase(
-  LoadFolderImagesUseCaseRef ref,
-) {
+LoadFolderImagesUseCase loadFolderImagesUseCase(Ref ref) {
   return LoadFolderImagesUseCase(
     imageRepository: ref.watch(imageRepositoryProvider),
   );
 }
 
 @riverpod
-LoadThumbnailUseCase loadThumbnailUseCase(LoadThumbnailUseCaseRef ref) {
+LoadThumbnailUseCase loadThumbnailUseCase(Ref ref) {
   return LoadThumbnailUseCase(
     thumbnailRepository: ref.watch(thumbnailRepositoryProvider),
   );
 }
 
 @riverpod
-SortImagesUseCase sortImagesUseCase(SortImagesUseCaseRef ref) {
+SortImagesUseCase sortImagesUseCase(Ref ref) {
   return SortImagesUseCase(database: ref.watch(appDatabaseProvider));
 }
 
@@ -88,7 +86,7 @@ class GallerySortOption extends _$GallerySortOption {
 
 /// 指定フォルダの画像リスト (Stream ベースのインクリメンタル読み込み)
 @riverpod
-Stream<List<ImageEntry>> galleryImages(GalleryImagesRef ref) {
+Stream<List<ImageEntry>> galleryImages(Ref ref) {
   final folder = ref.watch(currentFolderProvider);
   if (folder == null) return const Stream.empty();
 
@@ -128,7 +126,7 @@ void _sortImageEntries(List<ImageEntry> entries, SortOption sort) {
 
 /// フォルダ内の画像総数
 @riverpod
-Future<int> galleryImageCount(GalleryImageCountRef ref) async {
+Future<int> galleryImageCount(Ref ref) async {
   final folder = ref.watch(currentFolderProvider);
   if (folder == null) return 0;
 

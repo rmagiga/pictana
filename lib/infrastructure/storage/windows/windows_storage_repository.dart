@@ -24,8 +24,7 @@ typedef RecentFolderRow = RecentFolder;
 
 /// Windows 向け StorageRepository 実装
 class WindowsStorageRepository implements StorageRepository {
-  WindowsStorageRepository({required AppDatabase database})
-      : _db = database;
+  WindowsStorageRepository({required AppDatabase database}) : _db = database;
 
   final AppDatabase _db;
 
@@ -94,7 +93,7 @@ class WindowsStorageRepository implements StorageRepository {
   @override
   Future<FolderEntry?> selectFolder() async {
     try {
-      final result = await FilePicker.platform.getDirectoryPath(
+      final result = await FilePicker.getDirectoryPath(
         dialogTitle: '画像フォルダを選択',
       );
       if (result == null) return null; // キャンセル
@@ -159,12 +158,14 @@ class WindowsStorageRepository implements StorageRepository {
       final path = '$letter:\\';
       final dir = Directory(path);
       if (await dir.exists()) {
-        roots.add(StorageRoot(
-          id: EntryId.windows(path),
-          name: '$letter:',
-          type: StorageType.internal,
-          uri: path,
-        ));
+        roots.add(
+          StorageRoot(
+            id: EntryId.windows(path),
+            name: '$letter:',
+            type: StorageType.internal,
+            uri: path,
+          ),
+        );
       }
     }
     return roots;
@@ -199,10 +200,7 @@ class WindowsStorageRepository implements StorageRepository {
     return entries;
   }
 
-  FolderEntry _dirToFolderEntry(
-    Directory dir, {
-    required EntryId? parentId,
-  }) {
+  FolderEntry _dirToFolderEntry(Directory dir, {required EntryId? parentId}) {
     return FolderEntry(
       id: EntryId.windows(dir.path),
       name: p.basename(dir.path).isEmpty ? dir.path : p.basename(dir.path),

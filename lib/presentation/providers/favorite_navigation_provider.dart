@@ -16,9 +16,7 @@ part 'favorite_navigation_provider.g.dart';
 /// FavoriteRepository と StorageRepository を注入して
 /// ユースケースインスタンスを生成する。
 @riverpod
-NavigateToFavoriteUseCase navigateToFavoriteUseCase(
-  NavigateToFavoriteUseCaseRef ref,
-) {
+NavigateToFavoriteUseCase navigateToFavoriteUseCase(Ref ref) {
   return NavigateToFavoriteUseCase(
     favoriteRepository: ref.watch(favoriteRepositoryProvider),
     storageRepository: ref.watch(storageRepositoryProvider),

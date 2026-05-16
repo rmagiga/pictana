@@ -6,28 +6,80 @@ part of 'grid_column_settings_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$gridColumnSettingsNotifierHash() =>
-    r'87534f9fb6116939e92c1577dd53dd24349281d5';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+/// グリッド列数設定を管理する Provider
+///
+/// `setMinColumns` で min を設定すると、max >= min + 2 を自動調整する。
+/// `setMaxColumns` で max を設定する。
+/// DB 読み込み失敗時はデフォルト値 (3, 12) を使用する。
+
+@ProviderFor(GridColumnSettingsNotifier)
+final gridColumnSettingsProvider = GridColumnSettingsNotifierProvider._();
 
 /// グリッド列数設定を管理する Provider
 ///
 /// `setMinColumns` で min を設定すると、max >= min + 2 を自動調整する。
 /// `setMaxColumns` で max を設定する。
 /// DB 読み込み失敗時はデフォルト値 (3, 12) を使用する。
-///
-/// Copied from [GridColumnSettingsNotifier].
-@ProviderFor(GridColumnSettingsNotifier)
-final gridColumnSettingsNotifierProvider =
-    NotifierProvider<GridColumnSettingsNotifier, GridColumnSettings>.internal(
-      GridColumnSettingsNotifier.new,
-      name: r'gridColumnSettingsNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$gridColumnSettingsNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+final class GridColumnSettingsNotifierProvider
+    extends $NotifierProvider<GridColumnSettingsNotifier, GridColumnSettings> {
+  /// グリッド列数設定を管理する Provider
+  ///
+  /// `setMinColumns` で min を設定すると、max >= min + 2 を自動調整する。
+  /// `setMaxColumns` で max を設定する。
+  /// DB 読み込み失敗時はデフォルト値 (3, 12) を使用する。
+  GridColumnSettingsNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'gridColumnSettingsProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
-typedef _$GridColumnSettingsNotifier = Notifier<GridColumnSettings>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+  @override
+  String debugGetCreateSourceHash() => _$gridColumnSettingsNotifierHash();
+
+  @$internal
+  @override
+  GridColumnSettingsNotifier create() => GridColumnSettingsNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(GridColumnSettings value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<GridColumnSettings>(value),
+    );
+  }
+}
+
+String _$gridColumnSettingsNotifierHash() =>
+    r'a999f7e79cd589929d869ef4e137389040fbfac1';
+
+/// グリッド列数設定を管理する Provider
+///
+/// `setMinColumns` で min を設定すると、max >= min + 2 を自動調整する。
+/// `setMaxColumns` で max を設定する。
+/// DB 読み込み失敗時はデフォルト値 (3, 12) を使用する。
+
+abstract class _$GridColumnSettingsNotifier
+    extends $Notifier<GridColumnSettings> {
+  GridColumnSettings build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<GridColumnSettings, GridColumnSettings>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<GridColumnSettings, GridColumnSettings>,
+              GridColumnSettings,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

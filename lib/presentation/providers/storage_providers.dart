@@ -17,34 +17,28 @@ part 'storage_providers.g.dart';
 // ---------------------------------------------------------------------------
 
 @riverpod
-SelectStorageUseCase selectStorageUseCase(SelectStorageUseCaseRef ref) {
+SelectStorageUseCase selectStorageUseCase(Ref ref) {
   return SelectStorageUseCase(
     storageRepository: ref.watch(storageRepositoryProvider),
   );
 }
 
 @riverpod
-GetDefaultImageFoldersUseCase getDefaultImageFoldersUseCase(
-  GetDefaultImageFoldersUseCaseRef ref,
-) {
+GetDefaultImageFoldersUseCase getDefaultImageFoldersUseCase(Ref ref) {
   return GetDefaultImageFoldersUseCase(
     storageRepository: ref.watch(storageRepositoryProvider),
   );
 }
 
 @riverpod
-WatchStorageConnectionUseCase watchStorageConnectionUseCase(
-  WatchStorageConnectionUseCaseRef ref,
-) {
+WatchStorageConnectionUseCase watchStorageConnectionUseCase(Ref ref) {
   return WatchStorageConnectionUseCase(
     storageRepository: ref.watch(storageRepositoryProvider),
   );
 }
 
 @riverpod
-PersistUriPermissionUseCase persistUriPermissionUseCase(
-  PersistUriPermissionUseCaseRef ref,
-) {
+PersistUriPermissionUseCase persistUriPermissionUseCase(Ref ref) {
   return PersistUriPermissionUseCase(
     storageRepository: ref.watch(storageRepositoryProvider),
   );
@@ -56,7 +50,7 @@ PersistUriPermissionUseCase persistUriPermissionUseCase(
 
 /// ストレージ接続状態（切断などを検知するため）
 @riverpod
-Stream<List<StorageRoot>> storageRoots(StorageRootsRef ref) {
+Stream<List<StorageRoot>> storageRoots(Ref ref) {
   final useCase = ref.watch(watchStorageConnectionUseCaseProvider);
   return useCase.execute();
 }

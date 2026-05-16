@@ -24,7 +24,7 @@ void main() {
         overrides: [appDatabaseProvider.overrideWithValue(db)],
       );
 
-      final state = container.read(gridColumnSettingsNotifierProvider);
+      final state = container.read(gridColumnSettingsProvider);
 
       expect(state.minColumns, equals(3));
       expect(state.maxColumns, equals(12));
@@ -42,11 +42,11 @@ void main() {
       );
 
       final notifier = container.read(
-        gridColumnSettingsNotifierProvider.notifier,
+        gridColumnSettingsProvider.notifier,
       );
       await notifier.setMinColumns(4);
 
-      final state = container.read(gridColumnSettingsNotifierProvider);
+      final state = container.read(gridColumnSettingsProvider);
       expect(state.minColumns, equals(4));
       expect(state.maxColumns, equals(12)); // max は変わらない
 
@@ -64,11 +64,11 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
       final notifier = container.read(
-        gridColumnSettingsNotifierProvider.notifier,
+        gridColumnSettingsProvider.notifier,
       );
       await notifier.setMinColumns(10);
 
-      final state = container.read(gridColumnSettingsNotifierProvider);
+      final state = container.read(gridColumnSettingsProvider);
       expect(state.minColumns, equals(10));
       expect(state.maxColumns, equals(12)); // max >= min + 2 = 12
 
@@ -83,18 +83,18 @@ void main() {
       );
 
       // Provider を初期化して _loadInitial の非同期処理が完了するのを待つ
-      container.read(gridColumnSettingsNotifierProvider);
+      container.read(gridColumnSettingsProvider);
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
       final notifier = container.read(
-        gridColumnSettingsNotifierProvider.notifier,
+        gridColumnSettingsProvider.notifier,
       );
       await notifier.setMinColumns(11);
 
       // setMinColumns 後に _loadInitial が再度走らないことを確認するため少し待つ
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
-      final state = container.read(gridColumnSettingsNotifierProvider);
+      final state = container.read(gridColumnSettingsProvider);
       expect(state.minColumns, equals(11));
       expect(state.maxColumns, equals(13)); // max >= min + 2
 
@@ -111,11 +111,11 @@ void main() {
       );
 
       final notifier = container.read(
-        gridColumnSettingsNotifierProvider.notifier,
+        gridColumnSettingsProvider.notifier,
       );
       await notifier.setMaxColumns(8);
 
-      final state = container.read(gridColumnSettingsNotifierProvider);
+      final state = container.read(gridColumnSettingsProvider);
       expect(state.minColumns, equals(3)); // min は変わらない
       expect(state.maxColumns, equals(8));
 
@@ -130,11 +130,11 @@ void main() {
       );
 
       final notifier = container.read(
-        gridColumnSettingsNotifierProvider.notifier,
+        gridColumnSettingsProvider.notifier,
       );
       await notifier.setMaxColumns(4);
 
-      final state = container.read(gridColumnSettingsNotifierProvider);
+      final state = container.read(gridColumnSettingsProvider);
       expect(state.minColumns, equals(3));
       expect(state.maxColumns, equals(5)); // max >= min + 2 = 5
 
@@ -149,11 +149,11 @@ void main() {
       );
 
       final notifier = container.read(
-        gridColumnSettingsNotifierProvider.notifier,
+        gridColumnSettingsProvider.notifier,
       );
       await notifier.setMaxColumns(1);
 
-      final state = container.read(gridColumnSettingsNotifierProvider);
+      final state = container.read(gridColumnSettingsProvider);
       expect(state.minColumns, equals(3));
       expect(state.maxColumns, equals(5)); // max >= min + 2 = 5
 
@@ -170,7 +170,7 @@ void main() {
       );
 
       final notifier = container.read(
-        gridColumnSettingsNotifierProvider.notifier,
+        gridColumnSettingsProvider.notifier,
       );
       await notifier.setMinColumns(5);
 
@@ -189,7 +189,7 @@ void main() {
       );
 
       final notifier = container.read(
-        gridColumnSettingsNotifierProvider.notifier,
+        gridColumnSettingsProvider.notifier,
       );
       await notifier.setMaxColumns(10);
 

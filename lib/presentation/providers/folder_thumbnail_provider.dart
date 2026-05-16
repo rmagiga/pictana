@@ -25,7 +25,7 @@ part 'folder_thumbnail_provider.g.dart';
 /// 4. 結果を返す（空リストの場合もそのまま返す）
 @riverpod
 Future<List<Uint8List?>> getFolderThumbnails(
-  GetFolderThumbnailsRef ref,
+  Ref ref,
   FavoriteFolder folder,
 ) async {
   // 1. キャッシュチェック

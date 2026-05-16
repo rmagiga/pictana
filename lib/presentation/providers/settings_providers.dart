@@ -13,7 +13,7 @@ part 'settings_providers.g.dart';
 // ---------------------------------------------------------------------------
 
 @riverpod
-ManageCacheUseCase manageCacheUseCase(ManageCacheUseCaseRef ref) {
+ManageCacheUseCase manageCacheUseCase(Ref ref) {
   return ManageCacheUseCase(
     thumbnailRepository: ref.watch(thumbnailRepositoryProvider),
   );
@@ -35,7 +35,9 @@ class CacheSize extends _$CacheSize {
     state = const AsyncValue.loading();
     await ref.read(manageCacheUseCaseProvider).clearCache();
     // クリア後に再度サイズを再計算
-    state = await AsyncValue.guard(() => ref.read(manageCacheUseCaseProvider).getCacheSize());
+    state = await AsyncValue.guard(
+      () => ref.read(manageCacheUseCaseProvider).getCacheSize(),
+    );
   }
 }
 

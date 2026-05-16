@@ -6,194 +6,250 @@ part of 'viewer_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(loadImageUseCase)
+final loadImageUseCaseProvider = LoadImageUseCaseProvider._();
+
+final class LoadImageUseCaseProvider
+    extends
+        $FunctionalProvider<
+          LoadImageUseCase,
+          LoadImageUseCase,
+          LoadImageUseCase
+        >
+    with $Provider<LoadImageUseCase> {
+  LoadImageUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'loadImageUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$loadImageUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<LoadImageUseCase> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  LoadImageUseCase create(Ref ref) {
+    return loadImageUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LoadImageUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LoadImageUseCase>(value),
+    );
+  }
+}
+
 String _$loadImageUseCaseHash() => r'3b2b18f666ec36c1b5d3a23d560a3a78371dd357';
 
-/// See also [loadImageUseCase].
-@ProviderFor(loadImageUseCase)
-final loadImageUseCaseProvider = AutoDisposeProvider<LoadImageUseCase>.internal(
-  loadImageUseCase,
-  name: r'loadImageUseCaseProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$loadImageUseCaseHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(preloadAdjacentImagesUseCase)
+final preloadAdjacentImagesUseCaseProvider =
+    PreloadAdjacentImagesUseCaseProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef LoadImageUseCaseRef = AutoDisposeProviderRef<LoadImageUseCase>;
+final class PreloadAdjacentImagesUseCaseProvider
+    extends
+        $FunctionalProvider<
+          PreloadAdjacentImagesUseCase,
+          PreloadAdjacentImagesUseCase,
+          PreloadAdjacentImagesUseCase
+        >
+    with $Provider<PreloadAdjacentImagesUseCase> {
+  PreloadAdjacentImagesUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'preloadAdjacentImagesUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$preloadAdjacentImagesUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<PreloadAdjacentImagesUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  PreloadAdjacentImagesUseCase create(Ref ref) {
+    return preloadAdjacentImagesUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PreloadAdjacentImagesUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PreloadAdjacentImagesUseCase>(value),
+    );
+  }
+}
+
 String _$preloadAdjacentImagesUseCaseHash() =>
     r'4ef82b131459f845935d03575d482a1944032f16';
 
-/// See also [preloadAdjacentImagesUseCase].
-@ProviderFor(preloadAdjacentImagesUseCase)
-final preloadAdjacentImagesUseCaseProvider =
-    AutoDisposeProvider<PreloadAdjacentImagesUseCase>.internal(
-      preloadAdjacentImagesUseCase,
-      name: r'preloadAdjacentImagesUseCaseProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$preloadAdjacentImagesUseCaseHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef PreloadAdjacentImagesUseCaseRef =
-    AutoDisposeProviderRef<PreloadAdjacentImagesUseCase>;
-String _$imageMetadataHash() => r'69a60779a7ff6e11237e8a0f8175f59a8a0f6376';
-
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
-
 /// 指定された画像のメタデータを取得する Provider
-///
-/// Copied from [imageMetadata].
+
 @ProviderFor(imageMetadata)
-const imageMetadataProvider = ImageMetadataFamily();
+final imageMetadataProvider = ImageMetadataFamily._();
 
 /// 指定された画像のメタデータを取得する Provider
-///
-/// Copied from [imageMetadata].
-class ImageMetadataFamily extends Family<AsyncValue<ImageEntry>> {
-  /// 指定された画像のメタデータを取得する Provider
-  ///
-  /// Copied from [imageMetadata].
-  const ImageMetadataFamily();
 
+final class ImageMetadataProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<ImageEntry>,
+          ImageEntry,
+          FutureOr<ImageEntry>
+        >
+    with $FutureModifier<ImageEntry>, $FutureProvider<ImageEntry> {
   /// 指定された画像のメタデータを取得する Provider
-  ///
-  /// Copied from [imageMetadata].
-  ImageMetadataProvider call(ImageEntry entry) {
-    return ImageMetadataProvider(entry);
+  ImageMetadataProvider._({
+    required ImageMetadataFamily super.from,
+    required ImageEntry super.argument,
+  }) : super(
+         retry: null,
+         name: r'imageMetadataProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$imageMetadataHash();
+
+  @override
+  String toString() {
+    return r'imageMetadataProvider'
+        ''
+        '($argument)';
   }
 
+  @$internal
   @override
-  ImageMetadataProvider getProviderOverride(
-    covariant ImageMetadataProvider provider,
-  ) {
-    return call(provider.entry);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
+  $FutureProviderElement<ImageEntry> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'imageMetadataProvider';
-}
-
-/// 指定された画像のメタデータを取得する Provider
-///
-/// Copied from [imageMetadata].
-class ImageMetadataProvider extends AutoDisposeFutureProvider<ImageEntry> {
-  /// 指定された画像のメタデータを取得する Provider
-  ///
-  /// Copied from [imageMetadata].
-  ImageMetadataProvider(ImageEntry entry)
-    : this._internal(
-        (ref) => imageMetadata(ref as ImageMetadataRef, entry),
-        from: imageMetadataProvider,
-        name: r'imageMetadataProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$imageMetadataHash,
-        dependencies: ImageMetadataFamily._dependencies,
-        allTransitiveDependencies:
-            ImageMetadataFamily._allTransitiveDependencies,
-        entry: entry,
-      );
-
-  ImageMetadataProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.entry,
-  }) : super.internal();
-
-  final ImageEntry entry;
-
-  @override
-  Override overrideWith(
-    FutureOr<ImageEntry> Function(ImageMetadataRef provider) create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override: ImageMetadataProvider._internal(
-        (ref) => create(ref as ImageMetadataRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        entry: entry,
-      ),
-    );
-  }
-
-  @override
-  AutoDisposeFutureProviderElement<ImageEntry> createElement() {
-    return _ImageMetadataProviderElement(this);
+  FutureOr<ImageEntry> create(Ref ref) {
+    final argument = this.argument as ImageEntry;
+    return imageMetadata(ref, argument);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is ImageMetadataProvider && other.entry == entry;
+    return other is ImageMetadataProvider && other.argument == argument;
   }
 
   @override
   int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, entry.hashCode);
-
-    return _SystemHash.finish(hash);
+    return argument.hashCode;
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin ImageMetadataRef on AutoDisposeFutureProviderRef<ImageEntry> {
-  /// The parameter `entry` of this provider.
-  ImageEntry get entry;
-}
+String _$imageMetadataHash() => r'69a60779a7ff6e11237e8a0f8175f59a8a0f6376';
 
-class _ImageMetadataProviderElement
-    extends AutoDisposeFutureProviderElement<ImageEntry>
-    with ImageMetadataRef {
-  _ImageMetadataProviderElement(super.provider);
+/// 指定された画像のメタデータを取得する Provider
+
+final class ImageMetadataFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<ImageEntry>, ImageEntry> {
+  ImageMetadataFamily._()
+    : super(
+        retry: null,
+        name: r'imageMetadataProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 指定された画像のメタデータを取得する Provider
+
+  ImageMetadataProvider call(ImageEntry entry) =>
+      ImageMetadataProvider._(argument: entry, from: this);
 
   @override
-  ImageEntry get entry => (origin as ImageMetadataProvider).entry;
+  String toString() => r'imageMetadataProvider';
+}
+
+/// 指定された画像のバイト列を取得する Provider
+/// 取得中はローディングになり、成功すると Uint8List を返す。
+/// 同時に同じ画像が要求された場合はキャッシュを共有する。
+
+@ProviderFor(imageBytes)
+final imageBytesProvider = ImageBytesFamily._();
+
+/// 指定された画像のバイト列を取得する Provider
+/// 取得中はローディングになり、成功すると Uint8List を返す。
+/// 同時に同じ画像が要求された場合はキャッシュを共有する。
+
+final class ImageBytesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<Uint8List>,
+          Uint8List,
+          FutureOr<Uint8List>
+        >
+    with $FutureModifier<Uint8List>, $FutureProvider<Uint8List> {
+  /// 指定された画像のバイト列を取得する Provider
+  /// 取得中はローディングになり、成功すると Uint8List を返す。
+  /// 同時に同じ画像が要求された場合はキャッシュを共有する。
+  ImageBytesProvider._({
+    required ImageBytesFamily super.from,
+    required ImageEntry super.argument,
+  }) : super(
+         retry: null,
+         name: r'imageBytesProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$imageBytesHash();
+
+  @override
+  String toString() {
+    return r'imageBytesProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<Uint8List> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Uint8List> create(Ref ref) {
+    final argument = this.argument as ImageEntry;
+    return imageBytes(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ImageBytesProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
 }
 
 String _$imageBytesHash() => r'0836062e0ad2976cee7f81699feca01fead66002';
@@ -201,143 +257,123 @@ String _$imageBytesHash() => r'0836062e0ad2976cee7f81699feca01fead66002';
 /// 指定された画像のバイト列を取得する Provider
 /// 取得中はローディングになり、成功すると Uint8List を返す。
 /// 同時に同じ画像が要求された場合はキャッシュを共有する。
-///
-/// Copied from [imageBytes].
-@ProviderFor(imageBytes)
-const imageBytesProvider = ImageBytesFamily();
 
-/// 指定された画像のバイト列を取得する Provider
-/// 取得中はローディングになり、成功すると Uint8List を返す。
-/// 同時に同じ画像が要求された場合はキャッシュを共有する。
-///
-/// Copied from [imageBytes].
-class ImageBytesFamily extends Family<AsyncValue<Uint8List>> {
-  /// 指定された画像のバイト列を取得する Provider
-  /// 取得中はローディングになり、成功すると Uint8List を返す。
-  /// 同時に同じ画像が要求された場合はキャッシュを共有する。
-  ///
-  /// Copied from [imageBytes].
-  const ImageBytesFamily();
-
-  /// 指定された画像のバイト列を取得する Provider
-  /// 取得中はローディングになり、成功すると Uint8List を返す。
-  /// 同時に同じ画像が要求された場合はキャッシュを共有する。
-  ///
-  /// Copied from [imageBytes].
-  ImageBytesProvider call(ImageEntry entry) {
-    return ImageBytesProvider(entry);
-  }
-
-  @override
-  ImageBytesProvider getProviderOverride(
-    covariant ImageBytesProvider provider,
-  ) {
-    return call(provider.entry);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'imageBytesProvider';
-}
-
-/// 指定された画像のバイト列を取得する Provider
-/// 取得中はローディングになり、成功すると Uint8List を返す。
-/// 同時に同じ画像が要求された場合はキャッシュを共有する。
-///
-/// Copied from [imageBytes].
-class ImageBytesProvider extends AutoDisposeFutureProvider<Uint8List> {
-  /// 指定された画像のバイト列を取得する Provider
-  /// 取得中はローディングになり、成功すると Uint8List を返す。
-  /// 同時に同じ画像が要求された場合はキャッシュを共有する。
-  ///
-  /// Copied from [imageBytes].
-  ImageBytesProvider(ImageEntry entry)
-    : this._internal(
-        (ref) => imageBytes(ref as ImageBytesRef, entry),
-        from: imageBytesProvider,
+final class ImageBytesFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<Uint8List>, ImageEntry> {
+  ImageBytesFamily._()
+    : super(
+        retry: null,
         name: r'imageBytesProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$imageBytesHash,
-        dependencies: ImageBytesFamily._dependencies,
-        allTransitiveDependencies: ImageBytesFamily._allTransitiveDependencies,
-        entry: entry,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
       );
 
-  ImageBytesProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.entry,
-  }) : super.internal();
+  /// 指定された画像のバイト列を取得する Provider
+  /// 取得中はローディングになり、成功すると Uint8List を返す。
+  /// 同時に同じ画像が要求された場合はキャッシュを共有する。
 
-  final ImageEntry entry;
+  ImageBytesProvider call(ImageEntry entry) =>
+      ImageBytesProvider._(argument: entry, from: this);
 
   @override
-  Override overrideWith(
-    FutureOr<Uint8List> Function(ImageBytesRef provider) create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override: ImageBytesProvider._internal(
-        (ref) => create(ref as ImageBytesRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        entry: entry,
-      ),
-    );
+  String toString() => r'imageBytesProvider';
+}
+
+/// 指定された画像のバイト列から EXIF 回転角度を抽出する Provider。
+///
+/// 画像バイト列を取得し、ExifProcessorImpl で Orientation タグを解析して
+/// 回転角度 (0, 90, 180, 270) を返す。
+/// ImageEntry に既に exifRotation が設定されている場合はそれを優先する。
+
+@ProviderFor(imageExifRotation)
+final imageExifRotationProvider = ImageExifRotationFamily._();
+
+/// 指定された画像のバイト列から EXIF 回転角度を抽出する Provider。
+///
+/// 画像バイト列を取得し、ExifProcessorImpl で Orientation タグを解析して
+/// 回転角度 (0, 90, 180, 270) を返す。
+/// ImageEntry に既に exifRotation が設定されている場合はそれを優先する。
+
+final class ImageExifRotationProvider
+    extends $FunctionalProvider<AsyncValue<int>, int, FutureOr<int>>
+    with $FutureModifier<int>, $FutureProvider<int> {
+  /// 指定された画像のバイト列から EXIF 回転角度を抽出する Provider。
+  ///
+  /// 画像バイト列を取得し、ExifProcessorImpl で Orientation タグを解析して
+  /// 回転角度 (0, 90, 180, 270) を返す。
+  /// ImageEntry に既に exifRotation が設定されている場合はそれを優先する。
+  ImageExifRotationProvider._({
+    required ImageExifRotationFamily super.from,
+    required ImageEntry super.argument,
+  }) : super(
+         retry: null,
+         name: r'imageExifRotationProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$imageExifRotationHash();
+
+  @override
+  String toString() {
+    return r'imageExifRotationProvider'
+        ''
+        '($argument)';
   }
 
+  @$internal
   @override
-  AutoDisposeFutureProviderElement<Uint8List> createElement() {
-    return _ImageBytesProviderElement(this);
+  $FutureProviderElement<int> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<int> create(Ref ref) {
+    final argument = this.argument as ImageEntry;
+    return imageExifRotation(ref, argument);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is ImageBytesProvider && other.entry == entry;
+    return other is ImageExifRotationProvider && other.argument == argument;
   }
 
   @override
   int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, entry.hashCode);
-
-    return _SystemHash.finish(hash);
+    return argument.hashCode;
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin ImageBytesRef on AutoDisposeFutureProviderRef<Uint8List> {
-  /// The parameter `entry` of this provider.
-  ImageEntry get entry;
-}
+String _$imageExifRotationHash() => r'c4aac35ce3c94f8df1abf50c43ed27b29f7ff89d';
 
-class _ImageBytesProviderElement
-    extends AutoDisposeFutureProviderElement<Uint8List>
-    with ImageBytesRef {
-  _ImageBytesProviderElement(super.provider);
+/// 指定された画像のバイト列から EXIF 回転角度を抽出する Provider。
+///
+/// 画像バイト列を取得し、ExifProcessorImpl で Orientation タグを解析して
+/// 回転角度 (0, 90, 180, 270) を返す。
+/// ImageEntry に既に exifRotation が設定されている場合はそれを優先する。
+
+final class ImageExifRotationFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<int>, ImageEntry> {
+  ImageExifRotationFamily._()
+    : super(
+        retry: null,
+        name: r'imageExifRotationProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 指定された画像のバイト列から EXIF 回転角度を抽出する Provider。
+  ///
+  /// 画像バイト列を取得し、ExifProcessorImpl で Orientation タグを解析して
+  /// 回転角度 (0, 90, 180, 270) を返す。
+  /// ImageEntry に既に exifRotation が設定されている場合はそれを優先する。
+
+  ImageExifRotationProvider call(ImageEntry entry) =>
+      ImageExifRotationProvider._(argument: entry, from: this);
 
   @override
-  ImageEntry get entry => (origin as ImageBytesProvider).entry;
+  String toString() => r'imageExifRotationProvider';
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

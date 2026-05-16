@@ -35,7 +35,11 @@
 - 単体表示
 - pinch zoom
 - pan
-- swipe
+- swipe（左右）
+- swipe（上下、Android設定で有効化）
+- 矢印ボタンによる画像移動（Windows）
+- キーボードショートカット ←/→/PageUp/PageDown（Windows）
+- Ctrl+MouseWheel zoom（Windows）
 - GIF自動再生
 - EXIF回転補正
 - 画像情報表示（ファイル名/サイズ/解像度/形式/日時）
@@ -54,6 +58,7 @@
 - サムネイルサイズ
 - キャッシュサイズ上限 / クリア
 - 表示順デフォルト
+- スワイプ方向（Android: 左右/上下/両方）
 
 ---
 

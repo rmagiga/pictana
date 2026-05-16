@@ -48,11 +48,11 @@ FavoriteFolder _createTestFolder({
 /// 非同期処理を回避してテストを安定させる。
 /// [screenWidth] で MediaQuery のサイズを制御する。
 Widget _createTestWidget({
-  required List<Override> overrides,
+  required List<dynamic> overrides,
   double screenWidth = 400,
 }) {
   return ProviderScope(
-    overrides: overrides,
+    overrides: overrides.cast(),
     child: MaterialApp(
       home: MediaQuery(
         data: MediaQueryData(size: Size(screenWidth, 800)),

@@ -105,6 +105,10 @@ class AppDatabase extends _$AppDatabase {
     ),
   );
 
+  /// 全サムネイルキャッシュエントリを取得する
+  Future<List<ThumbnailCache>> getAllThumbnailCaches() =>
+      select(thumbnailCaches).get();
+
   /// 全サムネイルキャッシュを削除する
   Future<int> clearThumbnailCache() => delete(thumbnailCaches).go();
 

@@ -28,8 +28,8 @@ class GridColumnSettingTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(gridColumnSettingsNotifierProvider);
-    final notifier = ref.read(gridColumnSettingsNotifierProvider.notifier);
+    final settings = ref.watch(gridColumnSettingsProvider);
+    final notifier = ref.read(gridColumnSettingsProvider.notifier);
 
     return ListTile(
       title: const Text('グリッド列数'),
@@ -91,6 +91,7 @@ class GridColumnSettingTile extends ConsumerWidget {
         ),
         DropdownButton<int>(
           value: effectiveValue,
+          isDense: true,
           underline: const SizedBox.shrink(),
           items: items
               .map(

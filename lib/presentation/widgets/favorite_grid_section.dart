@@ -140,7 +140,7 @@ class FavoriteGridSection extends ConsumerWidget {
     }
 
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final settings = ref.watch(gridColumnSettingsNotifierProvider);
+    final settings = ref.watch(gridColumnSettingsProvider);
     final crossAxisCount = calculateGridColumns(
       screenWidth,
       minColumns: settings.minColumns,

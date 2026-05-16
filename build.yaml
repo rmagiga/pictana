@@ -1,0 +1,5 @@
+targets:
+  $default:
+    builders:
+      custom_lint|custom_lint:
+        enabled: false

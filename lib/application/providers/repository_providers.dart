@@ -6,12 +6,14 @@ library;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../domain/repositories/exif_processor.dart';
 import '../../domain/repositories/favorite_repository.dart';
 import '../../domain/repositories/image_repository.dart';
 import '../../domain/repositories/storage_repository.dart';
 import '../../domain/repositories/thumbnail_repository.dart';
 import '../../infrastructure/database/app_database.dart';
 import '../../infrastructure/database/favorite_repository_impl.dart';
+import '../../infrastructure/storage/common/exif_processor_impl.dart';
 import '../../infrastructure/storage/common/platform_storage_factory.dart';
 
 part 'repository_providers.g.dart';
@@ -22,7 +24,7 @@ part 'repository_providers.g.dart';
 
 /// AppDatabase シングルトン
 @Riverpod(keepAlive: true)
-AppDatabase appDatabase(AppDatabaseRef ref) {
+AppDatabase appDatabase(Ref ref) {
   final db = AppDatabase();
   ref.onDispose(db.close);
   return db;
@@ -34,21 +36,21 @@ AppDatabase appDatabase(AppDatabaseRef ref) {
 
 /// StorageRepository Provider
 @Riverpod(keepAlive: true)
-StorageRepository storageRepository(StorageRepositoryRef ref) {
+StorageRepository storageRepository(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return PlatformStorageFactory.createStorageRepository(db);
 }
 
 /// ImageRepository Provider
 @Riverpod(keepAlive: true)
-ImageRepository imageRepository(ImageRepositoryRef ref) {
+ImageRepository imageRepository(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return PlatformStorageFactory.createImageRepository(db);
 }
 
 /// ThumbnailRepository Provider
 @Riverpod(keepAlive: true)
-ThumbnailRepository thumbnailRepository(ThumbnailRepositoryRef ref) {
+ThumbnailRepository thumbnailRepository(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   final repo = PlatformStorageFactory.createThumbnailRepository(db);
   ref.onDispose(() async {
@@ -62,7 +64,15 @@ ThumbnailRepository thumbnailRepository(ThumbnailRepositoryRef ref) {
 /// お気に入りフォルダの永続化を担当するリポジトリの DI 定義。
 /// [AppDatabase] を注入して [FavoriteRepositoryImpl] を生成する。
 @Riverpod(keepAlive: true)
-FavoriteRepository favoriteRepository(FavoriteRepositoryRef ref) {
+FavoriteRepository favoriteRepository(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return FavoriteRepositoryImpl(db);
+}
+
+/// ExifProcessor Provider
+///
+/// EXIF Orientation タグの解析と回転角度変換を担当するプロセッサの DI 定義。
+@Riverpod(keepAlive: true)
+ExifProcessor exifProcessor(Ref ref) {
+  return ExifProcessorImpl();
 }
