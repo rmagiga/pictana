@@ -171,3 +171,5 @@ $RECYCLE.BIN/
 
 .kiro/specs/
 .kiro/settings/
+
+errors-*.log

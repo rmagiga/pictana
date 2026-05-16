@@ -61,7 +61,7 @@ class StorageSelectionScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('フォルダを選択'), centerTitle: true),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: EdgeInsets.only(
           top: 16.0,
           // グリッド下部: ナビゲーションバー高さ + FAB 分の余白
