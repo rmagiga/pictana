@@ -26,6 +26,7 @@ lib/
 ├── application/                 # アプリケーション層
 │   ├── providers/               # リポジトリ DI 用 Provider
 │   └── usecases/                # ユースケース（機能別サブフォルダ）
+│       ├── favorites/
 │       ├── gallery/
 │       ├── settings/
 │       ├── storage/
@@ -61,7 +62,7 @@ lib/
 - `fromJson` / `toJson` は `json_serializable` で生成
 
 ### ユースケース
-- 機能ドメインごとにサブフォルダで分類（gallery, settings, storage, viewer）
+- 機能ドメインごとにサブフォルダで分類（favorites, gallery, settings, storage, viewer）
 - コンストラクタでリポジトリを注入（DI）
 - 単一責任: 1 クラス = 1 ユースケース
 

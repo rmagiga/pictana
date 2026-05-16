@@ -10,13 +10,16 @@
 | カテゴリ | パッケージ | 用途 |
 |---------|-----------|------|
 | 状態管理 | flutter_riverpod, hooks_riverpod, riverpod_annotation | Provider ベースの状態管理 |
+| Hooks | flutter_hooks | HookWidget によるステートフルロジック再利用 |
 | コード生成 | freezed, json_serializable, riverpod_generator, drift_dev | イミュータブルモデル・Provider 自動生成 |
 | データベース | drift, sqlite3_flutter_libs | ローカル SQLite DB |
 | 画像表示 | extended_image | ズーム・ジェスチャー対応画像ウィジェット |
 | キャッシュ | flutter_cache_manager | サムネイル等のファイルキャッシュ |
 | ルーティング | go_router | 宣言的ルーティング |
 | ファイル選択 | file_picker | ストレージルート選択 |
+| UI エフェクト | shimmer | ローディングプレースホルダー |
 | ユーティリティ | path, path_provider, collection, logger | パス操作・ログ |
+| テスト (PBT) | glados (git) | Property-based testing |
 
 ## ビルドシステム
 
@@ -50,7 +53,7 @@ flutter build windows
 ## Lint 設定
 
 - `package:flutter_lints/flutter.yaml` を基本ルールとして使用
-- `riverpod_lint` によるカスタムリント有効
+- `custom_lint` + `riverpod_lint` によるカスタムリント有効
 
 ## コード生成ファイル
 

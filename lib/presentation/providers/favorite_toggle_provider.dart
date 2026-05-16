@@ -9,6 +9,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../application/providers/repository_providers.dart';
 import '../../application/usecases/favorites/toggle_favorite_usecase.dart';
+import 'favorite_helper_providers.dart';
 import 'favorite_list_provider.dart';
 import 'favorite_toggle_state.dart';
 
@@ -64,6 +65,10 @@ class FavoriteToggle extends _$FavoriteToggle {
         optimisticIsFavorite: null,
         targetUri: null,
       );
+
+      // isFolderFavoriteProvider のキャッシュを無効化し、DB の最新状態を再取得させる
+      // これがないと楽観的状態リセット後にフォールバック先が古い値を返す
+      ref.invalidate(isFolderFavoriteProvider(uri));
 
       // お気に入り一覧を再取得して最新状態に更新
       ref.read(favoriteListProvider.notifier).refresh();
