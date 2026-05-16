@@ -44,9 +44,9 @@ class StorageSelectionScreen extends ConsumerWidget {
     } catch (e) {
       appLogger.e('フォルダ選択エラー', error: e);
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('フォルダの選択に失敗しました: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('フォルダの選択に失敗しました。再度お試しください。')),
+        );
       }
     }
   }

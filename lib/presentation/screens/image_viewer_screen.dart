@@ -118,9 +118,11 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
 
   /// Ctrl+ホイールズームによるスケール変更 (Req 3.1, 3.2)
   void _onCtrlWheelScaleChanged(double newScale) {
-    // ignore: deprecated_member_use
-    final matrix = Matrix4.identity()..scale(newScale, newScale);
-    _transformationController.value = matrix;
+    _transformationController.value = Matrix4.diagonal3Values(
+      newScale,
+      newScale,
+      1.0,
+    );
   }
 
   /// Ctrl+ホイールズームの焦点位置設定 (Req 3.1)
@@ -128,12 +130,10 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
     // 焦点位置を考慮したズーム変換を適用する
     final scale = _transformationController.value.getMaxScaleOnAxis();
     if (scale <= 1.0) return;
-    // ignore: deprecated_member_use
-    final matrix = Matrix4.identity()
-      // ignore: deprecated_member_use
-      ..translate(focalPoint.dx * (1 - scale), focalPoint.dy * (1 - scale))
-      // ignore: deprecated_member_use
-      ..scale(scale, scale);
+    final tx = focalPoint.dx * (1 - scale);
+    final ty = focalPoint.dy * (1 - scale);
+    final matrix = Matrix4.translationValues(tx, ty, 0.0)
+      ..multiply(Matrix4.diagonal3Values(scale, scale, 1.0));
     _transformationController.value = matrix;
   }
 
@@ -338,7 +338,10 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, st) => Center(
-          child: Text('エラー: $e', style: const TextStyle(color: Colors.white)),
+          child: Text(
+            'エラーが発生しました',
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
       ),
     );

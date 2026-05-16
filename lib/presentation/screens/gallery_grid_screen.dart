@@ -199,6 +199,9 @@ class GalleryGridScreen extends HookConsumerWidget {
                         physics: Platform.isWindows
                             ? const FastScrollPhysics()
                             : null,
+                        // スクロール時にキーボードを閉じる（Android 向け）
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
                         padding: const EdgeInsets.all(4),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: crossAxisCount,
@@ -241,7 +244,7 @@ class GalleryGridScreen extends HookConsumerWidget {
                         color: Colors.red,
                       ),
                       const SizedBox(height: 16),
-                      Text('エラーが発生しました: $e'),
+                      const Text('画像の読み込みに失敗しました'),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () => context.go(AppRoutes.storageSelection),

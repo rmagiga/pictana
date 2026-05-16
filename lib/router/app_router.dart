@@ -65,8 +65,21 @@ final appRouter = GoRouter(
     ),
   ],
   errorBuilder: (context, state) => Scaffold(
+    appBar: AppBar(title: const Text('エラー')),
     body: Center(
-      child: Text('ページが見つかりません: ${state.error}'),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+          const SizedBox(height: 16),
+          const Text('ページが見つかりません'),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => context.go(AppRoutes.storageSelection),
+            child: const Text('ホームに戻る'),
+          ),
+        ],
+      ),
     ),
   ),
 );

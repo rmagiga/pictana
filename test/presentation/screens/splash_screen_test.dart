@@ -34,16 +34,12 @@ import 'package:optrig/router/app_router.dart';
 class _FakeStorageRepository implements StorageRepository {
   _FakeStorageRepository({
     this.recentFolders = const [],
-    this.defaultFolder,
     this.getRecentFoldersDelay = Duration.zero,
-    this.getDefaultFolderDelay = Duration.zero,
     this.shouldThrow = false,
   });
 
   final List<FolderEntry> recentFolders;
-  final FolderEntry? defaultFolder;
   final Duration getRecentFoldersDelay;
-  final Duration getDefaultFolderDelay;
   final bool shouldThrow;
 
   @override
@@ -58,10 +54,7 @@ class _FakeStorageRepository implements StorageRepository {
   @override
   Future<FolderEntry?> getDefaultImageFolder() async {
     if (shouldThrow) throw Exception('テスト用エラー');
-    if (getDefaultFolderDelay > Duration.zero) {
-      await Future.delayed(getDefaultFolderDelay);
-    }
-    return defaultFolder;
+    return null;
   }
 
   @override

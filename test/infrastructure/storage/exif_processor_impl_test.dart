@@ -1,5 +1,5 @@
 import 'package:optrig/infrastructure/storage/common/exif_processor_impl.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   late ExifProcessorImpl processor;

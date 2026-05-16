@@ -25,7 +25,6 @@ import 'package:optrig/application/usecases/settings/swipe_direction_setting.dar
 import 'package:optrig/application/usecases/viewer/preload_adjacent_images_usecase.dart';
 import 'package:optrig/domain/entities/entry_id.dart';
 import 'package:optrig/domain/entities/image_entry.dart';
-import 'package:optrig/domain/repositories/exif_processor.dart';
 import 'package:optrig/domain/repositories/image_repository.dart';
 import 'package:optrig/domain/repositories/thumbnail_repository.dart';
 import 'package:optrig/domain/value_objects/swipe_direction.dart';
@@ -124,12 +123,6 @@ class _FakeImageRepository implements ImageRepository {
 class _FakeThumbnailRepository implements ThumbnailRepository {
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
-}
-
-/// Fake ExifProcessor
-class _FakeExifProcessor implements ExifProcessor {
-  @override
-  int extractRotation(List<int> bytes) => 0;
 }
 
 /// Fake SwipeDirectionSetting Provider

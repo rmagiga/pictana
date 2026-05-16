@@ -8,7 +8,6 @@ library;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../domain/repositories/thumbnail_repository.dart';
 import '../../../domain/value_objects/cache_size_limit.dart';
 import '../../providers/repository_providers.dart';
 

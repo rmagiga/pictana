@@ -1,9 +1,11 @@
 /// アプリエントリーポイント
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/logging/app_logger.dart';
 import 'core/utils/image_cache_config.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'presentation/themes/app_theme.dart';
@@ -11,6 +13,22 @@ import 'router/app_router.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // グローバルエラーハンドリング: Flutter フレームワーク内の例外
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    appLogger.e(
+      'FlutterError',
+      error: details.exception,
+      stackTrace: details.stack,
+    );
+  };
+
+  // グローバルエラーハンドリング: Flutter フレームワーク外の非同期例外
+  PlatformDispatcher.instance.onError = (error, stack) {
+    appLogger.e('PlatformDispatcher error', error: error, stackTrace: stack);
+    return true;
+  };
 
   // ImageCache をデバイスメモリに応じて動的設定 (設計書 §11.3)
   configureImageCache();
