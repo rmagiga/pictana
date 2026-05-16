@@ -85,166 +85,175 @@ class GalleryGridScreen extends HookConsumerWidget {
       }
     });
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(folder?.name ?? 'Optrig Gallery'),
-            if (countAsync.value != null)
-              Text(
-                '${countAsync.value} items',
-                style: Theme.of(context).textTheme.bodySmall,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          context.go(AppRoutes.storageSelection);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            tooltip: 'フォルダ選択に戻る',
+            onPressed: () => context.go(AppRoutes.storageSelection),
+          ),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(folder?.name ?? 'Optrig Gallery'),
+              if (countAsync.value != null)
+                Text(
+                  '${countAsync.value} items',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+            ],
+          ),
+          actions: [
+            // お気に入りトグルボタン
+            if (folder != null)
+              FavoriteIndicator(uri: folder.uri, name: folder.name),
+            // 検索アイコンボタン (Req 11.1)
+            // 折りたたみ時のみ AppBar に表示
+            if (!searchFilterState.isSearchBarExpanded)
+              IconButton(
+                icon: const Icon(Icons.search),
+                tooltip: '検索',
+                onPressed: () {
+                  ref.read(searchControllerProvider.notifier).toggleSearchBar();
+                },
               ),
+            // ソートメニュー
+            const SortMenu(),
+            // 設定ボタン
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                context.push(AppRoutes.settings);
+              },
+            ),
           ],
         ),
-        actions: [
-          // お気に入りトグルボタン
-          if (folder != null)
-            FavoriteIndicator(uri: folder.uri, name: folder.name),
-          // 検索アイコンボタン (Req 11.1)
-          // 折りたたみ時のみ AppBar に表示
-          if (!searchFilterState.isSearchBarExpanded)
-            IconButton(
-              icon: const Icon(Icons.search),
-              tooltip: '検索',
-              onPressed: () {
-                ref.read(searchControllerProvider.notifier).toggleSearchBar();
-              },
-            ),
-          // ソートメニュー
-          const SortMenu(),
-          // 設定ボタン
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              context.push(AppRoutes.settings);
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          const StorageDisconnectBanner(), // USB切断時のみ表示される
-          // 検索バーウィジェット (Req 11.1, 11.5)
-          // 展開時のみ表示
-          if (searchFilterState.isSearchBarExpanded)
-            SearchBarWidget(
-              isExpanded: true,
-              onToggle: () {
-                ref.read(searchControllerProvider.notifier).toggleSearchBar();
-              },
-              onQueryChanged: (query) {
-                ref.read(searchControllerProvider.notifier).updateQuery(query);
-              },
-              onClear: () {
-                ref.read(searchControllerProvider.notifier).clearAll();
-              },
-            ),
-          // 種類フィルターチップ (Req 12.1, 12.5)
-          // 検索バーが展開されている場合のみ表示
-          if (searchFilterState.isSearchBarExpanded)
-            FilterChipsWidget(
-              selectedMimeType: searchFilterState.selectedMimeType,
-              onMimeTypeSelected: (mimeType) {
-                ref
-                    .read(searchControllerProvider.notifier)
-                    .updateMimeTypeFilter(mimeType);
-              },
-            ),
-          Expanded(
-            child: imagesAsync.when(
-              data: (images) {
-                // SearchController の filteredImages を適用 (Req 11.2, 12.2)
-                final filteredImages = ref.watch(
-                  filteredImagesProvider(images: images),
-                );
-
-                // 検索結果 0 件時のメッセージ表示 (Req 11.5, 12.5)
-                if (filteredImages.isEmpty) {
-                  return _buildEmptyResultMessage(
-                    context,
-                    isFiltered:
-                        searchFilterState.query.isNotEmpty ||
-                        searchFilterState.selectedMimeType != null,
+        body: Column(
+          children: [
+            const StorageDisconnectBanner(), // USB切断時のみ表示される
+            // 検索バーウィジェット (Req 11.1, 11.5)
+            // 展開時のみ表示
+            if (searchFilterState.isSearchBarExpanded)
+              SearchBarWidget(
+                isExpanded: true,
+                onToggle: () {
+                  ref.read(searchControllerProvider.notifier).toggleSearchBar();
+                },
+                onQueryChanged: (query) {
+                  ref
+                      .read(searchControllerProvider.notifier)
+                      .updateQuery(query);
+                },
+                onClear: () {
+                  ref.read(searchControllerProvider.notifier).clearAll();
+                },
+              ),
+            // 種類フィルターチップ (Req 12.1, 12.5)
+            // 検索バーが展開されている場合のみ表示
+            if (searchFilterState.isSearchBarExpanded)
+              FilterChipsWidget(
+                selectedMimeType: searchFilterState.selectedMimeType,
+                onMimeTypeSelected: (mimeType) {
+                  ref
+                      .read(searchControllerProvider.notifier)
+                      .updateMimeTypeFilter(mimeType);
+                },
+              ),
+            Expanded(
+              child: imagesAsync.when(
+                data: (images) {
+                  // SearchController の filteredImages を適用 (Req 11.2, 12.2)
+                  final filteredImages = ref.watch(
+                    filteredImagesProvider(images: images),
                   );
-                }
 
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    // 画面幅に応じて列数を動的に変更
-                    final crossAxisCount = (constraints.maxWidth / 150)
-                        .floor()
-                        .clamp(3, 10);
-
-                    final gridView = GridView.builder(
-                      controller: scrollController,
-                      // Windows: FastScrollHandler がスクロールを制御するため
-                      // ポインターシグナルによるスクロールを無効化 (Req 13.1)
-                      physics: Platform.isWindows
-                          ? const FastScrollPhysics()
-                          : null,
-                      padding: const EdgeInsets.all(4),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 4,
-                        mainAxisSpacing: 4,
-                      ),
-                      itemCount: filteredImages.length,
-                      itemBuilder: (context, index) {
-                        final image = filteredImages[index];
-                        return ImageGridTile(
-                          key: ValueKey(image.uri),
-                          image: image,
-                          onTap: () {
-                            context.push('${AppRoutes.imageViewer}/$index');
-                          },
-                        );
-                      },
+                  // 検索結果 0 件時のメッセージ表示 (Req 11.5, 12.5)
+                  if (filteredImages.isEmpty) {
+                    return _buildEmptyResultMessage(
+                      context,
+                      isFiltered:
+                          searchFilterState.query.isNotEmpty ||
+                          searchFilterState.selectedMimeType != null,
                     );
+                  }
 
-                    // Windows: FastScrollHandler でマウスホイール高速スクロール (Req 13.1)
-                    if (Platform.isWindows) {
-                      return FastScrollHandler(
-                        scrollController: scrollController,
-                        child: gridView,
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      // 画面幅に応じて列数を動的に変更
+                      final crossAxisCount = (constraints.maxWidth / 150)
+                          .floor()
+                          .clamp(3, 10);
+
+                      final gridView = GridView.builder(
+                        controller: scrollController,
+                        // Windows: FastScrollHandler がスクロールを制御するため
+                        // ポインターシグナルによるスクロールを無効化 (Req 13.1)
+                        physics: Platform.isWindows
+                            ? const FastScrollPhysics()
+                            : null,
+                        padding: const EdgeInsets.all(4),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          crossAxisSpacing: 4,
+                          mainAxisSpacing: 4,
+                        ),
+                        itemCount: filteredImages.length,
+                        itemBuilder: (context, index) {
+                          final image = filteredImages[index];
+                          return ImageGridTile(
+                            key: ValueKey(image.uri),
+                            image: image,
+                            onTap: () {
+                              context.push('${AppRoutes.imageViewer}/$index');
+                            },
+                          );
+                        },
                       );
-                    }
 
-                    return gridView;
-                  },
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, st) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 48,
-                      color: Colors.red,
-                    ),
-                    const SizedBox(height: 16),
-                    Text('エラーが発生しました: $e'),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => context.go(AppRoutes.storageSelection),
-                      child: const Text('フォルダを選び直す'),
-                    ),
-                  ],
+                      // Windows: FastScrollHandler でマウスホイール高速スクロール (Req 13.1)
+                      if (Platform.isWindows) {
+                        return FastScrollHandler(
+                          scrollController: scrollController,
+                          child: gridView,
+                        );
+                      }
+
+                      return gridView;
+                    },
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, st) => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(height: 16),
+                      Text('エラーが発生しました: $e'),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => context.go(AppRoutes.storageSelection),
+                        child: const Text('フォルダを選び直す'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-      // FABでフォルダ再選択 (Windows向け簡易UI)
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.go(AppRoutes.storageSelection),
-        tooltip: '別のフォルダを開く',
-        child: const Icon(Icons.folder_open),
+          ],
+        ),
       ),
     );
   }
