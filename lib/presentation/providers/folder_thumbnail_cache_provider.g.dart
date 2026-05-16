@@ -7,13 +7,16 @@ part of 'folder_thumbnail_cache_provider.dart';
 // **************************************************************************
 
 String _$folderThumbnailCacheHash() =>
-    r'a688b8dcf2ef48c05143720b9074d946fb7e7329';
+    r'6e92501abe2ca8c08f24710a6ce29a3167d4d3e0';
 
 /// フォルダサムネイルのメモリキャッシュを管理する Provider
 ///
 /// [LinkedHashMap] を使用した LRU キャッシュで、
 /// アクセス時にエントリを末尾に移動し、上限超過時は
 /// 先頭（最も古い）エントリを削除する。
+///
+/// 単一サムネイル（レガシー）と複数サムネイル（リスト）の
+/// 両方のキャッシュをサポートする。
 ///
 /// Copied from [FolderThumbnailCache].
 @ProviderFor(FolderThumbnailCache)

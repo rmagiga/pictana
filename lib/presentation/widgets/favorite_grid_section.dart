@@ -1,8 +1,9 @@
 /// お気に入りフォルダグリッドセクション ウィジェット
 ///
 /// ストレージ選択画面に配置し、お気に入り登録済みフォルダを
-/// 登録日時降順でグリッド形式に表示する。
-/// 画面幅に応じてレスポンシブに列数を調整し、
+/// 登録日時降順で固定サイズカード（160×180dp）のレスポンシブグリッドで表示する。
+/// 画面幅に応じて列数を自動調整し、GridColumnSettingsProvider の
+/// min/max 制約を適用する。
 /// 空リスト時はプレースホルダー、ローディング中はインジケーターを表示する。
 /// 長押し/右クリックによるコンテキストメニューから削除操作を実行し、
 /// Undo SnackBar による復元機能を提供する。
@@ -17,13 +18,15 @@ import '../../core/utils/grid_utils.dart';
 import '../../domain/entities/favorite_folder.dart';
 import '../providers/favorite_helper_providers.dart';
 import '../providers/favorite_list_provider.dart';
+import '../providers/grid_column_settings_provider.dart';
 import 'folder_card.dart';
 
 /// お気に入りフォルダグリッドセクション
 ///
 /// ストレージ選択画面に配置するセクションウィジェット。
 /// - 登録日時降順でお気に入りフォルダをグリッド表示
-/// - 画面幅に応じたレスポンシブ列数（2/3/4列）
+/// - 固定サイズカード 160×180dp（幅536dp未満時はアスペクト比維持で縮小）
+/// - GridColumnSettingsProvider の min/max 制約を適用したレスポンシブ列数
 /// - 空リスト時はプレースホルダー（フォルダアイコン + メッセージ）
 /// - ローディング中は [CircularProgressIndicator]
 /// - セクションヘッダーに「お気に入り」タイトル + 件数「N / 50」表示
@@ -42,8 +45,14 @@ class FavoriteGridSection extends ConsumerWidget {
   /// グリッドアイテム間の間隔
   static const double _gridSpacing = 8.0;
 
-  /// グリッドの左右パディング
-  static const double _horizontalPadding = 16.0;
+  /// カードの固定幅
+  static const double _cardWidth = 160.0;
+
+  /// カードの固定高さ
+  static const double _cardHeight = 180.0;
+
+  /// カードのアスペクト比（幅/高さ）
+  static const double _cardAspectRatio = _cardWidth / _cardHeight;
 
   /// 空状態のフォルダアイコンサイズ
   static const double _emptyIconSize = 64.0;
@@ -91,7 +100,7 @@ class FavoriteGridSection extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
         children: [
           Text(
@@ -119,7 +128,8 @@ class FavoriteGridSection extends ConsumerWidget {
   /// グリッド本体を構築する
   ///
   /// 空リスト時はプレースホルダーを表示し、
-  /// データがある場合は [GridView.builder] でフォルダカードを表示する。
+  /// データがある場合は固定サイズカードのレスポンシブグリッドを表示する。
+  /// GridColumnSettingsProvider の min/max 制約を適用する。
   Widget _buildGrid(
     BuildContext context,
     WidgetRef ref,
@@ -130,17 +140,26 @@ class FavoriteGridSection extends ConsumerWidget {
     }
 
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final crossAxisCount = calculateGridColumns(screenWidth);
+    final settings = ref.watch(gridColumnSettingsNotifierProvider);
+    final crossAxisCount = calculateGridColumns(
+      screenWidth,
+      minColumns: settings.minColumns,
+      maxColumns: settings.maxColumns,
+    );
+    final horizontalPadding = calculateGridHorizontalPadding(
+      screenWidth,
+      crossAxisCount,
+    );
 
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: _gridSpacing,
         mainAxisSpacing: _gridSpacing,
-        childAspectRatio: 1.0,
+        childAspectRatio: _cardAspectRatio,
       ),
       itemCount: favorites.length,
       itemBuilder: (context, index) {

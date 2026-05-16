@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/settings_providers.dart';
+import '../widgets/grid_column_setting_tile.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -16,9 +17,7 @@ class SettingsScreen extends ConsumerWidget {
     final themeMode = ref.watch(appThemeModeProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('設定'),
-      ),
+      appBar: AppBar(title: const Text('設定')),
       body: ListView(
         children: [
           _buildSectionHeader(context, '表示'),
@@ -37,6 +36,7 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
+          const GridColumnSettingTile(),
           const Divider(),
           _buildSectionHeader(context, 'キャッシュ管理'),
           ListTile(
@@ -48,7 +48,10 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             child: OutlinedButton.icon(
               onPressed: cacheSizeAsync.isLoading
                   ? null

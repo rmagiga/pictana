@@ -49,10 +49,10 @@ Widget _createTestWidget({
 }) {
   return ProviderScope(
     overrides: [
-      // サムネイル取得を null（画像なし）で即座に返すようオーバーライド
-      getFolderThumbnailProvider(
+      // サムネイル取得を空リスト（画像なし）で即座に返すようオーバーライド
+      getFolderThumbnailsProvider(
         folder,
-      ).overrideWith((ref) => Future<Uint8List?>.value(null)),
+      ).overrideWith((ref) => Future<List<Uint8List?>>.value([])),
     ],
     child: MaterialApp(
       home: Scaffold(
@@ -151,8 +151,8 @@ void main() {
       await tester.pumpWidget(_createTestWidget(folder: folder));
       await tester.pumpAndSettle();
 
-      // フォルダアイコンが表示される
-      expect(find.byIcon(Icons.folder), findsOneWidget);
+      // フォルダアイコンが表示される（カード下部 + ThumbnailOverlay の画像なし時）
+      expect(find.byIcon(Icons.folder), findsAtLeastNWidgets(1));
     });
   });
 }

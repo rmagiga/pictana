@@ -1,10 +1,10 @@
-/// StorageSelection画面 (設計書 §17.1)
+/// StorageSelection画面（リデザイン版）
 ///
 /// ユーザーが明示的に開くフォルダを選択する画面。
-/// 起動時に既定フォルダが見つからなかった場合や、
-/// ユーザーが意図して他のフォルダを開きたい場合に表示される。
-/// お気に入りフォルダ一覧セクションを含み、登録済みフォルダへの
-/// クイックアクセスを提供する。
+/// お気に入りフォルダ一覧をレスポンシブグリッドで表示し、
+/// FAB（Floating Action Button）でフォルダ選択を行う。
+/// 空状態時はプレースホルダーを中央表示する。
+/// Android セーフエリア対応を含む。
 library;
 
 import 'package:flutter/material.dart';
@@ -18,9 +18,17 @@ import '../providers/storage_providers.dart';
 import '../widgets/favorite_grid_section.dart';
 import '../widgets/favorite_navigation_handler.dart';
 
+/// ストレージ選択画面
+///
+/// - Scaffold + FAB パターン
+/// - body: お気に入りグリッド（FavoriteGridSection）
+/// - FAB: filled extended FAB、folder-open アイコン、ラベル「フォルダを選択」
+/// - FAB 位置: bottom-right、16dp margin、elevation 6dp
+/// - Android セーフエリア対応: viewPadding.bottom を考慮
 class StorageSelectionScreen extends ConsumerWidget {
   const StorageSelectionScreen({super.key});
 
+  /// フォルダ選択処理
   Future<void> _selectFolder(BuildContext context, WidgetRef ref) async {
     try {
       final useCase = ref.read(selectStorageUseCaseProvider);
@@ -45,69 +53,37 @@ class StorageSelectionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final viewPadding = MediaQuery.viewPaddingOf(context);
+    // ジェスチャーナビゲーション時の追加パディング
+    final bottomSafeArea = viewPadding.bottom;
+    final hasGestureNav = bottomSafeArea > 0;
+    final fabBottomMargin = hasGestureNav ? bottomSafeArea + 24.0 : 16.0;
 
     return Scaffold(
       appBar: AppBar(title: const Text('フォルダを選択'), centerTitle: true),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // お気に入りフォルダ一覧セクション
-            Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: FavoriteNavigationHandler(
-                child: FavoriteGridSection(
-                  onFolderTap: (folder) =>
-                      handleFavoriteNavigation(context, ref, folder),
-                ),
-              ),
-            ),
-            const Divider(height: 32),
-            // フォルダ選択セクション
-            Padding(
-              padding: const EdgeInsets.all(32.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.folder_open_rounded,
-                    size: 96,
-                    color: theme.colorScheme.primary.withAlpha(150),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    '画像フォルダが見つかりません',
-                    style: theme.textTheme.headlineSmall,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '写真が保存されているフォルダを選択してください。',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 48),
-                  FilledButton.icon(
-                    onPressed: () => _selectFolder(context, ref),
-                    icon: const Icon(Icons.create_new_folder_outlined),
-                    label: const Text('フォルダを選択'),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
-                      ),
-                      textStyle: theme.textTheme.titleMedium,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+      body: Padding(
+        padding: EdgeInsets.only(
+          top: 16.0,
+          // グリッド下部: ナビゲーションバー高さ + FAB 分の余白
+          bottom: bottomSafeArea + 80.0,
+        ),
+        child: FavoriteNavigationHandler(
+          child: FavoriteGridSection(
+            onFolderTap: (folder) =>
+                handleFavoriteNavigation(context, ref, folder),
+          ),
         ),
       ),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: fabBottomMargin),
+        child: FloatingActionButton.extended(
+          onPressed: () => _selectFolder(context, ref),
+          elevation: 6,
+          icon: const Icon(Icons.folder_open),
+          label: const Text('フォルダを選択'),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

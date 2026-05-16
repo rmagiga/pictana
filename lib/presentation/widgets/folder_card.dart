@@ -1,8 +1,9 @@
 /// お気に入りフォルダカード ウィジェット
 ///
 /// グリッド内の個別カードウィジェット。
-/// Card（角丸12dp、elevation 1dp → ホバー/フォーカス時 3dp）で構成し、
-/// カード上半分にサムネイルオーバーレイ、下半分にフォルダアイコンとフォルダ名を表示する。
+/// Card（角丸8dp、elevation 1dp → ホバー/フォーカス時 3dp）で構成し、
+/// カード上部70%にサムネイルオーバーレイ（2×2グリッド）、
+/// 下部30%にフォルダアイコン(16dp)とフォルダ名(1行)を表示する。
 /// タップでフォルダ遷移、長押し/右クリックで削除コンテキストメニューを表示する。
 library;
 
@@ -14,10 +15,10 @@ import 'thumbnail_overlay.dart';
 
 /// お気に入りフォルダカード
 ///
-/// - Card（角丸12dp、elevation 1dp → ホバー/フォーカス時 3dp）
+/// - Card（角丸8dp、elevation 1dp → ホバー/フォーカス時 3dp）
 /// - InkWell によるリップルエフェクト
-/// - カード上半分: [ThumbnailOverlay]
-/// - カード下半分: フォルダアイコン（40dp）+ フォルダ名（最大2行、中央揃え、ellipsis）
+/// - カード上部 70%: [ThumbnailOverlay]（2×2 グリッド）
+/// - カード下部 30%: フォルダアイコン(16dp) + フォルダ名(1行、ellipsis)
 /// - Material Design 3 Surface カラーを背景色に使用
 /// - 長押し/右クリックで削除コンテキストメニューを表示
 class FolderCard extends ConsumerStatefulWidget {
@@ -50,10 +51,10 @@ class _FolderCardState extends ConsumerState<FolderCard> {
   static const double _hoveredElevation = 3.0;
 
   /// カードの角丸半径
-  static const double _borderRadius = 12.0;
+  static const double _borderRadius = 8.0;
 
   /// フォルダアイコンのサイズ
-  static const double _folderIconSize = 40.0;
+  static const double _folderIconSize = 16.0;
 
   /// ホバー状態
   bool _isHovered = false;
@@ -130,13 +131,17 @@ class _FolderCardState extends ConsumerState<FolderCard> {
               onTap: widget.onTap,
               child: Column(
                 children: [
-                  // カード上半分: サムネイルオーバーレイ
-                  Expanded(child: ThumbnailOverlay(folder: widget.folder)),
-                  // カード下半分: フォルダアイコン + フォルダ名
+                  // カード上部 70%: サムネイルオーバーレイ（2×2 グリッド）
                   Expanded(
+                    flex: 7,
+                    child: ThumbnailOverlay(folder: widget.folder),
+                  ),
+                  // カード下部 30%: フォルダアイコン + フォルダ名
+                  Expanded(
+                    flex: 3,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Column(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
@@ -144,13 +149,14 @@ class _FolderCardState extends ConsumerState<FolderCard> {
                             size: _folderIconSize,
                             color: colorScheme.primary,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            widget.folder.name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: textTheme.bodySmall,
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              widget.folder.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: textTheme.bodySmall,
+                            ),
                           ),
                         ],
                       ),

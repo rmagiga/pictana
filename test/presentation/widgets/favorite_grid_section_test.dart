@@ -162,13 +162,13 @@ void main() {
           overrides: [
             favoriteListProvider.overrideWith(() => _DataFavoriteList(folders)),
             favoriteCountProvider.overrideWith((ref) => Future.value(2)),
-            // サムネイル取得を null で即座に返す
-            getFolderThumbnailProvider(
+            // サムネイル取得を空リストで即座に返す
+            getFolderThumbnailsProvider(
               folders[0],
-            ).overrideWith((ref) => Future<Uint8List?>.value(null)),
-            getFolderThumbnailProvider(
+            ).overrideWith((ref) => Future<List<Uint8List?>>.value([])),
+            getFolderThumbnailsProvider(
               folders[1],
-            ).overrideWith((ref) => Future<Uint8List?>.value(null)),
+            ).overrideWith((ref) => Future<List<Uint8List?>>.value([])),
           ],
         ),
       );

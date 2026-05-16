@@ -6,8 +6,8 @@ part of 'folder_thumbnail_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getFolderThumbnailHash() =>
-    r'6143a641435da7f074a04639872fec771c816352';
+String _$getFolderThumbnailsHash() =>
+    r'4417c6b67bdb88ce96e0a1111262982077b16a64';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -30,55 +30,55 @@ class _SystemHash {
   }
 }
 
-/// 個別フォルダのサムネイルを取得する Family Provider
+/// 個別フォルダのサムネイルを最大4枚取得する Family Provider
 ///
-/// [FavoriteFolder] を引数に取り、以下のフローでサムネイルを返す:
+/// [FavoriteFolder] を引数に取り、以下のフローでサムネイルリストを返す:
 /// 1. メモリキャッシュをチェック（ヒット時は即座に返す）
-/// 2. キャッシュミス時は [GetFolderThumbnailUseCase] を実行
+/// 2. キャッシュミス時は [GetFolderThumbnailsUseCase] を実行
 /// 3. 取得結果をキャッシュに保存
-/// 4. 結果を返す（null の場合もそのまま返す）
+/// 4. 結果を返す（空リストの場合もそのまま返す）
 ///
-/// Copied from [getFolderThumbnail].
-@ProviderFor(getFolderThumbnail)
-const getFolderThumbnailProvider = GetFolderThumbnailFamily();
+/// Copied from [getFolderThumbnails].
+@ProviderFor(getFolderThumbnails)
+const getFolderThumbnailsProvider = GetFolderThumbnailsFamily();
 
-/// 個別フォルダのサムネイルを取得する Family Provider
+/// 個別フォルダのサムネイルを最大4枚取得する Family Provider
 ///
-/// [FavoriteFolder] を引数に取り、以下のフローでサムネイルを返す:
+/// [FavoriteFolder] を引数に取り、以下のフローでサムネイルリストを返す:
 /// 1. メモリキャッシュをチェック（ヒット時は即座に返す）
-/// 2. キャッシュミス時は [GetFolderThumbnailUseCase] を実行
+/// 2. キャッシュミス時は [GetFolderThumbnailsUseCase] を実行
 /// 3. 取得結果をキャッシュに保存
-/// 4. 結果を返す（null の場合もそのまま返す）
+/// 4. 結果を返す（空リストの場合もそのまま返す）
 ///
-/// Copied from [getFolderThumbnail].
-class GetFolderThumbnailFamily extends Family<AsyncValue<Uint8List?>> {
-  /// 個別フォルダのサムネイルを取得する Family Provider
+/// Copied from [getFolderThumbnails].
+class GetFolderThumbnailsFamily extends Family<AsyncValue<List<Uint8List?>>> {
+  /// 個別フォルダのサムネイルを最大4枚取得する Family Provider
   ///
-  /// [FavoriteFolder] を引数に取り、以下のフローでサムネイルを返す:
+  /// [FavoriteFolder] を引数に取り、以下のフローでサムネイルリストを返す:
   /// 1. メモリキャッシュをチェック（ヒット時は即座に返す）
-  /// 2. キャッシュミス時は [GetFolderThumbnailUseCase] を実行
+  /// 2. キャッシュミス時は [GetFolderThumbnailsUseCase] を実行
   /// 3. 取得結果をキャッシュに保存
-  /// 4. 結果を返す（null の場合もそのまま返す）
+  /// 4. 結果を返す（空リストの場合もそのまま返す）
   ///
-  /// Copied from [getFolderThumbnail].
-  const GetFolderThumbnailFamily();
+  /// Copied from [getFolderThumbnails].
+  const GetFolderThumbnailsFamily();
 
-  /// 個別フォルダのサムネイルを取得する Family Provider
+  /// 個別フォルダのサムネイルを最大4枚取得する Family Provider
   ///
-  /// [FavoriteFolder] を引数に取り、以下のフローでサムネイルを返す:
+  /// [FavoriteFolder] を引数に取り、以下のフローでサムネイルリストを返す:
   /// 1. メモリキャッシュをチェック（ヒット時は即座に返す）
-  /// 2. キャッシュミス時は [GetFolderThumbnailUseCase] を実行
+  /// 2. キャッシュミス時は [GetFolderThumbnailsUseCase] を実行
   /// 3. 取得結果をキャッシュに保存
-  /// 4. 結果を返す（null の場合もそのまま返す）
+  /// 4. 結果を返す（空リストの場合もそのまま返す）
   ///
-  /// Copied from [getFolderThumbnail].
-  GetFolderThumbnailProvider call(FavoriteFolder folder) {
-    return GetFolderThumbnailProvider(folder);
+  /// Copied from [getFolderThumbnails].
+  GetFolderThumbnailsProvider call(FavoriteFolder folder) {
+    return GetFolderThumbnailsProvider(folder);
   }
 
   @override
-  GetFolderThumbnailProvider getProviderOverride(
-    covariant GetFolderThumbnailProvider provider,
+  GetFolderThumbnailsProvider getProviderOverride(
+    covariant GetFolderThumbnailsProvider provider,
   ) {
     return call(provider.folder);
   }
@@ -95,43 +95,44 @@ class GetFolderThumbnailFamily extends Family<AsyncValue<Uint8List?>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'getFolderThumbnailProvider';
+  String? get name => r'getFolderThumbnailsProvider';
 }
 
-/// 個別フォルダのサムネイルを取得する Family Provider
+/// 個別フォルダのサムネイルを最大4枚取得する Family Provider
 ///
-/// [FavoriteFolder] を引数に取り、以下のフローでサムネイルを返す:
+/// [FavoriteFolder] を引数に取り、以下のフローでサムネイルリストを返す:
 /// 1. メモリキャッシュをチェック（ヒット時は即座に返す）
-/// 2. キャッシュミス時は [GetFolderThumbnailUseCase] を実行
+/// 2. キャッシュミス時は [GetFolderThumbnailsUseCase] を実行
 /// 3. 取得結果をキャッシュに保存
-/// 4. 結果を返す（null の場合もそのまま返す）
+/// 4. 結果を返す（空リストの場合もそのまま返す）
 ///
-/// Copied from [getFolderThumbnail].
-class GetFolderThumbnailProvider extends AutoDisposeFutureProvider<Uint8List?> {
-  /// 個別フォルダのサムネイルを取得する Family Provider
+/// Copied from [getFolderThumbnails].
+class GetFolderThumbnailsProvider
+    extends AutoDisposeFutureProvider<List<Uint8List?>> {
+  /// 個別フォルダのサムネイルを最大4枚取得する Family Provider
   ///
-  /// [FavoriteFolder] を引数に取り、以下のフローでサムネイルを返す:
+  /// [FavoriteFolder] を引数に取り、以下のフローでサムネイルリストを返す:
   /// 1. メモリキャッシュをチェック（ヒット時は即座に返す）
-  /// 2. キャッシュミス時は [GetFolderThumbnailUseCase] を実行
+  /// 2. キャッシュミス時は [GetFolderThumbnailsUseCase] を実行
   /// 3. 取得結果をキャッシュに保存
-  /// 4. 結果を返す（null の場合もそのまま返す）
+  /// 4. 結果を返す（空リストの場合もそのまま返す）
   ///
-  /// Copied from [getFolderThumbnail].
-  GetFolderThumbnailProvider(FavoriteFolder folder)
+  /// Copied from [getFolderThumbnails].
+  GetFolderThumbnailsProvider(FavoriteFolder folder)
     : this._internal(
-        (ref) => getFolderThumbnail(ref as GetFolderThumbnailRef, folder),
-        from: getFolderThumbnailProvider,
-        name: r'getFolderThumbnailProvider',
+        (ref) => getFolderThumbnails(ref as GetFolderThumbnailsRef, folder),
+        from: getFolderThumbnailsProvider,
+        name: r'getFolderThumbnailsProvider',
         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
             ? null
-            : _$getFolderThumbnailHash,
-        dependencies: GetFolderThumbnailFamily._dependencies,
+            : _$getFolderThumbnailsHash,
+        dependencies: GetFolderThumbnailsFamily._dependencies,
         allTransitiveDependencies:
-            GetFolderThumbnailFamily._allTransitiveDependencies,
+            GetFolderThumbnailsFamily._allTransitiveDependencies,
         folder: folder,
       );
 
-  GetFolderThumbnailProvider._internal(
+  GetFolderThumbnailsProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -145,12 +146,12 @@ class GetFolderThumbnailProvider extends AutoDisposeFutureProvider<Uint8List?> {
 
   @override
   Override overrideWith(
-    FutureOr<Uint8List?> Function(GetFolderThumbnailRef provider) create,
+    FutureOr<List<Uint8List?>> Function(GetFolderThumbnailsRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: GetFolderThumbnailProvider._internal(
-        (ref) => create(ref as GetFolderThumbnailRef),
+      override: GetFolderThumbnailsProvider._internal(
+        (ref) => create(ref as GetFolderThumbnailsRef),
         from: from,
         name: null,
         dependencies: null,
@@ -162,13 +163,13 @@ class GetFolderThumbnailProvider extends AutoDisposeFutureProvider<Uint8List?> {
   }
 
   @override
-  AutoDisposeFutureProviderElement<Uint8List?> createElement() {
-    return _GetFolderThumbnailProviderElement(this);
+  AutoDisposeFutureProviderElement<List<Uint8List?>> createElement() {
+    return _GetFolderThumbnailsProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is GetFolderThumbnailProvider && other.folder == folder;
+    return other is GetFolderThumbnailsProvider && other.folder == folder;
   }
 
   @override
@@ -182,18 +183,18 @@ class GetFolderThumbnailProvider extends AutoDisposeFutureProvider<Uint8List?> {
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin GetFolderThumbnailRef on AutoDisposeFutureProviderRef<Uint8List?> {
+mixin GetFolderThumbnailsRef on AutoDisposeFutureProviderRef<List<Uint8List?>> {
   /// The parameter `folder` of this provider.
   FavoriteFolder get folder;
 }
 
-class _GetFolderThumbnailProviderElement
-    extends AutoDisposeFutureProviderElement<Uint8List?>
-    with GetFolderThumbnailRef {
-  _GetFolderThumbnailProviderElement(super.provider);
+class _GetFolderThumbnailsProviderElement
+    extends AutoDisposeFutureProviderElement<List<Uint8List?>>
+    with GetFolderThumbnailsRef {
+  _GetFolderThumbnailsProviderElement(super.provider);
 
   @override
-  FavoriteFolder get folder => (origin as GetFolderThumbnailProvider).folder;
+  FavoriteFolder get folder => (origin as GetFolderThumbnailsProvider).folder;
 }
 
 // ignore_for_file: type=lint
