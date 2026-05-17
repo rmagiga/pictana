@@ -72,44 +72,39 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
 
   /// 前の画像に遷移する (Req 1.3, 2.1)
   void _goToPreviousPage() {
-    if (_isPageAnimating) return;
     if (_currentIndex <= 0) return;
-    setState(() => _isPageAnimating = true);
-    _pageController
-        .previousPage(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        )
-        .then((_) {
-          if (mounted) setState(() => _isPageAnimating = false);
-        });
+    _navigateToPage(_currentIndex - 1);
   }
 
   /// 次の画像に遷移する (Req 1.4, 2.2)
   void _goToNextPage(int totalCount) {
-    if (_isPageAnimating) return;
     if (_currentIndex >= totalCount - 1) return;
-    setState(() => _isPageAnimating = true);
-    _pageController
-        .nextPage(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        )
-        .then((_) {
-          if (mounted) setState(() => _isPageAnimating = false);
-        });
+    _navigateToPage(_currentIndex + 1);
   }
 
   /// キーボードナビゲーションによるページ遷移 (Req 2.1, 2.2)
   void _navigateToIndex(int index, int totalCount) {
-    if (_isPageAnimating) return;
     if (index < 0 || index >= totalCount) return;
+    _navigateToPage(index);
+  }
+
+  /// ページ遷移を実行する（連続操作対応）
+  ///
+  /// アニメーション中に次の遷移が来た場合、現在位置を即座に確定してから
+  /// 新しいターゲットへ遷移する。これにより連続スワイプ時のもたつきを解消する。
+  void _navigateToPage(int targetPage) {
+    // アニメーション中なら現在位置を即座に確定する
+    if (_isPageAnimating) {
+      final snappedPage = _pageController.page?.round() ?? _currentIndex;
+      _pageController.jumpToPage(snappedPage);
+    }
+
     setState(() => _isPageAnimating = true);
     _pageController
         .animateToPage(
-          index,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
+          targetPage,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
         )
         .then((_) {
           if (mounted) setState(() => _isPageAnimating = false);

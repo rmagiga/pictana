@@ -63,9 +63,15 @@ class _SwipeDirectionControllerState extends State<SwipeDirectionController> {
   /// both モードで縦方向ドラッグが検知されたかどうか
   bool _isVerticalDrag = false;
 
+  /// ページ遷移アニメーション中かどうか（連続スワイプ制御用）
+  bool _isAnimating = false;
+
   /// ドラッグ方向判定のしきい値（ピクセル）
   /// この距離以上移動したら方向を確定する
   static const double _directionThreshold = 10.0;
+
+  /// ページ遷移アニメーションの duration
+  static const Duration _pageDuration = Duration(milliseconds: 200);
 
   @override
   Widget build(BuildContext context) {
@@ -80,11 +86,11 @@ class _SwipeDirectionControllerState extends State<SwipeDirectionController> {
     return switch (widget.direction) {
       SwipeDirection.horizontal => _buildPageView(
         scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
       ),
       SwipeDirection.vertical => _buildPageView(
         scrollDirection: Axis.vertical,
-        physics: const BouncingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
       ),
       SwipeDirection.both => _buildBothDirectionView(),
     };
@@ -116,7 +122,7 @@ class _SwipeDirectionControllerState extends State<SwipeDirectionController> {
       onVerticalDragEnd: _onVerticalDragEnd,
       child: _buildPageView(
         scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
       ),
     );
   }
@@ -150,39 +156,46 @@ class _SwipeDirectionControllerState extends State<SwipeDirectionController> {
       return;
     }
 
+    // アニメーション中でも次のページ遷移を受け付ける（連続スワイプ対応）
     final velocity = details.primaryVelocity ?? 0;
     final currentPage = widget.pageController.page?.round() ?? 0;
 
     // 上スワイプ（負の速度）= 次の画像
-    if (velocity < -200 || _hasExceededThreshold(isUp: true)) {
-      final nextPage = currentPage + 1;
-      if (nextPage < widget.itemCount) {
-        widget.pageController.animateToPage(
-          nextPage,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      }
+    if (velocity < -200) {
+      _animateToPage(currentPage + 1);
     }
     // 下スワイプ（正の速度）= 前の画像
-    else if (velocity > 200 || _hasExceededThreshold(isUp: false)) {
-      final prevPage = currentPage - 1;
-      if (prevPage >= 0) {
-        widget.pageController.animateToPage(
-          prevPage,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      }
+    else if (velocity > 200) {
+      _animateToPage(currentPage - 1);
     }
 
     _resetDragState();
   }
 
-  /// しきい値を超えたかどうかを判定する
-  bool _hasExceededThreshold({required bool isUp}) {
-    // velocity ベースで判定するため、ここでは false を返す
-    return false;
+  /// ページ遷移アニメーションを実行する（連続スワイプ対応）
+  ///
+  /// 前のアニメーションが完了していなくても、即座に次のページへ遷移する。
+  /// [PageController.jumpToPage] で現在位置を確定してから
+  /// [PageController.animateToPage] で次のページへ遷移する。
+  void _animateToPage(int targetPage) {
+    if (targetPage < 0 || targetPage >= widget.itemCount) return;
+
+    // 前のアニメーション中なら現在位置を即座に確定する
+    if (_isAnimating) {
+      final snappedPage = widget.pageController.page?.round() ?? targetPage;
+      widget.pageController.jumpToPage(snappedPage);
+    }
+
+    _isAnimating = true;
+    widget.pageController
+        .animateToPage(
+          targetPage,
+          duration: _pageDuration,
+          curve: Curves.easeOut,
+        )
+        .then((_) {
+          _isAnimating = false;
+        });
   }
 
   /// ドラッグ状態をリセットする
