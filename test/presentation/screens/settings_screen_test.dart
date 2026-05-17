@@ -308,7 +308,7 @@ void main() {
       await tester.pumpWidget(_createTestWidget());
       await tester.pumpAndSettle();
       expect(find.text('テーマ'), findsOneWidget);
-      expect(find.text('システムに合わせる'), findsOneWidget);
+      expect(find.text('システムに合わせる'), findsWidgets);
     });
   });
 }

@@ -60,7 +60,17 @@ class StorageSelectionScreen extends ConsumerWidget {
     final fabBottomMargin = hasGestureNav ? bottomSafeArea + 24.0 : 16.0;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('フォルダを選択'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('フォルダを選択'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: '設定',
+            onPressed: () => context.push(AppRoutes.settings),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: EdgeInsets.only(
           top: 16.0,

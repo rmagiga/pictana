@@ -10,5 +10,8 @@ void main() {
 
     // Verify that the app starts without errors.
     expect(find.byType(OptrigApp), findsOneWidget);
+
+    // スプラッシュ画面のタイムアウトなどの非同期処理を完了させる
+    await tester.pump(const Duration(seconds: 3));
   });
 }

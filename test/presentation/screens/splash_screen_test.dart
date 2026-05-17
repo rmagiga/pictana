@@ -198,6 +198,10 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(find.text('Optrig'), findsOneWidget);
       expect(find.text('画像フォルダを検出中...'), findsOneWidget);
+
+      // 非同期タイマーを完了させるために時間を進める
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
     });
   });
 
@@ -293,6 +297,10 @@ void main() {
 
       // タイムアウトにより Storage Selection 画面へ遷移 (Req 16.3)
       expect(navigatedPaths, contains(AppRoutes.storageSelection));
+
+      // 残りのディレイ（5秒ディレイのうちの残り2秒以上）を完了させる
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
     });
   });
 }

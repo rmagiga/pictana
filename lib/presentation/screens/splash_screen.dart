@@ -46,13 +46,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   Future<void> _initializeApp() async {
     try {
       // 3 秒タイムアウト付きでフォルダ検出を実行 (Req 16.3)
-      final targetFolder = await Future.any<FolderEntry?>([
-        _detectTargetFolder(),
-        Future<FolderEntry?>.delayed(
-          const Duration(seconds: 3),
-          () => null,
-        ),
-      ]);
+      final targetFolder = await _detectTargetFolder().timeout(
+        const Duration(seconds: 3),
+        onTimeout: () => null,
+      );
 
       if (!mounted) return;
 
