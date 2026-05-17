@@ -180,27 +180,15 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
       ref.read(preloadAdjacentImagesUseCaseProvider).execute(images, index);
     }
 
-    // Android: SwipeDirectionController でスワイプ方向を制御する (Req 4.1, 7.4)
-    if (Platform.isAndroid) {
-      final swipeDirection = ref.watch(swipeDirectionSettingProvider);
-      return SwipeDirectionController(
-        direction: swipeDirection,
-        isZoomed: _isZoomed,
-        pageController: _pageController,
-        itemCount: images.length,
-        itemBuilder: itemBuilder,
-        onPageChanged: onPageChanged,
-      );
-    }
-
-    // Windows: 標準の PageView.builder を使用する
-    return PageView.builder(
-      controller: _pageController,
-      // ズーム中はページスワイプを無効にする
-      physics: _isZoomed ? const NeverScrollableScrollPhysics() : null,
+    // 全プラットフォーム: SwipeDirectionController でスワイプ方向を制御する (Req 4.1, 7.4)
+    final swipeDirection = ref.watch(swipeDirectionSettingProvider);
+    return SwipeDirectionController(
+      direction: swipeDirection,
+      isZoomed: _isZoomed,
+      pageController: _pageController,
       itemCount: images.length,
-      onPageChanged: onPageChanged,
       itemBuilder: itemBuilder,
+      onPageChanged: onPageChanged,
     );
   }
 

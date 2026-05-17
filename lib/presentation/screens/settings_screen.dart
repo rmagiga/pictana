@@ -8,9 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../application/usecases/settings/cache_size_limit_setting.dart';
+import '../../application/usecases/settings/swipe_direction_setting.dart';
 import '../../application/usecases/settings/thumbnail_size_setting.dart';
 import '../../core/utils/format_bytes.dart';
 import '../../domain/value_objects/cache_size_limit.dart';
+import '../../domain/value_objects/swipe_direction.dart';
 import '../../domain/value_objects/thumbnail_size_option.dart';
 import '../providers/settings_providers.dart';
 import '../providers/theme_provider.dart';
@@ -26,6 +28,7 @@ class SettingsScreen extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final currentCacheLimit = ref.watch(cacheSizeLimitSettingProvider);
     final currentThumbnailSize = ref.watch(thumbnailSizeSettingProvider);
+    final currentSwipeDirection = ref.watch(swipeDirectionSettingProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('設定')),
@@ -39,7 +42,10 @@ class SettingsScreen extends ConsumerWidget {
               value: themeMode,
               underline: const SizedBox.shrink(),
               items: const [
-                DropdownMenuItem(value: ThemeMode.system, child: Text('システムに合わせる')),
+                DropdownMenuItem(
+                  value: ThemeMode.system,
+                  child: Text('システムに合わせる'),
+                ),
                 DropdownMenuItem(value: ThemeMode.light, child: Text('ライト')),
                 DropdownMenuItem(value: ThemeMode.dark, child: Text('ダーク')),
               ],
@@ -74,6 +80,36 @@ class SettingsScreen extends ConsumerWidget {
                   ref
                       .read(thumbnailSizeSettingProvider.notifier)
                       .update(option);
+                }
+              },
+            ),
+          ),
+
+          const Divider(),
+          _buildSectionHeader(context, 'ビューア'),
+
+          // スワイプ方向設定 (Req 4, 7)
+          ListTile(
+            title: const Text('スワイプ方向'),
+            subtitle: Text(
+              '画像詳細画面でのスワイプによる画像移動方向: ${currentSwipeDirection.displayName}',
+            ),
+            trailing: DropdownButton<SwipeDirection>(
+              value: currentSwipeDirection,
+              underline: const SizedBox.shrink(),
+              items: SwipeDirection.values
+                  .map(
+                    (direction) => DropdownMenuItem<SwipeDirection>(
+                      value: direction,
+                      child: Text(direction.displayName),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (direction) {
+                if (direction != null) {
+                  ref
+                      .read(swipeDirectionSettingProvider.notifier)
+                      .update(direction);
                 }
               },
             ),
