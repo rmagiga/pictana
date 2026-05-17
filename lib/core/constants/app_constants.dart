@@ -40,4 +40,4 @@ const kGridBreakpointTablet = 960.0;
 const kStorageRetryIntervalSeconds = 3;
 
 /// アプリ名
-const kAppName = 'Optrig';
+const kAppName = 'Pictana';

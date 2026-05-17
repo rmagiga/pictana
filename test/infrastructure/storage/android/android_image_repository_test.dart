@@ -21,12 +21,12 @@ library;
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/core/errors/app_exceptions.dart';
-import 'package:optrig/domain/entities/entry_id.dart';
-import 'package:optrig/domain/entities/folder_entry.dart';
-import 'package:optrig/domain/entities/image_entry.dart';
-import 'package:optrig/infrastructure/storage/android/android_image_repository.dart';
-import 'package:optrig/infrastructure/storage/android/saf_platform_channel.dart';
+import 'package:pictana/core/errors/app_exceptions.dart';
+import 'package:pictana/domain/entities/entry_id.dart';
+import 'package:pictana/domain/entities/folder_entry.dart';
+import 'package:pictana/domain/entities/image_entry.dart';
+import 'package:pictana/infrastructure/storage/android/android_image_repository.dart';
+import 'package:pictana/infrastructure/storage/android/saf_platform_channel.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用モック

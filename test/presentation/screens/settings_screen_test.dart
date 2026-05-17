@@ -14,15 +14,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/application/usecases/settings/cache_size_limit_setting.dart';
-import 'package:optrig/application/usecases/settings/thumbnail_size_setting.dart';
-import 'package:optrig/domain/value_objects/cache_size_limit.dart';
-import 'package:optrig/domain/value_objects/grid_column_settings.dart';
-import 'package:optrig/domain/value_objects/thumbnail_size_option.dart';
-import 'package:optrig/presentation/providers/grid_column_settings_provider.dart';
-import 'package:optrig/presentation/providers/theme_provider.dart';
-import 'package:optrig/presentation/providers/settings_providers.dart';
-import 'package:optrig/presentation/screens/settings_screen.dart';
+import 'package:pictana/application/usecases/settings/cache_size_limit_setting.dart';
+import 'package:pictana/application/usecases/settings/thumbnail_size_setting.dart';
+import 'package:pictana/domain/value_objects/cache_size_limit.dart';
+import 'package:pictana/domain/value_objects/grid_column_settings.dart';
+import 'package:pictana/domain/value_objects/thumbnail_size_option.dart';
+import 'package:pictana/presentation/providers/grid_column_settings_provider.dart';
+import 'package:pictana/presentation/providers/theme_provider.dart';
+import 'package:pictana/presentation/providers/settings_providers.dart';
+import 'package:pictana/presentation/screens/settings_screen.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用モック Provider

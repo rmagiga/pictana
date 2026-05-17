@@ -12,16 +12,16 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
-import 'package:optrig/application/usecases/storage/get_folder_thumbnails_usecase.dart';
-import 'package:optrig/domain/entities/entry_id.dart';
-import 'package:optrig/domain/entities/favorite_folder.dart';
-import 'package:optrig/domain/entities/folder_entry.dart';
-import 'package:optrig/domain/entities/image_entry.dart';
-import 'package:optrig/domain/repositories/image_repository.dart';
-import 'package:optrig/domain/repositories/storage_repository.dart';
-import 'package:optrig/domain/repositories/thumbnail_repository.dart';
-import 'package:optrig/domain/value_objects/sort_option.dart';
-import 'package:optrig/domain/value_objects/thumbnail_size_option.dart';
+import 'package:pictana/application/usecases/storage/get_folder_thumbnails_usecase.dart';
+import 'package:pictana/domain/entities/entry_id.dart';
+import 'package:pictana/domain/entities/favorite_folder.dart';
+import 'package:pictana/domain/entities/folder_entry.dart';
+import 'package:pictana/domain/entities/image_entry.dart';
+import 'package:pictana/domain/repositories/image_repository.dart';
+import 'package:pictana/domain/repositories/storage_repository.dart';
+import 'package:pictana/domain/repositories/thumbnail_repository.dart';
+import 'package:pictana/domain/value_objects/sort_option.dart';
+import 'package:pictana/domain/value_objects/thumbnail_size_option.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用 Fake 実装

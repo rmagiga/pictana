@@ -10,15 +10,15 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/application/providers/repository_providers.dart';
-import 'package:optrig/application/usecases/settings/cache_size_limit_setting.dart';
-import 'package:optrig/application/usecases/settings/swipe_direction_setting.dart';
-import 'package:optrig/application/usecases/settings/thumbnail_size_setting.dart';
-import 'package:optrig/domain/repositories/thumbnail_repository.dart';
-import 'package:optrig/domain/value_objects/cache_size_limit.dart';
-import 'package:optrig/domain/value_objects/swipe_direction.dart';
-import 'package:optrig/domain/value_objects/thumbnail_size_option.dart';
-import 'package:optrig/infrastructure/database/app_database.dart';
+import 'package:pictana/application/providers/repository_providers.dart';
+import 'package:pictana/application/usecases/settings/cache_size_limit_setting.dart';
+import 'package:pictana/application/usecases/settings/swipe_direction_setting.dart';
+import 'package:pictana/application/usecases/settings/thumbnail_size_setting.dart';
+import 'package:pictana/domain/repositories/thumbnail_repository.dart';
+import 'package:pictana/domain/value_objects/cache_size_limit.dart';
+import 'package:pictana/domain/value_objects/swipe_direction.dart';
+import 'package:pictana/domain/value_objects/thumbnail_size_option.dart';
+import 'package:pictana/infrastructure/database/app_database.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用 Fake ThumbnailRepository

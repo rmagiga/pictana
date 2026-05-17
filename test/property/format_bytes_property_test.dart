@@ -16,7 +16,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
-import 'package:optrig/core/utils/format_bytes.dart';
+import 'package:pictana/core/utils/format_bytes.dart';
 
 void main() {
   // ===========================================================================

@@ -11,12 +11,14 @@ import '../../../core/errors/app_exceptions.dart';
 
 /// SAF プラットフォームチャネル
 ///
-/// MethodChannel(`com.example.optrig/saf`) と
-/// EventChannel(`com.example.optrig/saf/usb`) を使用して
+/// MethodChannel(`com.pgcodetutor.pictana/saf`) と
+/// EventChannel(`com.pgcodetutor.pictana/saf/usb`) を使用して
 /// Android ネイティブ側の SAF API を呼び出す。
 class SafPlatformChannel {
-  static const _methodChannel = MethodChannel('com.example.optrig/saf');
-  static const _usbEventChannel = EventChannel('com.example.optrig/saf/usb');
+  static const _methodChannel = MethodChannel('com.pgcodetutor.pictana/saf');
+  static const _usbEventChannel = EventChannel(
+    'com.pgcodetutor.pictana/saf/usb',
+  );
 
   // ---------------------------------------------------------------------------
   // フォルダ選択

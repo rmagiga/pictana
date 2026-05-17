@@ -14,10 +14,10 @@ import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
-import 'package:optrig/application/providers/repository_providers.dart';
-import 'package:optrig/domain/value_objects/sort_option.dart';
-import 'package:optrig/infrastructure/database/app_database.dart';
-import 'package:optrig/presentation/providers/gallery_providers.dart';
+import 'package:pictana/application/providers/repository_providers.dart';
+import 'package:pictana/domain/value_objects/sort_option.dart';
+import 'package:pictana/infrastructure/database/app_database.dart';
+import 'package:pictana/presentation/providers/gallery_providers.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用モック: _loadInitial() の遅延をシミュレートする AppDatabase

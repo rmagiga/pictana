@@ -15,16 +15,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:optrig/application/providers/repository_providers.dart';
-import 'package:optrig/application/usecases/storage/storage_monitor.dart';
-import 'package:optrig/domain/entities/entry_id.dart';
-import 'package:optrig/domain/entities/folder_entry.dart';
-import 'package:optrig/domain/entities/storage_monitor_state.dart';
-import 'package:optrig/domain/entities/storage_root.dart';
-import 'package:optrig/domain/repositories/storage_repository.dart';
-import 'package:optrig/presentation/providers/gallery_providers.dart';
-import 'package:optrig/presentation/screens/splash_screen.dart';
-import 'package:optrig/router/app_router.dart';
+import 'package:pictana/application/providers/repository_providers.dart';
+import 'package:pictana/application/usecases/storage/storage_monitor.dart';
+import 'package:pictana/domain/entities/entry_id.dart';
+import 'package:pictana/domain/entities/folder_entry.dart';
+import 'package:pictana/domain/entities/storage_monitor_state.dart';
+import 'package:pictana/domain/entities/storage_root.dart';
+import 'package:pictana/domain/repositories/storage_repository.dart';
+import 'package:pictana/presentation/providers/gallery_providers.dart';
+import 'package:pictana/presentation/screens/splash_screen.dart';
+import 'package:pictana/router/app_router.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用モック
@@ -196,7 +196,7 @@ void main() {
 
       // 初期表示: ロゴ + インジケーター + テキスト
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      expect(find.text('Optrig'), findsOneWidget);
+      expect(find.text('Pictana'), findsOneWidget);
       expect(find.text('画像フォルダを検出中...'), findsOneWidget);
 
       // 非同期タイマーを完了させるために時間を進める

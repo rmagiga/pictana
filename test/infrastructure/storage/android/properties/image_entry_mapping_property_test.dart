@@ -12,9 +12,9 @@
 library;
 
 import 'package:glados/glados.dart';
-import 'package:optrig/domain/entities/entry_id.dart';
-import 'package:optrig/domain/entities/image_entry.dart';
-import 'package:optrig/infrastructure/storage/android/saf_data_mappers.dart';
+import 'package:pictana/domain/entities/entry_id.dart';
+import 'package:pictana/domain/entities/image_entry.dart';
+import 'package:pictana/infrastructure/storage/android/saf_data_mappers.dart';
 
 /// サポートする画像拡張子リスト
 const _supportedExtensions = [

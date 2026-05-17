@@ -1,4 +1,4 @@
-# optrig
+# pictana
 
 A new Flutter project.
 

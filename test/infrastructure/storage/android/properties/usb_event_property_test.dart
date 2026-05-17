@@ -11,8 +11,8 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
-import 'package:optrig/domain/entities/entry_id.dart';
-import 'package:optrig/domain/entities/storage_root.dart';
+import 'package:pictana/domain/entities/entry_id.dart';
+import 'package:pictana/domain/entities/storage_root.dart';
 
 // ---------------------------------------------------------------------------
 // USB イベントモデル

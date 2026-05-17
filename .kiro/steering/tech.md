@@ -4,6 +4,7 @@
 
 - **Flutter** (Dart SDK ^3.11.5)
 - Material Design 3 ベース
+- パッケージ名: `pictana`
 
 ## 主要ライブラリ
 
@@ -60,3 +61,9 @@ flutter build windows
 以下の拡張子を持つファイルは自動生成されるため、手動編集しない:
 - `*.freezed.dart`
 - `*.g.dart`
+
+## 依存制約メモ
+
+- `drift` / `drift_dev`: analyzer 9.x 制約（flutter_test の meta 1.17.0 固定による）
+- `json_serializable`: analyzer 9.x 制約
+- `test_api: 0.7.12` を dependency_overrides で固定

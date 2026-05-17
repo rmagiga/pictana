@@ -13,7 +13,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
-import 'package:optrig/domain/value_objects/zoom_calculation.dart';
+import 'package:pictana/domain/value_objects/zoom_calculation.dart';
 
 void main() {
   // ===========================================================================

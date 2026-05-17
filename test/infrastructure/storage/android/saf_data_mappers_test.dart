@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/domain/entities/entry_id.dart';
-import 'package:optrig/domain/entities/image_entry.dart';
-import 'package:optrig/domain/entities/storage_root.dart';
-import 'package:optrig/infrastructure/storage/android/saf_data_mappers.dart';
+import 'package:pictana/domain/entities/entry_id.dart';
+import 'package:pictana/domain/entities/image_entry.dart';
+import 'package:pictana/domain/entities/storage_root.dart';
+import 'package:pictana/infrastructure/storage/android/saf_data_mappers.dart';
 
 void main() {
   group('FolderEntryFromMap', () {

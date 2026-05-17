@@ -15,9 +15,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/domain/entities/favorite_folder.dart';
-import 'package:optrig/presentation/providers/folder_thumbnail_provider.dart';
-import 'package:optrig/presentation/widgets/folder_card.dart';
+import 'package:pictana/domain/entities/favorite_folder.dart';
+import 'package:pictana/presentation/providers/folder_thumbnail_provider.dart';
+import 'package:pictana/presentation/widgets/folder_card.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用ヘルパー

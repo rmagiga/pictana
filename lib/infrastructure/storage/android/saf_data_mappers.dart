@@ -4,10 +4,10 @@
 /// ドメインエンティティに変換する拡張メソッドを提供する。
 library;
 
-import 'package:optrig/domain/entities/entry_id.dart';
-import 'package:optrig/domain/entities/folder_entry.dart';
-import 'package:optrig/domain/entities/image_entry.dart';
-import 'package:optrig/domain/entities/storage_root.dart';
+import 'package:pictana/domain/entities/entry_id.dart';
+import 'package:pictana/domain/entities/folder_entry.dart';
+import 'package:pictana/domain/entities/image_entry.dart';
+import 'package:pictana/domain/entities/storage_root.dart';
 
 /// MethodChannel Map → FolderEntry 変換
 extension FolderEntryFromMap on FolderEntry {

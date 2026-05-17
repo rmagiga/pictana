@@ -1,4 +1,4 @@
-package com.example.optrig
+package com.pgcodetutor.pictana
 
 import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
@@ -13,8 +13,8 @@ import kotlinx.coroutines.CancellableContinuation
 class MainActivity : FlutterFragmentActivity() {
 
     companion object {
-        private const val SAF_CHANNEL = "com.example.optrig/saf"
-        private const val USB_EVENT_CHANNEL = "com.example.optrig/saf/usb"
+        private const val SAF_CHANNEL = "com.pgcodetutor.pictana/saf"
+        private const val USB_EVENT_CHANNEL = "com.pgcodetutor.pictana/saf/usb"
     }
 
     /// フォルダ選択結果を待つ continuation（SafCommands.selectFolder から設定される）

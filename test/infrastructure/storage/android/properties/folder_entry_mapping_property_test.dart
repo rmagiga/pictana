@@ -9,8 +9,8 @@
 library;
 
 import 'package:glados/glados.dart';
-import 'package:optrig/domain/entities/entry_id.dart';
-import 'package:optrig/infrastructure/storage/android/saf_data_mappers.dart';
+import 'package:pictana/domain/entities/entry_id.dart';
+import 'package:pictana/infrastructure/storage/android/saf_data_mappers.dart';
 
 void main() {
   group('Property 1: FolderEntry Map 変換の完全性', () {

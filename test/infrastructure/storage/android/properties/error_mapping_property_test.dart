@@ -13,8 +13,8 @@ library;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
-import 'package:optrig/core/errors/app_exceptions.dart';
-import 'package:optrig/infrastructure/storage/android/saf_platform_channel.dart';
+import 'package:pictana/core/errors/app_exceptions.dart';
+import 'package:pictana/infrastructure/storage/android/saf_platform_channel.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +30,7 @@ void main() {
   void setupMethodChannelError(String errorCode, String message) {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-          const MethodChannel('com.example.optrig/saf'),
+          const MethodChannel('com.pgcodetutor.pictana/saf'),
           (MethodCall methodCall) async {
             throw PlatformException(code: errorCode, message: message);
           },
@@ -40,7 +40,7 @@ void main() {
   tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-          const MethodChannel('com.example.optrig/saf'),
+          const MethodChannel('com.pgcodetutor.pictana/saf'),
           null,
         );
   });
@@ -231,11 +231,11 @@ void main() {
       // MissingPluginException をスローする
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(
-            const MethodChannel('com.example.optrig/saf'),
+            const MethodChannel('com.pgcodetutor.pictana/saf'),
             (MethodCall methodCall) async {
               throw MissingPluginException(
                 'No implementation found for method '
-                '${methodCall.method} on channel com.example.optrig/saf',
+                '${methodCall.method} on channel com.pgcodetutor.pictana/saf',
               );
             },
           );
@@ -292,7 +292,7 @@ void main() {
       // UnsupportedError にメソッド名が含まれることを検証
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(
-            const MethodChannel('com.example.optrig/saf'),
+            const MethodChannel('com.pgcodetutor.pictana/saf'),
             (MethodCall methodCall) async {
               throw MissingPluginException(exceptionMessage);
             },
@@ -318,7 +318,7 @@ void main() {
         // ハンドラを null に設定して MissingPluginException を発生させる
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(
-              const MethodChannel('com.example.optrig/saf'),
+              const MethodChannel('com.pgcodetutor.pictana/saf'),
               null,
             );
 

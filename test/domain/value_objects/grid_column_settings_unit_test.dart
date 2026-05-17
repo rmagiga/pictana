@@ -6,7 +6,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/domain/value_objects/grid_column_settings.dart';
+import 'package:pictana/domain/value_objects/grid_column_settings.dart';
 
 void main() {
   group('GridColumnSettings - デフォルト値', () {

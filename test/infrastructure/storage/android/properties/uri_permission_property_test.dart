@@ -18,7 +18,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
-import 'package:optrig/infrastructure/storage/android/uri_permission_manager.dart';
+import 'package:pictana/infrastructure/storage/android/uri_permission_manager.dart';
 
 /// URI パーミッション検証の純粋関数
 ///

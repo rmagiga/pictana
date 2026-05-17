@@ -9,7 +9,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
-import 'package:optrig/domain/value_objects/exif_rotation.dart';
+import 'package:pictana/domain/value_objects/exif_rotation.dart';
 
 /// 有効な回転角度の集合
 const validRotations = {0, 90, 180, 270};

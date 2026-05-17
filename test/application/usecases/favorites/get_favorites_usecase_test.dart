@@ -8,9 +8,9 @@ library;
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/application/usecases/favorites/get_favorites_usecase.dart';
-import 'package:optrig/infrastructure/database/app_database.dart';
-import 'package:optrig/infrastructure/database/favorite_repository_impl.dart';
+import 'package:pictana/application/usecases/favorites/get_favorites_usecase.dart';
+import 'package:pictana/infrastructure/database/app_database.dart';
+import 'package:pictana/infrastructure/database/favorite_repository_impl.dart';
 
 void main() {
   late AppDatabase db;

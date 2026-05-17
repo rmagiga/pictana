@@ -4,8 +4,8 @@
 /// 回転角度を返す実装クラス。
 library;
 
-import 'package:optrig/domain/repositories/exif_processor.dart';
-import 'package:optrig/domain/value_objects/exif_rotation.dart';
+import 'package:pictana/domain/repositories/exif_processor.dart';
+import 'package:pictana/domain/value_objects/exif_rotation.dart';
 
 /// EXIF Orientation タグの解析と回転角度変換を行う実装。
 ///

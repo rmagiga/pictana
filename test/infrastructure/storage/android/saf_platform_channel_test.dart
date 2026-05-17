@@ -1,15 +1,14 @@
-
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/core/errors/app_exceptions.dart';
-import 'package:optrig/infrastructure/storage/android/saf_platform_channel.dart';
+import 'package:pictana/core/errors/app_exceptions.dart';
+import 'package:pictana/infrastructure/storage/android/saf_platform_channel.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late SafPlatformChannel channel;
 
-  const methodChannelName = 'com.example.optrig/saf';
+  const methodChannelName = 'com.pgcodetutor.pictana/saf';
 
   setUp(() {
     channel = SafPlatformChannel();

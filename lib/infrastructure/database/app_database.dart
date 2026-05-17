@@ -149,7 +149,7 @@ class AppDatabase extends _$AppDatabase {
 QueryExecutor _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'optrig.db'));
+    final file = File(p.join(dbFolder.path, 'pictana.db'));
     return NativeDatabase.createInBackground(file);
   });
 }

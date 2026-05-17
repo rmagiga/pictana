@@ -11,8 +11,8 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/domain/value_objects/swipe_direction.dart';
-import 'package:optrig/presentation/widgets/viewer/swipe_direction_controller.dart';
+import 'package:pictana/domain/value_objects/swipe_direction.dart';
+import 'package:pictana/presentation/widgets/viewer/swipe_direction_controller.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用ヘルパー

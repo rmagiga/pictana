@@ -11,8 +11,8 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/domain/entities/image_entry.dart';
-import 'package:optrig/presentation/widgets/gallery/filter_chips_widget.dart';
+import 'package:pictana/domain/entities/image_entry.dart';
+import 'package:pictana/presentation/widgets/gallery/filter_chips_widget.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用ヘルパー

@@ -9,7 +9,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
-import 'package:optrig/domain/entities/favorite_folder.dart';
+import 'package:pictana/domain/entities/favorite_folder.dart';
 
 // ---------------------------------------------------------------------------
 // glados 用カスタムジェネレータ

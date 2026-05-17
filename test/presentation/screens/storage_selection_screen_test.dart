@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:optrig/application/providers/repository_providers.dart';
-import 'package:optrig/domain/entities/entry_id.dart';
-import 'package:optrig/domain/entities/folder_entry.dart';
-import 'package:optrig/domain/entities/storage_root.dart';
-import 'package:optrig/domain/repositories/storage_repository.dart';
-import 'package:optrig/presentation/screens/storage_selection_screen.dart';
-import 'package:optrig/router/app_router.dart';
+import 'package:pictana/application/providers/repository_providers.dart';
+import 'package:pictana/domain/entities/entry_id.dart';
+import 'package:pictana/domain/entities/folder_entry.dart';
+import 'package:pictana/domain/entities/storage_root.dart';
+import 'package:pictana/domain/repositories/storage_repository.dart';
+import 'package:pictana/presentation/screens/storage_selection_screen.dart';
+import 'package:pictana/router/app_router.dart';
 
 /// テスト用 Fake StorageRepository
 class _FakeStorageRepository implements StorageRepository {

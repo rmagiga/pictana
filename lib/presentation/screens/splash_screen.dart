@@ -118,11 +118,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Optrig',
+              'Pictana',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.5,
-                  ),
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
+              ),
             ),
             const SizedBox(height: 32),
             // 読み込み中インジケーター (Req 16.1)
@@ -131,8 +131,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             Text(
               '画像フォルダを検出中...',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),

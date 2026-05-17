@@ -1,4 +1,4 @@
-import 'package:optrig/infrastructure/storage/common/exif_processor_impl.dart';
+import 'package:pictana/infrastructure/storage/common/exif_processor_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

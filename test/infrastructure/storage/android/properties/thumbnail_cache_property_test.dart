@@ -12,10 +12,10 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
-import 'package:optrig/domain/entities/entry_id.dart';
-import 'package:optrig/domain/entities/image_entry.dart';
+import 'package:pictana/domain/entities/entry_id.dart';
+import 'package:pictana/domain/entities/image_entry.dart';
 
-import 'package:optrig/domain/value_objects/thumbnail_size_option.dart';
+import 'package:pictana/domain/value_objects/thumbnail_size_option.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用の簡易キャッシュモデル

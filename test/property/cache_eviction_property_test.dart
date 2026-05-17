@@ -16,7 +16,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
-import 'package:optrig/domain/value_objects/cache_eviction.dart';
+import 'package:pictana/domain/value_objects/cache_eviction.dart';
 
 /// テスト用キャッシュエントリ
 class CacheEntry {

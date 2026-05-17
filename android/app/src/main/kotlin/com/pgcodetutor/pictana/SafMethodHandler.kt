@@ -1,4 +1,4 @@
-package com.example.optrig
+package com.pgcodetutor.pictana
 
 import android.content.Context
 import android.net.Uri

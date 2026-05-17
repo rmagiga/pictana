@@ -7,13 +7,13 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/core/errors/app_exceptions.dart';
-import 'package:optrig/domain/entities/entry_id.dart';
-import 'package:optrig/domain/entities/folder_entry.dart';
-import 'package:optrig/domain/entities/storage_root.dart';
-import 'package:optrig/infrastructure/database/app_database.dart';
-import 'package:optrig/infrastructure/storage/android/android_storage_repository.dart';
-import 'package:optrig/infrastructure/storage/android/saf_platform_channel.dart';
+import 'package:pictana/core/errors/app_exceptions.dart';
+import 'package:pictana/domain/entities/entry_id.dart';
+import 'package:pictana/domain/entities/folder_entry.dart';
+import 'package:pictana/domain/entities/storage_root.dart';
+import 'package:pictana/infrastructure/database/app_database.dart';
+import 'package:pictana/infrastructure/storage/android/android_storage_repository.dart';
+import 'package:pictana/infrastructure/storage/android/saf_platform_channel.dart';
 
 // =============================================================================
 // モッククラス

@@ -23,13 +23,13 @@ import 'dart:io';
 import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/domain/entities/entry_id.dart';
-import 'package:optrig/domain/entities/image_entry.dart';
+import 'package:pictana/domain/entities/entry_id.dart';
+import 'package:pictana/domain/entities/image_entry.dart';
 
-import 'package:optrig/domain/value_objects/thumbnail_size_option.dart';
-import 'package:optrig/infrastructure/database/app_database.dart';
-import 'package:optrig/infrastructure/storage/android/android_thumbnail_repository.dart';
-import 'package:optrig/infrastructure/storage/android/saf_platform_channel.dart';
+import 'package:pictana/domain/value_objects/thumbnail_size_option.dart';
+import 'package:pictana/infrastructure/database/app_database.dart';
+import 'package:pictana/infrastructure/storage/android/android_thumbnail_repository.dart';
+import 'package:pictana/infrastructure/storage/android/saf_platform_channel.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用モック

@@ -163,7 +163,7 @@ class WindowsThumbnailRepository implements ThumbnailRepository {
   Future<Directory> _getCacheDir() async {
     if (_cacheDir != null) return _cacheDir!;
     final base = await getApplicationDocumentsDirectory();
-    _cacheDir = Directory(p.join(base.path, 'optrig', 'thumbnails'));
+    _cacheDir = Directory(p.join(base.path, 'pictana', 'thumbnails'));
     return _cacheDir!;
   }
 }

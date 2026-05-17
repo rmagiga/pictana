@@ -104,7 +104,7 @@ class GalleryGridScreen extends HookConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(folder?.name ?? 'Optrig Gallery'),
+              Text(folder?.name ?? 'Pictana Gallery'),
               if (countAsync.value != null)
                 Text(
                   '${countAsync.value} items',

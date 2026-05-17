@@ -1,4 +1,4 @@
-name: optrig
+name: pictana
 description: "ローカルストレージ上の画像を閲覧・管理するための Flutter デスクトップ/モバイルアプリケーション"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.

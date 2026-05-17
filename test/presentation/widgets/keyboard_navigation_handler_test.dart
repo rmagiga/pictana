@@ -13,7 +13,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/presentation/widgets/viewer/keyboard_navigation_handler.dart';
+import 'package:pictana/presentation/widgets/viewer/keyboard_navigation_handler.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用ヘルパー

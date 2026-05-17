@@ -1,6 +1,6 @@
 # Android 14+ ストレージアクセス仕様まとめ
 
-Optrig の Android 対応に関連する、Android 14 (API 34) 以降のストレージ関連仕様をまとめる。
+Pictana の Android 対応に関連する、Android 14 (API 34) 以降のストレージ関連仕様をまとめる。
 情報源: [Android Developers 公式ドキュメント](https://developer.android.com/about/versions/14)
 
 ## 1. Storage Access Framework (SAF) — 基本仕様
@@ -60,9 +60,9 @@ Android 14 の最大の変更。ユーザーがアプリに対して「選択し
 - 互換モードでは「写真と動画を選択」時に一時的に `READ_MEDIA_IMAGES`/`READ_MEDIA_VIDEO` が付与される
 - アプリがバックグラウンドに移行するかプロセスが終了すると権限が失効（ワンタイムパーミッション相当）
 
-#### Optrig への影響
+#### Pictana への影響
 
-- **Optrig は SAF (`ACTION_OPEN_DOCUMENT_TREE`) を使用するため、Selected Photos Access の影響は受けない**
+- **Pictana は SAF (`ACTION_OPEN_DOCUMENT_TREE`) を使用するため、Selected Photos Access の影響は受けない**
 - SAF はユーザーが明示的にフォルダを選択する仕組みであり、MediaStore パーミッションとは独立
 - ただし、将来的に MediaStore 連携（デフォルト画像フォルダ検出等）を行う場合は考慮が必要
 
@@ -84,7 +84,7 @@ Android 14 の最大の変更。ユーザーがアプリに対して「選択し
 ### 2.3 フォアグラウンドサービスタイプ必須化
 
 - Android 14 ターゲットのアプリは、すべてのフォアグラウンドサービスに `foregroundServiceType` を指定する必要がある
-- Optrig でバックグラウンドスキャン等を行う場合は `dataSync` または `shortService` を検討
+- Pictana でバックグラウンドスキャン等を行う場合は `dataSync` または `shortService` を検討
 
 ### 2.4 その他の関連変更
 
@@ -106,13 +106,13 @@ Android 14 の最大の変更。ユーザーがアプリに対して「選択し
 
 ## 4. Photo Picker vs SAF vs MediaStore — 使い分け
 
-| 方式 | ユースケース | パーミッション | Optrig での用途 |
+| 方式 | ユースケース | パーミッション | Pictana での用途 |
 |---|---|---|---|
 | **Photo Picker** | 写真/動画の選択（プロフィール画像、添付等） | 不要 | 使用しない |
 | **MediaStore** | デバイス全体のメディアクエリ | READ_MEDIA_* | デフォルト画像フォルダ検出（補助的） |
 | **SAF (OPEN_DOCUMENT_TREE)** | フォルダ単位のアクセス、ファイル管理アプリ | 不要（ユーザー選択で付与） | **メイン方式** |
 
-### Optrig が SAF を採用する理由
+### Pictana が SAF を採用する理由
 
 1. フォルダ階層のブラウジングが必要（Photo Picker では不可）
 2. USB OTG / 外部ストレージへのアクセスが必要

@@ -12,7 +12,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
-import 'package:optrig/presentation/providers/folder_thumbnail_cache_provider.dart';
+import 'package:pictana/presentation/providers/folder_thumbnail_cache_provider.dart';
 
 // ---------------------------------------------------------------------------
 // glados 用カスタムジェネレータ

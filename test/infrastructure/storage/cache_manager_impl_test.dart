@@ -10,7 +10,7 @@ library;
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/domain/value_objects/cache_eviction.dart';
+import 'package:pictana/domain/value_objects/cache_eviction.dart';
 
 /// キャッシュエントリの情報（CacheManagerImpl の CacheEntry と同一構造）
 typedef CacheEntry = ({String id, int sizeBytes, DateTime lastAccessedAt});

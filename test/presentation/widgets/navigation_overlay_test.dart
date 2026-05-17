@@ -12,7 +12,7 @@ library;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/presentation/widgets/viewer/navigation_overlay.dart';
+import 'package:pictana/presentation/widgets/viewer/navigation_overlay.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用ヘルパー

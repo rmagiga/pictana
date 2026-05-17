@@ -11,7 +11,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/presentation/widgets/gallery/search_bar_widget.dart';
+import 'package:pictana/presentation/widgets/gallery/search_bar_widget.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用ヘルパー

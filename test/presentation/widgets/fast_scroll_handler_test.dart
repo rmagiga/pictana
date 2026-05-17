@@ -13,7 +13,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/presentation/widgets/gallery/fast_scroll_handler.dart';
+import 'package:pictana/presentation/widgets/gallery/fast_scroll_handler.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用ヘルパー

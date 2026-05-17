@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:optrig/main.dart';
+import 'package:pictana/main.dart';
 
 void main() {
   testWidgets('App starts smoke test', (WidgetTester tester) async {

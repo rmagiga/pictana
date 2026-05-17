@@ -8,13 +8,13 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/application/providers/repository_providers.dart';
-import 'package:optrig/domain/repositories/favorite_repository.dart';
-import 'package:optrig/domain/entities/favorite_folder.dart';
-import 'package:optrig/presentation/providers/favorite_helper_providers.dart';
-import 'package:optrig/presentation/providers/favorite_toggle_provider.dart';
-import 'package:optrig/presentation/providers/favorite_toggle_state.dart';
-import 'package:optrig/presentation/widgets/favorite_indicator.dart';
+import 'package:pictana/application/providers/repository_providers.dart';
+import 'package:pictana/domain/repositories/favorite_repository.dart';
+import 'package:pictana/domain/entities/favorite_folder.dart';
+import 'package:pictana/presentation/providers/favorite_helper_providers.dart';
+import 'package:pictana/presentation/providers/favorite_toggle_provider.dart';
+import 'package:pictana/presentation/providers/favorite_toggle_state.dart';
+import 'package:pictana/presentation/widgets/favorite_indicator.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用モック

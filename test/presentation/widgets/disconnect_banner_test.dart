@@ -14,10 +14,10 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:optrig/application/usecases/storage/storage_monitor.dart';
-import 'package:optrig/domain/entities/folder_entry.dart';
-import 'package:optrig/domain/entities/storage_monitor_state.dart';
-import 'package:optrig/presentation/widgets/gallery/disconnect_banner.dart';
+import 'package:pictana/application/usecases/storage/storage_monitor.dart';
+import 'package:pictana/domain/entities/folder_entry.dart';
+import 'package:pictana/domain/entities/storage_monitor_state.dart';
+import 'package:pictana/presentation/widgets/gallery/disconnect_banner.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用モック

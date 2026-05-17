@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.optrig"
+    namespace = "com.pgcodetutor.pictana"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.optrig"
+        applicationId = "com.pgcodetutor.pictana"
         // Android 14+ (API 34) を対象。SAF + Scoped Storage 制約下で動作。
         minSdk = 34
         targetSdk = flutter.targetSdkVersion
