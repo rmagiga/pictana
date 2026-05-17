@@ -59,4 +59,12 @@ abstract interface class StorageRepository {
 
   /// 最近開いたフォルダを記録する。
   Future<void> recordRecentFolder(FolderEntry folder);
+
+  /// URI と名前から FolderEntry を復元する。
+  ///
+  /// プラットフォーム固有の URI パース（例：Android SAF の tree URI や document ID 抽出）を行う。
+  FolderEntry restoreFolderFromUri({
+    required String uri,
+    required String name,
+  });
 }

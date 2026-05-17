@@ -8,7 +8,6 @@ library;
 import 'dart:async';
 
 import '../../../core/errors/favorite_exceptions.dart';
-import '../../../domain/entities/entry_id.dart';
 import '../../../domain/entities/folder_entry.dart';
 import '../../../domain/repositories/favorite_repository.dart';
 import '../../../domain/repositories/storage_repository.dart';
@@ -38,7 +37,10 @@ class NavigateToFavoriteUseCase {
   /// タイムアウトまたはアクセス不可の場合は [FolderAccessException] をスローする。
   Future<FolderEntry> execute({required FavoriteFolder favorite}) async {
     // FavoriteFolder から FolderEntry を構築
-    final folderEntry = _buildFolderEntry(favorite);
+    final folderEntry = _storageRepository.restoreFolderFromUri(
+      uri: favorite.uri,
+      name: favorite.name,
+    );
 
     try {
       // フォルダへのアクセス確認（サブフォルダ一覧取得を試行）
@@ -59,20 +61,5 @@ class NavigateToFavoriteUseCase {
         reason: 'フォルダにアクセスできません: $e',
       );
     }
-  }
-
-  /// [FavoriteFolder] から [FolderEntry] を構築する
-  FolderEntry _buildFolderEntry(FavoriteFolder favorite) {
-    // URI のスキームからプラットフォームを判定
-    final platformType = favorite.uri.startsWith('content://')
-        ? PlatformType.android
-        : PlatformType.windows;
-
-    return FolderEntry(
-      id: EntryId(rawValue: favorite.uri, platformType: platformType),
-      name: favorite.name,
-      uri: favorite.uri,
-      parentId: null,
-    );
   }
 }

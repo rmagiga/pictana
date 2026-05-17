@@ -77,6 +77,19 @@ class _FakeStorageRepository implements StorageRepository {
 
   @override
   Future<void> recordRecentFolder(FolderEntry folder) async {}
+
+  @override
+  FolderEntry restoreFolderFromUri({
+    required String uri,
+    required String name,
+  }) {
+    return FolderEntry(
+      id: EntryId.windows(uri),
+      name: name,
+      uri: uri,
+      parentId: null,
+    );
+  }
 }
 
 /// テスト用 StorageMonitor Notifier

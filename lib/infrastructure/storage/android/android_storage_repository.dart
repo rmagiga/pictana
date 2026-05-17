@@ -141,6 +141,21 @@ class AndroidStorageRepository implements StorageRepository {
     }
   }
 
+  @override
+  FolderEntry restoreFolderFromUri({
+    required String uri,
+    required String name,
+  }) {
+    final treeUri = _extractTreeUri(uri);
+    final documentId = _extractDocumentId(uri);
+    return FolderEntry(
+      id: EntryId.android(documentId),
+      name: name,
+      uri: treeUri,
+      parentId: null,
+    );
+  }
+
   // ---------------------------------------------------------------------------
   // private ヘルパー
   // ---------------------------------------------------------------------------
@@ -150,15 +165,7 @@ class AndroidStorageRepository implements StorageRepository {
   /// DB には tree URI または document URI が保存されている可能性がある。
   /// どちらの場合でも正しい tree URI と document ID を抽出する。
   FolderEntry _rowToFolderEntry(RecentFolder row) {
-    final uri = row.uri;
-    final treeUri = _extractTreeUri(uri);
-    final documentId = _extractDocumentId(uri);
-    return FolderEntry(
-      id: EntryId.android(documentId),
-      name: row.name,
-      uri: treeUri,
-      parentId: null,
-    );
+    return restoreFolderFromUri(uri: row.uri, name: row.name);
   }
 
   /// URI から tree URI 部分を抽出する。

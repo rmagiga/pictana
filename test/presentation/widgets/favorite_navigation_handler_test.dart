@@ -125,6 +125,19 @@ class _FakeFavoriteRepository implements FavoriteRepository {
 class _FakeStorageRepository implements StorageRepository {
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
+
+  @override
+  FolderEntry restoreFolderFromUri({
+    required String uri,
+    required String name,
+  }) {
+    return FolderEntry(
+      id: EntryId.windows(uri),
+      name: name,
+      uri: uri,
+      parentId: null,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

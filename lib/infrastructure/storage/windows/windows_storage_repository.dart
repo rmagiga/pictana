@@ -147,6 +147,19 @@ class WindowsStorageRepository implements StorageRepository {
     }
   }
 
+  @override
+  FolderEntry restoreFolderFromUri({
+    required String uri,
+    required String name,
+  }) {
+    return FolderEntry(
+      id: EntryId.windows(uri),
+      name: name,
+      uri: uri,
+      parentId: null,
+    );
+  }
+
   // ---------------------------------------------------------------------------
   // private ヘルパー
   // ---------------------------------------------------------------------------
@@ -210,12 +223,7 @@ class WindowsStorageRepository implements StorageRepository {
   }
 
   FolderEntry _rowToFolderEntry(RecentFolderRow row) {
-    return FolderEntry(
-      id: EntryId.windows(row.uri),
-      name: row.name,
-      uri: row.uri,
-      parentId: null,
-    );
+    return restoreFolderFromUri(uri: row.uri, name: row.name);
   }
 
   /// リソース解放
