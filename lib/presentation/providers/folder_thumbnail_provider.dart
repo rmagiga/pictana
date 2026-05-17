@@ -39,6 +39,7 @@ Future<List<Uint8List?>> getFolderThumbnails(
   final useCase = GetFolderThumbnailsUseCase(
     imageRepository: ref.read(imageRepositoryProvider),
     thumbnailRepository: ref.read(thumbnailRepositoryProvider),
+    storageRepository: ref.read(storageRepositoryProvider),
   );
 
   final result = await useCase.execute(folder: folder);

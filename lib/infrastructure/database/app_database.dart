@@ -95,15 +95,27 @@ class AppDatabase extends _$AppDatabase {
     required String cachePath,
     required int width,
     required int height,
-  }) => into(thumbnailCaches).insertOnConflictUpdate(
-    ThumbnailCachesCompanion.insert(
-      imageUri: imageUri,
-      cachePath: cachePath,
-      width: width,
-      height: height,
-      updatedAt: DateTime.now(),
-    ),
-  );
+  }) {
+    final now = DateTime.now();
+    return into(thumbnailCaches).insert(
+      ThumbnailCachesCompanion.insert(
+        imageUri: imageUri,
+        cachePath: cachePath,
+        width: width,
+        height: height,
+        updatedAt: now,
+      ),
+      onConflict: DoUpdate(
+        (old) => ThumbnailCachesCompanion(
+          cachePath: Value(cachePath),
+          width: Value(width),
+          height: Value(height),
+          updatedAt: Value(now),
+        ),
+        target: [thumbnailCaches.imageUri],
+      ),
+    );
+  }
 
   /// 全サムネイルキャッシュエントリを取得する
   Future<List<ThumbnailCache>> getAllThumbnailCaches() =>

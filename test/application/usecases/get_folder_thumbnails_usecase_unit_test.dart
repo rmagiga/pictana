@@ -14,12 +14,31 @@ import 'package:optrig/domain/entities/favorite_folder.dart';
 import 'package:optrig/domain/entities/folder_entry.dart';
 import 'package:optrig/domain/entities/image_entry.dart';
 import 'package:optrig/domain/repositories/image_repository.dart';
+import 'package:optrig/domain/repositories/storage_repository.dart';
 import 'package:optrig/domain/repositories/thumbnail_repository.dart';
 import 'package:optrig/domain/value_objects/sort_option.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用 Fake 実装
 // ---------------------------------------------------------------------------
+
+/// テスト用 StorageRepository
+class _FakeStorageRepository implements StorageRepository {
+  @override
+  FolderEntry restoreFolderFromUri({
+    required String uri,
+    required String name,
+  }) {
+    return FolderEntry(
+      id: EntryId(rawValue: uri, platformType: PlatformType.windows),
+      name: name,
+      uri: uri,
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => null;
+}
 
 /// テスト用 ImageRepository
 class _FakeImageRepository implements ImageRepository {
@@ -127,6 +146,7 @@ void main() {
       final useCase = GetFolderThumbnailsUseCase(
         imageRepository: _FakeImageRepository(imageCount: 0),
         thumbnailRepository: _SuccessThumbnailRepository(),
+        storageRepository: _FakeStorageRepository(),
       );
 
       final result = await useCase.execute(folder: _createTestFolder());
@@ -138,6 +158,7 @@ void main() {
       final useCase = GetFolderThumbnailsUseCase(
         imageRepository: _FailingImageRepository(),
         thumbnailRepository: _SuccessThumbnailRepository(),
+        storageRepository: _FakeStorageRepository(),
       );
 
       final result = await useCase.execute(folder: _createTestFolder());
@@ -151,6 +172,7 @@ void main() {
       final useCase = GetFolderThumbnailsUseCase(
         imageRepository: _FakeImageRepository(imageCount: 1),
         thumbnailRepository: _SuccessThumbnailRepository(),
+        storageRepository: _FakeStorageRepository(),
       );
 
       final result = await useCase.execute(folder: _createTestFolder());
@@ -163,6 +185,7 @@ void main() {
       final useCase = GetFolderThumbnailsUseCase(
         imageRepository: _FakeImageRepository(imageCount: 2),
         thumbnailRepository: _SuccessThumbnailRepository(),
+        storageRepository: _FakeStorageRepository(),
       );
 
       final result = await useCase.execute(folder: _createTestFolder());
@@ -176,6 +199,7 @@ void main() {
       final useCase = GetFolderThumbnailsUseCase(
         imageRepository: _FakeImageRepository(imageCount: 3),
         thumbnailRepository: _SuccessThumbnailRepository(),
+        storageRepository: _FakeStorageRepository(),
       );
 
       final result = await useCase.execute(folder: _createTestFolder());
@@ -189,6 +213,7 @@ void main() {
       final useCase = GetFolderThumbnailsUseCase(
         imageRepository: _FakeImageRepository(imageCount: 4),
         thumbnailRepository: _SuccessThumbnailRepository(),
+        storageRepository: _FakeStorageRepository(),
       );
 
       final result = await useCase.execute(folder: _createTestFolder());
@@ -200,6 +225,7 @@ void main() {
       final useCase = GetFolderThumbnailsUseCase(
         imageRepository: _FakeImageRepository(imageCount: 10),
         thumbnailRepository: _SuccessThumbnailRepository(),
+        storageRepository: _FakeStorageRepository(),
       );
 
       final result = await useCase.execute(folder: _createTestFolder());
@@ -213,6 +239,7 @@ void main() {
       final useCase = GetFolderThumbnailsUseCase(
         imageRepository: _FakeImageRepository(imageCount: 3),
         thumbnailRepository: _FailingThumbnailRepository(),
+        storageRepository: _FakeStorageRepository(),
       );
 
       final result = await useCase.execute(folder: _createTestFolder());
@@ -229,6 +256,7 @@ void main() {
       final useCase = GetFolderThumbnailsUseCase(
         imageRepository: _FakeImageRepository(imageCount: 4),
         thumbnailRepository: _SuccessThumbnailRepository(),
+        storageRepository: _FakeStorageRepository(),
       );
 
       final result = await useCase.execute(folder: _createTestFolder());

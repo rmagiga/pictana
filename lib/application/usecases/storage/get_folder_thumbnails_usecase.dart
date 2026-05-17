@@ -8,12 +8,14 @@
 /// Requirements: 2.2, 2.3
 library;
 
+import 'dart:io';
 import 'dart:typed_data';
 
 import '../../../domain/entities/entry_id.dart';
 import '../../../domain/entities/favorite_folder.dart';
 import '../../../domain/entities/folder_entry.dart';
 import '../../../domain/repositories/image_repository.dart';
+import '../../../domain/repositories/storage_repository.dart';
 import '../../../domain/repositories/thumbnail_repository.dart';
 import '../../../domain/value_objects/sort_option.dart';
 
@@ -22,11 +24,14 @@ class GetFolderThumbnailsUseCase {
   const GetFolderThumbnailsUseCase({
     required ImageRepository imageRepository,
     required ThumbnailRepository thumbnailRepository,
+    required StorageRepository storageRepository,
   }) : _imageRepository = imageRepository,
-       _thumbnailRepository = thumbnailRepository;
+       _thumbnailRepository = thumbnailRepository,
+       _storageRepository = storageRepository;
 
   final ImageRepository _imageRepository;
   final ThumbnailRepository _thumbnailRepository;
+  final StorageRepository _storageRepository;
 
   /// フォルダ内の先頭4枚の画像サムネイルを取得する。
   ///
@@ -41,11 +46,10 @@ class GetFolderThumbnailsUseCase {
     ThumbnailSize size = ThumbnailSize.grid,
   }) async {
     try {
-      // FavoriteFolder.uri から FolderEntry を構築
-      final folderEntry = FolderEntry(
-        id: EntryId(rawValue: folder.uri, platformType: PlatformType.unknown),
-        name: folder.name,
+      // FavoriteFolder.uri から FolderEntry を構築（プラットフォーム依存のパースは Repository に委譲）
+      final folderEntry = _storageRepository.restoreFolderFromUri(
         uri: folder.uri,
+        name: folder.name,
       );
 
       // 先頭4枚の画像をファイル名昇順で取得
