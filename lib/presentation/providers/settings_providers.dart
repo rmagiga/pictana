@@ -41,29 +41,3 @@ class CacheSize extends _$CacheSize {
   }
 }
 
-/// テーマモード設定
-@riverpod
-class AppThemeMode extends _$AppThemeMode {
-  static const _kThemeKey = 'theme_mode';
-
-  @override
-  int build() {
-    _loadInitial();
-    // デフォルトは 0 (System)
-    return 0;
-  }
-
-  Future<void> _loadInitial() async {
-    final db = ref.read(appDatabaseProvider);
-    final value = await db.getSetting(_kThemeKey);
-    if (value != null) {
-      state = int.tryParse(value) ?? 0;
-    }
-  }
-
-  Future<void> setTheme(int mode) async {
-    state = mode;
-    final db = ref.read(appDatabaseProvider);
-    await db.setSetting(_kThemeKey, mode.toString());
-  }
-}

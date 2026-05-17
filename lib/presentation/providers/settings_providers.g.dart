@@ -55,7 +55,7 @@ final class ManageCacheUseCaseProvider
 }
 
 String _$manageCacheUseCaseHash() =>
-    r'415e21edce629664bc36264962107c2df36f2f55';
+    r'9c502912b622decca36353f0252974b828fac931';
 
 /// 現在のキャッシュサイズ（バイト）
 
@@ -99,63 +99,6 @@ abstract class _$CacheSize extends $AsyncNotifier<int> {
             as $ClassProviderElement<
               AnyNotifier<AsyncValue<int>, int>,
               AsyncValue<int>,
-              Object?,
-              Object?
-            >;
-    element.handleCreate(ref, build);
-  }
-}
-
-/// テーマモード設定
-
-@ProviderFor(AppThemeMode)
-final appThemeModeProvider = AppThemeModeProvider._();
-
-/// テーマモード設定
-final class AppThemeModeProvider extends $NotifierProvider<AppThemeMode, int> {
-  /// テーマモード設定
-  AppThemeModeProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'appThemeModeProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$appThemeModeHash();
-
-  @$internal
-  @override
-  AppThemeMode create() => AppThemeMode();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(int value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<int>(value),
-    );
-  }
-}
-
-String _$appThemeModeHash() => r'5e0a0c3ae2d32cc8ce462a64c2e8ce869e868c2a';
-
-/// テーマモード設定
-
-abstract class _$AppThemeMode extends $Notifier<int> {
-  int build();
-  @$mustCallSuper
-  @override
-  void runBuild() {
-    final ref = this.ref as $Ref<int, int>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<int, int>,
-              int,
               Object?,
               Object?
             >;

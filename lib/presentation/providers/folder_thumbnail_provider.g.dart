@@ -87,7 +87,7 @@ final class GetFolderThumbnailsProvider
 }
 
 String _$getFolderThumbnailsHash() =>
-    r'4417c6b67bdb88ce96e0a1111262982077b16a64';
+    r'72a8f9628aad19b72b09b5a8e74662e80a898833';
 
 /// 個別フォルダのサムネイルを最大4枚取得する Family Provider
 ///

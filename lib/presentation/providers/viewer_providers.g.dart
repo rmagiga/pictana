@@ -53,7 +53,7 @@ final class LoadImageUseCaseProvider
   }
 }
 
-String _$loadImageUseCaseHash() => r'3b2b18f666ec36c1b5d3a23d560a3a78371dd357';
+String _$loadImageUseCaseHash() => r'81449f72c0f2b9b5f78ad5bab3fdf65ab00e1580';
 
 @ProviderFor(preloadAdjacentImagesUseCase)
 final preloadAdjacentImagesUseCaseProvider =
@@ -102,7 +102,7 @@ final class PreloadAdjacentImagesUseCaseProvider
 }
 
 String _$preloadAdjacentImagesUseCaseHash() =>
-    r'4ef82b131459f845935d03575d482a1944032f16';
+    r'c26c80909b8a4d030ba451d04654fdc7a4c36001';
 
 /// 指定された画像のメタデータを取得する Provider
 
@@ -163,7 +163,7 @@ final class ImageMetadataProvider
   }
 }
 
-String _$imageMetadataHash() => r'69a60779a7ff6e11237e8a0f8175f59a8a0f6376';
+String _$imageMetadataHash() => r'cb4a377dad1f4497bd97ecc4f3dd7484e313f1e1';
 
 /// 指定された画像のメタデータを取得する Provider
 
@@ -252,7 +252,7 @@ final class ImageBytesProvider
   }
 }
 
-String _$imageBytesHash() => r'0836062e0ad2976cee7f81699feca01fead66002';
+String _$imageBytesHash() => r'e52c8feaeca3b645baede4bdd17b1bff467269b9';
 
 /// 指定された画像のバイト列を取得する Provider
 /// 取得中はローディングになり、成功すると Uint8List を返す。
@@ -346,7 +346,7 @@ final class ImageExifRotationProvider
   }
 }
 
-String _$imageExifRotationHash() => r'c4aac35ce3c94f8df1abf50c43ed27b29f7ff89d';
+String _$imageExifRotationHash() => r'eabdef51a6e4ab0eeb021bcc8b2c3645344a9af6';
 
 /// 指定された画像のバイト列から EXIF 回転角度を抽出する Provider。
 ///

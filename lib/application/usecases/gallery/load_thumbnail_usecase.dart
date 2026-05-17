@@ -9,6 +9,7 @@ import 'dart:typed_data';
 
 import '../../../domain/entities/image_entry.dart';
 import '../../../domain/repositories/thumbnail_repository.dart';
+import '../../../domain/value_objects/thumbnail_size_option.dart';
 
 /// サムネイル読み込み UseCase
 class LoadThumbnailUseCase {
@@ -22,7 +23,7 @@ class LoadThumbnailUseCase {
   /// キャッシュ優先で返す。生成失敗時は null を返す。
   Future<Uint8List?> execute(
     ImageEntry entry, {
-    ThumbnailSize size = ThumbnailSize.grid,
+    ThumbnailSizeOption size = ThumbnailSizeOption.medium,
   }) {
     return _repo.getThumbnail(entry, size: size);
   }

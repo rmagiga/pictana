@@ -25,7 +25,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:optrig/domain/entities/entry_id.dart';
 import 'package:optrig/domain/entities/image_entry.dart';
-import 'package:optrig/domain/repositories/thumbnail_repository.dart';
+
+import 'package:optrig/domain/value_objects/thumbnail_size_option.dart';
 import 'package:optrig/infrastructure/database/app_database.dart';
 import 'package:optrig/infrastructure/storage/android/android_thumbnail_repository.dart';
 import 'package:optrig/infrastructure/storage/android/saf_platform_channel.dart';
@@ -199,11 +200,11 @@ void main() {
         expect(mockChannel.getThumbnailCallArgs.first.contentUri, entry.uri);
         expect(
           mockChannel.getThumbnailCallArgs.first.width,
-          ThumbnailSize.grid.px,
+          ThumbnailSizeOption.medium.px,
         );
         expect(
           mockChannel.getThumbnailCallArgs.first.height,
-          ThumbnailSize.grid.px,
+          ThumbnailSizeOption.medium.px,
         );
       });
 
@@ -215,12 +216,12 @@ void main() {
         await repository.getThumbnail(entry);
 
         // DB にキャッシュエントリが存在することを確認
-        final cacheKey = '${entry.uri}::${ThumbnailSize.grid.px}';
+        final cacheKey = '${entry.uri}::${ThumbnailSizeOption.medium.px}';
         final dbEntry = await db.getThumbnailCache(cacheKey);
         expect(dbEntry, isNotNull);
         expect(dbEntry!.imageUri, cacheKey);
-        expect(dbEntry.width, ThumbnailSize.grid.px);
-        expect(dbEntry.height, ThumbnailSize.grid.px);
+        expect(dbEntry.width, ThumbnailSizeOption.medium.px);
+        expect(dbEntry.height, ThumbnailSizeOption.medium.px);
       });
     });
 
@@ -242,7 +243,7 @@ void main() {
         await repository.getThumbnail(entry);
 
         // DB にキャッシュエントリが存在しないことを確認
-        final cacheKey = '${entry.uri}::${ThumbnailSize.grid.px}';
+        final cacheKey = '${entry.uri}::${ThumbnailSizeOption.medium.px}';
         final dbEntry = await db.getThumbnailCache(cacheKey);
         expect(dbEntry, isNull);
 
@@ -271,7 +272,7 @@ void main() {
         await repository.getThumbnail(entry);
 
         // DB にキャッシュエントリが存在しないことを確認
-        final cacheKey = '${entry.uri}::${ThumbnailSize.grid.px}';
+        final cacheKey = '${entry.uri}::${ThumbnailSizeOption.medium.px}';
         final dbEntry = await db.getThumbnailCache(cacheKey);
         expect(dbEntry, isNull);
       });
@@ -302,7 +303,7 @@ void main() {
         await repository.getThumbnail(entry);
 
         // DB にエントリが存在することを確認
-        final cacheKey = '${entry.uri}::${ThumbnailSize.grid.px}';
+        final cacheKey = '${entry.uri}::${ThumbnailSizeOption.medium.px}';
         var dbEntry = await db.getThumbnailCache(cacheKey);
         expect(dbEntry, isNotNull);
 
@@ -340,7 +341,7 @@ void main() {
         await repository.getThumbnail(entry);
 
         // DB にエントリが存在することを確認
-        final cacheKey = '${entry.uri}::${ThumbnailSize.grid.px}';
+        final cacheKey = '${entry.uri}::${ThumbnailSizeOption.medium.px}';
         var dbEntry = await db.getThumbnailCache(cacheKey);
         expect(dbEntry, isNotNull);
 
@@ -380,18 +381,18 @@ void main() {
         expect(mockChannel.getThumbnailCallCount, callCountBefore);
       });
 
-      test('grid と large の両方のキャッシュが無効化される', () async {
+      test('medium と large の両方のキャッシュが無効化される', () async {
         final entry = createTestImageEntry();
         final gridData = Uint8List.fromList([1, 2, 3]);
         final largeData = Uint8List.fromList([4, 5, 6]);
 
-        // grid サイズでキャッシュ
+        // medium サイズでキャッシュ
         mockChannel.thumbnailResponse = gridData;
-        await repository.getThumbnail(entry, size: ThumbnailSize.grid);
+        await repository.getThumbnail(entry, size: ThumbnailSizeOption.medium);
 
         // large サイズでキャッシュ
         mockChannel.thumbnailResponse = largeData;
-        await repository.getThumbnail(entry, size: ThumbnailSize.large);
+        await repository.getThumbnail(entry, size: ThumbnailSizeOption.large);
 
         expect(mockChannel.getThumbnailCallCount, 2);
 
@@ -400,8 +401,8 @@ void main() {
 
         // 両方ともネイティブが再度呼ばれる
         mockChannel.thumbnailResponse = gridData;
-        await repository.getThumbnail(entry, size: ThumbnailSize.grid);
-        await repository.getThumbnail(entry, size: ThumbnailSize.large);
+        await repository.getThumbnail(entry, size: ThumbnailSizeOption.medium);
+        await repository.getThumbnail(entry, size: ThumbnailSizeOption.large);
         expect(mockChannel.getThumbnailCallCount, 4);
       });
     });
@@ -474,17 +475,17 @@ void main() {
       });
     });
 
-    group('異なる ThumbnailSize', () {
-      test('grid と large は独立してキャッシュされる', () async {
+    group('異なる ThumbnailSizeOption', () {
+      test('medium と large は独立してキャッシュされる', () async {
         final entry = createTestImageEntry();
         final gridData = Uint8List.fromList([1, 2, 3, 4]);
         final largeData = Uint8List.fromList([5, 6, 7, 8]);
 
-        // grid サイズでキャッシュ
+        // medium サイズでキャッシュ
         mockChannel.thumbnailResponse = gridData;
         final gridResult = await repository.getThumbnail(
           entry,
-          size: ThumbnailSize.grid,
+          size: ThumbnailSizeOption.medium,
         );
         expect(gridResult, equals(gridData));
 
@@ -492,17 +493,17 @@ void main() {
         mockChannel.thumbnailResponse = largeData;
         final largeResult = await repository.getThumbnail(
           entry,
-          size: ThumbnailSize.large,
+          size: ThumbnailSizeOption.large,
         );
         expect(largeResult, equals(largeData));
 
         // 両方ともネイティブが呼ばれた
         expect(mockChannel.getThumbnailCallCount, 2);
 
-        // grid を再取得 → キャッシュから（ネイティブ呼び出し増えない）
+        // medium を再取得 → キャッシュから（ネイティブ呼び出し増えない）
         final cachedGrid = await repository.getThumbnail(
           entry,
-          size: ThumbnailSize.grid,
+          size: ThumbnailSizeOption.medium,
         );
         expect(cachedGrid, equals(gridData));
         expect(mockChannel.getThumbnailCallCount, 2);
@@ -510,7 +511,7 @@ void main() {
         // large を再取得 → キャッシュから（ネイティブ呼び出し増えない）
         final cachedLarge = await repository.getThumbnail(
           entry,
-          size: ThumbnailSize.large,
+          size: ThumbnailSizeOption.large,
         );
         expect(cachedLarge, equals(largeData));
         expect(mockChannel.getThumbnailCallCount, 2);
@@ -520,11 +521,11 @@ void main() {
         final entry = createTestImageEntry();
         mockChannel.thumbnailResponse = createTestThumbnailBytes();
 
-        await repository.getThumbnail(entry, size: ThumbnailSize.grid);
+        await repository.getThumbnail(entry, size: ThumbnailSizeOption.medium);
         expect(mockChannel.getThumbnailCallArgs.last.width, 256);
         expect(mockChannel.getThumbnailCallArgs.last.height, 256);
 
-        await repository.getThumbnail(entry, size: ThumbnailSize.large);
+        await repository.getThumbnail(entry, size: ThumbnailSizeOption.large);
         expect(mockChannel.getThumbnailCallArgs.last.width, 512);
         expect(mockChannel.getThumbnailCallArgs.last.height, 512);
       });

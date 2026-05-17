@@ -17,6 +17,7 @@ import 'package:optrig/domain/entities/image_entry.dart';
 import 'package:optrig/domain/repositories/image_repository.dart';
 import 'package:optrig/domain/repositories/thumbnail_repository.dart';
 import 'package:optrig/domain/value_objects/sort_option.dart';
+import 'package:optrig/domain/value_objects/thumbnail_size_option.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用 Fake 実装
@@ -64,7 +65,7 @@ class FakeThumbnailRepository implements ThumbnailRepository {
   @override
   Future<Uint8List?> getThumbnail(
     ImageEntry entry, {
-    ThumbnailSize size = ThumbnailSize.grid,
+    ThumbnailSizeOption size = ThumbnailSizeOption.medium,
   }) async {
     getThumbnailCallCount++;
     return getThumbnailResult;

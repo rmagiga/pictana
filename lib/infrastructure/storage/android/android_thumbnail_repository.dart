@@ -18,6 +18,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../domain/entities/image_entry.dart';
 import '../../../domain/repositories/thumbnail_repository.dart';
+import '../../../domain/value_objects/thumbnail_size_option.dart';
 import '../../database/app_database.dart';
 import 'saf_platform_channel.dart';
 
@@ -54,7 +55,7 @@ class AndroidThumbnailRepository implements ThumbnailRepository {
   @override
   Future<Uint8List?> getThumbnail(
     ImageEntry entry, {
-    ThumbnailSize size = ThumbnailSize.grid,
+    ThumbnailSizeOption size = ThumbnailSizeOption.medium,
   }) async {
     final cacheKey = _buildCacheKey(entry.uri, size);
 
@@ -129,7 +130,7 @@ class AndroidThumbnailRepository implements ThumbnailRepository {
   @override
   Future<void> invalidate(ImageEntry entry) async {
     // grid と large の両方のキャッシュを無効化
-    for (final size in ThumbnailSize.values) {
+    for (final size in ThumbnailSizeOption.values) {
       final cacheKey = _buildCacheKey(entry.uri, size);
 
       // メモリキャッシュから削除
@@ -162,7 +163,7 @@ class AndroidThumbnailRepository implements ThumbnailRepository {
   /// キャッシュキーを生成する
   ///
   /// URI + サイズの組み合わせで一意に識別する。
-  String _buildCacheKey(String uri, ThumbnailSize size) {
+  String _buildCacheKey(String uri, ThumbnailSizeOption size) {
     return '$uri::${size.px}';
   }
 
@@ -171,7 +172,7 @@ class AndroidThumbnailRepository implements ThumbnailRepository {
   /// 生成失敗時は null を返す（例外を投げない）。
   Future<Uint8List?> _generateFromNative(
     String contentUri,
-    ThumbnailSize size,
+    ThumbnailSizeOption size,
   ) async {
     try {
       return await _channel.getThumbnail(contentUri, size.px, size.px);
@@ -213,7 +214,7 @@ class AndroidThumbnailRepository implements ThumbnailRepository {
   Future<void> _saveToDisk(
     String cacheKey,
     Uint8List data,
-    ThumbnailSize size,
+    ThumbnailSizeOption size,
   ) async {
     try {
       final dir = await _getCacheDir();

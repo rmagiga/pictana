@@ -52,7 +52,7 @@ final class AppDatabaseProvider
   }
 }
 
-String _$appDatabaseHash() => r'96b544ff7ce456f0fc1edbdafdf332306a9affed';
+String _$appDatabaseHash() => r'59cce38d45eeaba199eddd097d8e149d66f9f3e1';
 
 /// StorageRepository Provider
 
@@ -104,7 +104,7 @@ final class StorageRepositoryProvider
   }
 }
 
-String _$storageRepositoryHash() => r'6fa427749aa908312017468c97b93393b1d65fe4';
+String _$storageRepositoryHash() => r'ad034ce392ca7a787b1212ca03545eaa870e45ab';
 
 /// ImageRepository Provider
 
@@ -151,7 +151,7 @@ final class ImageRepositoryProvider
   }
 }
 
-String _$imageRepositoryHash() => r'da6293f2584e0b4f6947a37e3d17d3e1b89351bb';
+String _$imageRepositoryHash() => r'd1ba35447aaa4b4e0601a16edc9ab0c3fb8f5aa4';
 
 /// ThumbnailRepository Provider
 
@@ -204,7 +204,7 @@ final class ThumbnailRepositoryProvider
 }
 
 String _$thumbnailRepositoryHash() =>
-    r'cedab62dc343c7d6962b240447c1ae1fa5bd9a31';
+    r'05aa09988f01cae1ac1dd069c988974e1107d7dd';
 
 /// FavoriteRepository Provider
 ///
@@ -266,7 +266,7 @@ final class FavoriteRepositoryProvider
 }
 
 String _$favoriteRepositoryHash() =>
-    r'2d40dd54d51bace99f8598036f9eeb01b2dc208b';
+    r'df0fb9e397ab443c96abef72358ac1b0c3c092a7';
 
 /// ExifProcessor Provider
 ///
@@ -318,4 +318,4 @@ final class ExifProcessorProvider
   }
 }
 
-String _$exifProcessorHash() => r'4f5145aefe522a3970516ea586a3b2095082feae';
+String _$exifProcessorHash() => r'b172776d16e69666f3f3c3bca9563a6bc730fd0b';

@@ -5,8 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'application/usecases/settings/cache_size_limit_setting.dart';
+import 'application/usecases/settings/thumbnail_size_setting.dart';
 import 'core/logging/app_logger.dart';
 import 'core/utils/image_cache_config.dart';
+import 'presentation/providers/grid_column_settings_provider.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'presentation/themes/app_theme.dart';
 import 'router/app_router.dart';
@@ -45,6 +48,11 @@ class OptrigApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 起動時に永続化設定をロード (遅延評価による未適用の防止)
+    ref.read(cacheSizeLimitSettingProvider);
+    ref.read(thumbnailSizeSettingProvider);
+    ref.read(gridColumnSettingsProvider);
+
     // テーマモードを監視 (設計書 §5.6)
     final themeMode = ref.watch(themeModeProvider);
 

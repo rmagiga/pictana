@@ -8,16 +8,14 @@
 /// Requirements: 2.2, 2.3
 library;
 
-import 'dart:io';
 import 'dart:typed_data';
 
-import '../../../domain/entities/entry_id.dart';
 import '../../../domain/entities/favorite_folder.dart';
-import '../../../domain/entities/folder_entry.dart';
 import '../../../domain/repositories/image_repository.dart';
 import '../../../domain/repositories/storage_repository.dart';
 import '../../../domain/repositories/thumbnail_repository.dart';
 import '../../../domain/value_objects/sort_option.dart';
+import '../../../domain/value_objects/thumbnail_size_option.dart';
 
 /// フォルダ内の先頭4枚のサムネイルを取得するユースケース
 class GetFolderThumbnailsUseCase {
@@ -43,7 +41,7 @@ class GetFolderThumbnailsUseCase {
   /// スロット割り当て順序: [top-left, top-right, bottom-left, bottom-right]
   Future<List<Uint8List?>> execute({
     required FavoriteFolder folder,
-    ThumbnailSize size = ThumbnailSize.grid,
+    ThumbnailSizeOption size = ThumbnailSizeOption.medium,
   }) async {
     try {
       // FavoriteFolder.uri から FolderEntry を構築（プラットフォーム依存のパースは Repository に委譲）

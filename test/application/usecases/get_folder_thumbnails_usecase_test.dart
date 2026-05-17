@@ -18,8 +18,10 @@ import 'package:optrig/domain/entities/favorite_folder.dart';
 import 'package:optrig/domain/entities/folder_entry.dart';
 import 'package:optrig/domain/entities/image_entry.dart';
 import 'package:optrig/domain/repositories/image_repository.dart';
+import 'package:optrig/domain/repositories/storage_repository.dart';
 import 'package:optrig/domain/repositories/thumbnail_repository.dart';
 import 'package:optrig/domain/value_objects/sort_option.dart';
+import 'package:optrig/domain/value_objects/thumbnail_size_option.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用 Fake 実装
@@ -80,7 +82,7 @@ class FakeThumbnailRepository implements ThumbnailRepository {
   @override
   Future<Uint8List?> getThumbnail(
     ImageEntry entry, {
-    ThumbnailSize size = ThumbnailSize.grid,
+    ThumbnailSizeOption size = ThumbnailSizeOption.medium,
   }) async {
     final index = _callIndex++;
     if (index < thumbnailResults.length && thumbnailResults[index]) {
@@ -88,6 +90,24 @@ class FakeThumbnailRepository implements ThumbnailRepository {
       return Uint8List.fromList([index]);
     }
     return null;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => null;
+}
+
+/// テスト用 StorageRepository
+class FakeStorageRepository implements StorageRepository {
+  @override
+  FolderEntry restoreFolderFromUri({
+    required String uri,
+    required String name,
+  }) {
+    return FolderEntry(
+      id: EntryId(rawValue: uri, platformType: PlatformType.windows),
+      name: name,
+      uri: uri,
+    );
   }
 
   @override
@@ -145,6 +165,7 @@ void main() {
           final useCase = GetFolderThumbnailsUseCase(
             imageRepository: fakeImageRepo,
             thumbnailRepository: fakeThumbnailRepo,
+            storageRepository: FakeStorageRepository(),
           );
 
           final result = await useCase.execute(folder: createTestFolder());
@@ -172,6 +193,7 @@ void main() {
           final useCase = GetFolderThumbnailsUseCase(
             imageRepository: fakeImageRepo,
             thumbnailRepository: fakeThumbnailRepo,
+            storageRepository: FakeStorageRepository(),
           );
 
           final result = await useCase.execute(folder: createTestFolder());
@@ -213,6 +235,7 @@ void main() {
         final useCase = GetFolderThumbnailsUseCase(
           imageRepository: fakeImageRepo,
           thumbnailRepository: fakeThumbnailRepo,
+          storageRepository: FakeStorageRepository(),
         );
 
         final result = await useCase.execute(folder: createTestFolder());
@@ -239,6 +262,7 @@ void main() {
         final useCase = GetFolderThumbnailsUseCase(
           imageRepository: fakeImageRepo,
           thumbnailRepository: fakeThumbnailRepo,
+          storageRepository: FakeStorageRepository(),
         );
 
         final result = await useCase.execute(folder: createTestFolder());
@@ -257,6 +281,7 @@ void main() {
         final useCase = GetFolderThumbnailsUseCase(
           imageRepository: fakeImageRepo,
           thumbnailRepository: fakeThumbnailRepo,
+          storageRepository: FakeStorageRepository(),
         );
 
         final result = await useCase.execute(folder: createTestFolder());

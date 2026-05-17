@@ -10,22 +10,19 @@ part of 'theme_provider.dart';
 // ignore_for_file: type=lint, type=warning
 /// アプリのテーマモード状態
 ///
-/// DB からの読み込みは AppSettingsProvider 経由で行い、
-/// このProviderは純粋なテーマモード切替のみを担う。
+/// DB (AppDatabase) を用いて永続化を行う。
 
 @ProviderFor(ThemeModeNotifier)
 final themeModeProvider = ThemeModeNotifierProvider._();
 
 /// アプリのテーマモード状態
 ///
-/// DB からの読み込みは AppSettingsProvider 経由で行い、
-/// このProviderは純粋なテーマモード切替のみを担う。
+/// DB (AppDatabase) を用いて永続化を行う。
 final class ThemeModeNotifierProvider
     extends $NotifierProvider<ThemeModeNotifier, ThemeMode> {
   /// アプリのテーマモード状態
   ///
-  /// DB からの読み込みは AppSettingsProvider 経由で行い、
-  /// このProviderは純粋なテーマモード切替のみを担う。
+  /// DB (AppDatabase) を用いて永続化を行う。
   ThemeModeNotifierProvider._()
     : super(
         from: null,
@@ -53,12 +50,11 @@ final class ThemeModeNotifierProvider
   }
 }
 
-String _$themeModeNotifierHash() => r'965c1f1f7e4b67d1a5043eec925b4c17e5c4ec0b';
+String _$themeModeNotifierHash() => r'22c1d57508757987d6bc64c4d31e8823ed00ee38';
 
 /// アプリのテーマモード状態
 ///
-/// DB からの読み込みは AppSettingsProvider 経由で行い、
-/// このProviderは純粋なテーマモード切替のみを担う。
+/// DB (AppDatabase) を用いて永続化を行う。
 
 abstract class _$ThemeModeNotifier extends $Notifier<ThemeMode> {
   ThemeMode build();

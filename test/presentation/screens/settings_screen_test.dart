@@ -20,6 +20,7 @@ import 'package:optrig/domain/value_objects/cache_size_limit.dart';
 import 'package:optrig/domain/value_objects/grid_column_settings.dart';
 import 'package:optrig/domain/value_objects/thumbnail_size_option.dart';
 import 'package:optrig/presentation/providers/grid_column_settings_provider.dart';
+import 'package:optrig/presentation/providers/theme_provider.dart';
 import 'package:optrig/presentation/providers/settings_providers.dart';
 import 'package:optrig/presentation/screens/settings_screen.dart';
 
@@ -47,12 +48,12 @@ class _FakeCacheSizeLimitSetting extends CacheSizeLimitSetting {
   }
 }
 
-class _FakeAppThemeMode extends AppThemeMode {
+class _FakeThemeModeNotifier extends ThemeModeNotifier {
   @override
-  int build() => 0;
+  ThemeMode build() => ThemeMode.system;
 
   @override
-  Future<void> setTheme(int mode) async {
+  Future<void> setThemeMode(ThemeMode mode) async {
     state = mode;
   }
 }
@@ -113,7 +114,7 @@ Widget _createTestWidget({CacheSize? cacheSizeOverride}) {
       cacheSizeLimitSettingProvider.overrideWith(
         () => _FakeCacheSizeLimitSetting(),
       ),
-      appThemeModeProvider.overrideWith(() => _FakeAppThemeMode()),
+      themeModeProvider.overrideWith(() => _FakeThemeModeNotifier()),
       cacheSizeProvider.overrideWith(
         () => cacheSizeOverride ?? _FakeCacheSize(),
       ),

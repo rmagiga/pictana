@@ -71,7 +71,7 @@ final class IsFolderFavoriteProvider
   }
 }
 
-String _$isFolderFavoriteHash() => r'e6d9478f0637112f39460fe8562cd8452b652011';
+String _$isFolderFavoriteHash() => r'cb5033cad8203a0d6256b7ee26e0c751c8f56adf';
 
 /// 指定フォルダ URI がお気に入り登録済みか判定する Provider
 ///
@@ -143,4 +143,4 @@ final class FavoriteCountProvider
   }
 }
 
-String _$favoriteCountHash() => r'355a1114bd90c1a014c92da8d7ffa4b525a2de52';
+String _$favoriteCountHash() => r'1eab43b4ca7e7453b2d7395a142add62da0bbf61';

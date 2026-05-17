@@ -13,6 +13,7 @@ import '../../core/utils/format_bytes.dart';
 import '../../domain/value_objects/cache_size_limit.dart';
 import '../../domain/value_objects/thumbnail_size_option.dart';
 import '../providers/settings_providers.dart';
+import '../providers/theme_provider.dart';
 import '../widgets/grid_column_setting_tile.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -22,7 +23,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final cacheSizeAsync = ref.watch(cacheSizeProvider);
-    final themeMode = ref.watch(appThemeModeProvider);
+    final themeMode = ref.watch(themeModeProvider);
     final currentCacheLimit = ref.watch(cacheSizeLimitSettingProvider);
     final currentThumbnailSize = ref.watch(thumbnailSizeSettingProvider);
 
@@ -34,17 +35,17 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             title: const Text('テーマ'),
             subtitle: Text(_themeModeName(themeMode)),
-            trailing: DropdownButton<int>(
+            trailing: DropdownButton<ThemeMode>(
               value: themeMode,
               underline: const SizedBox.shrink(),
               items: const [
-                DropdownMenuItem(value: 0, child: Text('システムに合わせる')),
-                DropdownMenuItem(value: 1, child: Text('ライト')),
-                DropdownMenuItem(value: 2, child: Text('ダーク')),
+                DropdownMenuItem(value: ThemeMode.system, child: Text('システムに合わせる')),
+                DropdownMenuItem(value: ThemeMode.light, child: Text('ライト')),
+                DropdownMenuItem(value: ThemeMode.dark, child: Text('ダーク')),
               ],
               onChanged: (mode) {
                 if (mode != null) {
-                  ref.read(appThemeModeProvider.notifier).setTheme(mode);
+                  ref.read(themeModeProvider.notifier).setThemeMode(mode);
                 }
               },
             ),
@@ -200,11 +201,11 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  String _themeModeName(int mode) {
+  String _themeModeName(ThemeMode mode) {
     switch (mode) {
-      case 1:
+      case ThemeMode.light:
         return 'ライト';
-      case 2:
+      case ThemeMode.dark:
         return 'ダーク';
       default:
         return 'システムに合わせる';

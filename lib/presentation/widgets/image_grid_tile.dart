@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../application/usecases/settings/thumbnail_size_setting.dart';
 import '../../domain/entities/image_entry.dart';
 import '../providers/gallery_providers.dart';
 
@@ -44,7 +45,8 @@ class _ImageGridTileState extends ConsumerState<ImageGridTile> {
   Future<void> _loadThumbnail() async {
     setState(() => _isLoading = true);
     final useCase = ref.read(loadThumbnailUseCaseProvider);
-    final bytes = await useCase.execute(widget.image);
+    final sizeOption = ref.read(thumbnailSizeSettingProvider);
+    final bytes = await useCase.execute(widget.image, size: sizeOption);
     if (mounted) {
       setState(() {
         _thumbnailBytes = bytes;

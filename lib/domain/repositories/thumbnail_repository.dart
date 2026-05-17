@@ -9,18 +9,7 @@ library;
 import 'dart:typed_data';
 
 import '../entities/image_entry.dart';
-
-/// サムネイルのサイズオプション
-enum ThumbnailSize {
-  /// 一覧用サムネイル (設計書 §11.2: 256px)
-  grid(256),
-
-  /// 大きめサムネイル（設定: 大）
-  large(512);
-
-  const ThumbnailSize(this.px);
-  final int px;
-}
+import '../value_objects/thumbnail_size_option.dart';
 
 abstract interface class ThumbnailRepository {
   /// 指定画像のサムネイルを取得する。
@@ -34,7 +23,7 @@ abstract interface class ThumbnailRepository {
   /// 生成失敗時は null を返す（例外は投げない）。
   Future<Uint8List?> getThumbnail(
     ImageEntry entry, {
-    ThumbnailSize size = ThumbnailSize.grid,
+    ThumbnailSizeOption size = ThumbnailSizeOption.medium,
   });
 
   /// キャッシュの使用サイズを返す（bytes）。

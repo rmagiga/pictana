@@ -28,6 +28,7 @@ import 'package:optrig/domain/entities/image_entry.dart';
 import 'package:optrig/domain/repositories/image_repository.dart';
 import 'package:optrig/domain/repositories/thumbnail_repository.dart';
 import 'package:optrig/domain/value_objects/swipe_direction.dart';
+import 'package:optrig/domain/value_objects/thumbnail_size_option.dart';
 import 'package:optrig/presentation/providers/gallery_providers.dart';
 import 'package:optrig/presentation/providers/viewer_providers.dart';
 import 'package:optrig/presentation/screens/image_viewer_screen.dart';
@@ -107,7 +108,7 @@ class _FakeLoadThumbnailUseCase extends LoadThumbnailUseCase {
   @override
   Future<Uint8List?> execute(
     ImageEntry entry, {
-    ThumbnailSize size = ThumbnailSize.grid,
+    ThumbnailSizeOption size = ThumbnailSizeOption.medium,
   }) async {
     return _testImageBytes;
   }

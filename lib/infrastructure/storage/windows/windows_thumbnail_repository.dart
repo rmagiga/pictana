@@ -16,6 +16,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../domain/entities/image_entry.dart';
 import '../../../domain/repositories/thumbnail_repository.dart';
+import '../../../domain/value_objects/thumbnail_size_option.dart';
 import '../../database/app_database.dart';
 
 /// Windows 向け ThumbnailRepository 実装
@@ -34,7 +35,7 @@ class WindowsThumbnailRepository implements ThumbnailRepository {
   @override
   Future<Uint8List?> getThumbnail(
     ImageEntry entry, {
-    ThumbnailSize size = ThumbnailSize.grid,
+    ThumbnailSizeOption size = ThumbnailSizeOption.medium,
   }) async {
     // 1. DB キャッシュ確認
     final cached = await _db.getThumbnailCache(entry.uri);
@@ -55,7 +56,7 @@ class WindowsThumbnailRepository implements ThumbnailRepository {
     if (thumbnail == null) return null;
 
     // 3. ディスクへ保存
-    await _saveToDisk(entry.uri, thumbnail);
+    await _saveToDisk(entry.uri, thumbnail, size);
 
     return thumbnail;
   }
@@ -134,7 +135,11 @@ class WindowsThumbnailRepository implements ThumbnailRepository {
   }
 
   /// サムネイルをディスクとDBへ保存する
-  Future<void> _saveToDisk(String imageUri, Uint8List data) async {
+  Future<void> _saveToDisk(
+    String imageUri,
+    Uint8List data,
+    ThumbnailSizeOption size,
+  ) async {
     try {
       final dir = await _getCacheDir();
       await dir.create(recursive: true);
@@ -147,8 +152,8 @@ class WindowsThumbnailRepository implements ThumbnailRepository {
       await _db.upsertThumbnailCache(
         imageUri: imageUri,
         cachePath: cacheFile.path,
-        width: 256,
-        height: 256,
+        width: size.px,
+        height: size.px,
       );
     } catch (e) {
       appLogger.w('サムネイルキャッシュ保存エラー', error: e);

@@ -13,6 +13,7 @@ import '../../../domain/entities/folder_entry.dart';
 import '../../../domain/repositories/image_repository.dart';
 import '../../../domain/repositories/thumbnail_repository.dart';
 import '../../../domain/value_objects/sort_option.dart';
+import '../../../domain/value_objects/thumbnail_size_option.dart';
 
 /// フォルダのサムネイル画像を取得するユースケース
 class GetFolderThumbnailUseCase {
@@ -29,7 +30,7 @@ class GetFolderThumbnailUseCase {
   /// 画像が存在しない場合やサムネイル生成失敗時は null を返す。
   Future<Uint8List?> execute({
     required FavoriteFolder folder,
-    ThumbnailSize size = ThumbnailSize.grid,
+    ThumbnailSizeOption size = ThumbnailSizeOption.medium,
   }) async {
     try {
       // FavoriteFolder.uri から FolderEntry を構築

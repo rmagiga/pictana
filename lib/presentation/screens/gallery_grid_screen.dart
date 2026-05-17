@@ -18,6 +18,7 @@ import '../../domain/entities/image_entry.dart';
 import '../../domain/entities/storage_monitor_state.dart';
 import '../../router/app_router.dart';
 import '../providers/gallery_providers.dart';
+import '../providers/grid_column_settings_provider.dart';
 import '../widgets/favorite_indicator.dart';
 import '../widgets/gallery/fast_scroll_handler.dart';
 import '../widgets/gallery/filter_chips_widget.dart';
@@ -187,10 +188,12 @@ class GalleryGridScreen extends HookConsumerWidget {
 
                   return LayoutBuilder(
                     builder: (context, constraints) {
-                      // 画面幅に応じて列数を動的に変更
+                      // 画面幅と設定値に応じて列数を動的に変更
+                      final settings = ref.watch(gridColumnSettingsProvider);
                       final crossAxisCount = (constraints.maxWidth / 150)
                           .floor()
-                          .clamp(3, 10);
+                          .clamp(settings.minColumns, settings.maxColumns)
+                          .toInt();
 
                       final gridView = GridView.builder(
                         controller: scrollController,

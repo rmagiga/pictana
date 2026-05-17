@@ -68,7 +68,7 @@ final class NavigateToFavoriteUseCaseProvider
 }
 
 String _$navigateToFavoriteUseCaseHash() =>
-    r'7e0942c936f4a625c3fe5a89c59d38d9a5b0cb01';
+    r'1f5bab823cb6669483f754993403ba9f0979ce07';
 
 /// お気に入りフォルダナビゲーション中の状態
 ///

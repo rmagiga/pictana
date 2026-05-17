@@ -14,7 +14,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
 import 'package:optrig/domain/entities/entry_id.dart';
 import 'package:optrig/domain/entities/image_entry.dart';
-import 'package:optrig/domain/repositories/thumbnail_repository.dart';
+
+import 'package:optrig/domain/value_objects/thumbnail_size_option.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用の簡易キャッシュモデル
@@ -25,7 +26,7 @@ import 'package:optrig/domain/repositories/thumbnail_repository.dart';
 // ---------------------------------------------------------------------------
 
 /// サムネイルキャッシュのキーを生成する（本体実装と同じロジック）
-String buildCacheKey(String uri, ThumbnailSize size) {
+String buildCacheKey(String uri, ThumbnailSizeOption size) {
   return '$uri::${size.px}';
 }
 
@@ -46,7 +47,7 @@ class SimpleThumbnailCache {
   /// キャッシュミス時: [nativeGenerator] を呼び出してキャッシュに保存
   Uint8List? getThumbnail(
     ImageEntry entry, {
-    ThumbnailSize size = ThumbnailSize.grid,
+    ThumbnailSizeOption size = ThumbnailSizeOption.medium,
     required Uint8List? Function() nativeGenerator,
   }) {
     final cacheKey = buildCacheKey(entry.uri, size);
@@ -68,7 +69,7 @@ class SimpleThumbnailCache {
   }
 
   /// キャッシュにデータが存在するか確認
-  bool containsKey(String uri, ThumbnailSize size) {
+  bool containsKey(String uri, ThumbnailSizeOption size) {
     return _memoryCache.containsKey(buildCacheKey(uri, size));
   }
 }
@@ -175,38 +176,38 @@ void main() {
       },
     );
 
-    Glados(_imageEntryGenerator).test('異なる ThumbnailSize は独立してキャッシュされる', (
+    Glados(_imageEntryGenerator).test('異なる ThumbnailSizeOption は独立してキャッシュされる', (
       entry,
     ) {
       final cache = SimpleThumbnailCache();
       final gridData = Uint8List.fromList([1, 2, 3, 4]);
       final largeData = Uint8List.fromList([5, 6, 7, 8]);
 
-      // grid サイズでキャッシュ
+      // medium サイズでキャッシュ
       cache.getThumbnail(
         entry,
-        size: ThumbnailSize.grid,
+        size: ThumbnailSizeOption.medium,
         nativeGenerator: () => gridData,
       );
 
       // large サイズでキャッシュ（別キー）
       cache.getThumbnail(
         entry,
-        size: ThumbnailSize.large,
+        size: ThumbnailSizeOption.large,
         nativeGenerator: () => largeData,
       );
 
-      // grid を再取得 → grid データが返る
+      // medium を再取得 → medium データが返る
       final cachedGrid = cache.getThumbnail(
         entry,
-        size: ThumbnailSize.grid,
+        size: ThumbnailSizeOption.medium,
         nativeGenerator: () => throw StateError('ネイティブ生成が呼ばれるべきではない'),
       );
 
       // large を再取得 → large データが返る
       final cachedLarge = cache.getThumbnail(
         entry,
-        size: ThumbnailSize.large,
+        size: ThumbnailSizeOption.large,
         nativeGenerator: () => throw StateError('ネイティブ生成が呼ばれるべきではない'),
       );
 

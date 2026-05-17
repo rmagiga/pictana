@@ -55,7 +55,7 @@ final class SelectStorageUseCaseProvider
 }
 
 String _$selectStorageUseCaseHash() =>
-    r'74f34d43f6baecd2cb8a0cda0cc9438bfc330199';
+    r'5c4e0b92920979c34c49b2b0193fa6bc9cf718e0';
 
 @ProviderFor(getDefaultImageFoldersUseCase)
 final getDefaultImageFoldersUseCaseProvider =
@@ -106,7 +106,7 @@ final class GetDefaultImageFoldersUseCaseProvider
 }
 
 String _$getDefaultImageFoldersUseCaseHash() =>
-    r'f97394acc42335dd0db23b7aec1277a7275fc18d';
+    r'2243e7b75e5746c404d414ebbd7be9c4073a2cef';
 
 @ProviderFor(watchStorageConnectionUseCase)
 final watchStorageConnectionUseCaseProvider =
@@ -157,7 +157,7 @@ final class WatchStorageConnectionUseCaseProvider
 }
 
 String _$watchStorageConnectionUseCaseHash() =>
-    r'632fc0da1808497027701e227a720e1a5ce66739';
+    r'f11e933caf7ee76556b9bfbde41076747e432346';
 
 @ProviderFor(persistUriPermissionUseCase)
 final persistUriPermissionUseCaseProvider =
@@ -206,7 +206,7 @@ final class PersistUriPermissionUseCaseProvider
 }
 
 String _$persistUriPermissionUseCaseHash() =>
-    r'4a7004b0ea91fc448c677cda0de60bc3c69ef033';
+    r'1e3efae90f73aa1d0fd3a2d6e61feb12cc5a6baf';
 
 /// ストレージ接続状態（切断などを検知するため）
 
@@ -252,4 +252,4 @@ final class StorageRootsProvider
   }
 }
 
-String _$storageRootsHash() => r'9c205ce68b4adde88ff0cd73f62f3e28b0607652';
+String _$storageRootsHash() => r'f69a07e0eea3dea939356bd28b6116c57c827753';
