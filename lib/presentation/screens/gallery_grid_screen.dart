@@ -14,11 +14,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../application/usecases/gallery/search_controller.dart';
 import '../../application/usecases/storage/storage_monitor.dart';
+import '../../core/logging/app_logger.dart';
 import '../../domain/entities/image_entry.dart';
 import '../../domain/entities/storage_monitor_state.dart';
 import '../../router/app_router.dart';
 import '../providers/gallery_providers.dart';
 import '../providers/grid_column_settings_provider.dart';
+import '../providers/storage_providers.dart';
 import '../widgets/favorite_indicator.dart';
 import '../widgets/gallery/fast_scroll_handler.dart';
 import '../widgets/gallery/filter_chips_widget.dart';
@@ -34,6 +36,28 @@ import '../widgets/storage_disconnect_banner.dart';
 /// 検索結果 0 件時は「検索結果がありません」メッセージを表示する。
 class GalleryGridScreen extends HookConsumerWidget {
   const GalleryGridScreen({super.key});
+
+  /// フォルダ選択ダイアログを起動し、選択後にギャラリーを切り替える
+  Future<void> _selectFolder(BuildContext context, WidgetRef ref) async {
+    try {
+      final useCase = ref.read(selectStorageUseCaseProvider);
+      final folder = await useCase.execute();
+
+      if (folder != null) {
+        ref.read(currentFolderProvider.notifier).setFolder(folder);
+        // ギャラリーを再読み込み
+        ref.invalidate(galleryImagesProvider);
+        ref.invalidate(galleryImageCountProvider);
+      }
+    } catch (e) {
+      appLogger.e('フォルダ選択エラー', error: e);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('フォルダの選択に失敗しました。再度お試しください。')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -113,6 +137,12 @@ class GalleryGridScreen extends HookConsumerWidget {
             ],
           ),
           actions: [
+            // フォルダ選択ボタン
+            IconButton(
+              icon: const Icon(Icons.folder_open),
+              tooltip: 'フォルダを選択',
+              onPressed: () => _selectFolder(context, ref),
+            ),
             // お気に入りトグルボタン
             if (folder != null)
               FavoriteIndicator(uri: folder.uri, name: folder.name),

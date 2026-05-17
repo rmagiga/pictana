@@ -1,10 +1,8 @@
-/// StorageSelection画面（リデザイン版）
+/// ホーム画面（旧 StorageSelection 画面）
 ///
-/// ユーザーが明示的に開くフォルダを選択する画面。
-/// お気に入りフォルダ一覧をレスポンシブグリッドで表示し、
-/// FAB（Floating Action Button）でフォルダ選択を行う。
-/// 空状態時はプレースホルダーを中央表示する。
-/// Android セーフエリア対応を含む。
+/// アプリのホーム画面として機能し、お気に入りフォルダ一覧を表示する。
+/// AppBar のフォルダ選択ボタンからシステムフォルダ選択ダイアログを起動する。
+/// お気に入りが0件の場合は中央にオンボーディング用のフォルダ選択ボタンを表示する。
 library;
 
 import 'package:flutter/material.dart';
@@ -13,18 +11,17 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/logging/app_logger.dart';
 import '../../router/app_router.dart';
+import '../providers/favorite_list_provider.dart';
 import '../providers/gallery_providers.dart';
 import '../providers/storage_providers.dart';
 import '../widgets/favorite_grid_section.dart';
 import '../widgets/favorite_navigation_handler.dart';
 
-/// ストレージ選択画面
+/// ホーム画面
 ///
-/// - Scaffold + FAB パターン
+/// - AppBar にフォルダ選択アイコンボタンを配置
 /// - body: お気に入りグリッド（FavoriteGridSection）
-/// - FAB: filled extended FAB、folder-open アイコン、ラベル「フォルダを選択」
-/// - FAB 位置: bottom-right、16dp margin、elevation 6dp
-/// - Android セーフエリア対応: viewPadding.bottom を考慮
+/// - お気に入り0件時: 中央にオンボーディングボタンを表示
 class StorageSelectionScreen extends ConsumerWidget {
   const StorageSelectionScreen({super.key});
 
@@ -53,17 +50,20 @@ class StorageSelectionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewPadding = MediaQuery.viewPaddingOf(context);
-    // ジェスチャーナビゲーション時の追加パディング
-    final bottomSafeArea = viewPadding.bottom;
-    final hasGestureNav = bottomSafeArea > 0;
-    final fabBottomMargin = hasGestureNav ? bottomSafeArea + 24.0 : 16.0;
+    final favoritesAsync = ref.watch(favoriteListProvider);
+    final hasFavorites = (favoritesAsync.value ?? []).isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('フォルダを選択'),
+        title: const Text('Pictana'),
         centerTitle: true,
         actions: [
+          // フォルダ選択ボタン
+          IconButton(
+            icon: const Icon(Icons.folder_open),
+            tooltip: 'フォルダを選択',
+            onPressed: () => _selectFolder(context, ref),
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
             tooltip: '設定',
@@ -71,29 +71,51 @@ class StorageSelectionScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          top: 16.0,
-          // グリッド下部: ナビゲーションバー高さ + FAB 分の余白
-          bottom: bottomSafeArea + 80.0,
-        ),
-        child: FavoriteNavigationHandler(
-          child: FavoriteGridSection(
-            onFolderTap: (folder) =>
-                handleFavoriteNavigation(context, ref, folder),
-          ),
+      body: hasFavorites
+          ? SingleChildScrollView(
+              padding: const EdgeInsets.only(top: 16.0, bottom: 24.0),
+              child: FavoriteNavigationHandler(
+                child: FavoriteGridSection(
+                  onFolderTap: (folder) =>
+                      handleFavoriteNavigation(context, ref, folder),
+                ),
+              ),
+            )
+          : _buildOnboarding(context, ref),
+    );
+  }
+
+  /// お気に入りが0件の場合のオンボーディング画面
+  ///
+  /// 中央にフォルダアイコンと説明テキスト、フォルダ選択ボタンを表示する。
+  Widget _buildOnboarding(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.folder_open, size: 80, color: onSurfaceVariant),
+            const SizedBox(height: 24),
+            Text(
+              'フォルダを選択して画像を閲覧しましょう',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed: () => _selectFolder(context, ref),
+              icon: const Icon(Icons.folder_open),
+              label: const Text('フォルダを選択'),
+            ),
+          ],
         ),
       ),
-      floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: fabBottomMargin),
-        child: FloatingActionButton.extended(
-          onPressed: () => _selectFolder(context, ref),
-          elevation: 6,
-          icon: const Icon(Icons.folder_open),
-          label: const Text('フォルダを選択'),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

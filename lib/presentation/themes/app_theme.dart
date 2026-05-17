@@ -51,6 +51,8 @@ abstract final class AppTheme {
     snackBarTheme: const SnackBarThemeData(
       backgroundColor: AppColorsDark.surface,
       contentTextStyle: TextStyle(color: AppColorsDark.onBackground),
+      actionTextColor: AppColorsDark.primary,
+      closeIconColor: AppColorsDark.onSurfaceMedium,
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: AppColorsDark.primary,
@@ -99,6 +101,10 @@ abstract final class AppTheme {
       labelStyle: const TextStyle(color: AppColorsLight.onBackground),
       side: BorderSide.none,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    ),
+    snackBarTheme: const SnackBarThemeData(
+      actionTextColor: AppColorsLight.primary,
+      closeIconColor: AppColorsLight.onSurfaceMedium,
     ),
   );
 }

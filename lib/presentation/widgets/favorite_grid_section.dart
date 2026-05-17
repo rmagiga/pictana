@@ -16,6 +16,7 @@ import '../../application/providers/repository_providers.dart';
 import '../../application/usecases/favorites/toggle_favorite_usecase.dart';
 import '../../core/utils/grid_utils.dart';
 import '../../domain/entities/favorite_folder.dart';
+import '../../domain/repositories/favorite_repository.dart';
 import '../providers/favorite_helper_providers.dart';
 import '../providers/favorite_list_provider.dart';
 import '../providers/grid_column_settings_provider.dart';
@@ -210,12 +211,18 @@ class FavoriteGridSection extends ConsumerWidget {
   /// 削除処理を実行し、成功時は Undo アクション付き SnackBar を5秒間表示する。
   /// Undo 実行時はフォルダを復元しグリッドに再表示する。
   /// 削除失敗時はグリッドを復元しエラー SnackBar を表示する。
+  ///
+  /// 注意: お気に入りが0件になると親ウィジェット（StorageSelectionScreen）が
+  /// 本ウィジェットをツリーから除去しオンボーディング画面に切り替えるため、
+  /// SnackBar コールバック実行時に WidgetRef が無効になる。
+  /// そのため、コールバックで必要なオブジェクトは事前にキャプチャしておく。
   Future<void> _deleteFavorite(
     BuildContext context,
     WidgetRef ref,
     FavoriteFolder folder,
   ) async {
     final repository = ref.read(favoriteRepositoryProvider);
+    final notifier = ref.read(favoriteListProvider.notifier);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final errorColor = Theme.of(context).colorScheme.error;
 
@@ -224,27 +231,30 @@ class FavoriteGridSection extends ConsumerWidget {
       await repository.removeFavorite(folder.uri);
 
       // リストを更新（グリッドから即座に除去）
-      await ref.read(favoriteListProvider.notifier).refresh();
+      await notifier.refresh();
 
       // 既存の SnackBar を閉じてから新しいものを表示
       scaffoldMessenger.hideCurrentSnackBar();
 
       // Undo SnackBar を表示（5秒間）
+      // コールバック内では事前にキャプチャした repository と notifier を使用する
+      // （ウィジェットがアンマウントされ ref が無効になる可能性があるため）
       scaffoldMessenger.showSnackBar(
         SnackBar(
           content: const Text('お気に入りから削除しました'),
           duration: _undoDuration,
+          showCloseIcon: true,
           action: SnackBarAction(
             label: '元に戻す',
             onPressed: () async {
-              await _undoDelete(ref, folder);
+              await _undoDelete(repository, notifier, folder);
             },
           ),
         ),
       );
     } catch (e) {
       // 削除失敗時はグリッドを復元しエラー SnackBar を表示
-      await ref.read(favoriteListProvider.notifier).refresh();
+      await notifier.refresh();
 
       scaffoldMessenger.hideCurrentSnackBar();
       scaffoldMessenger.showSnackBar(
@@ -256,15 +266,19 @@ class FavoriteGridSection extends ConsumerWidget {
   /// 削除を取り消し、フォルダを復元する
   ///
   /// 削除されたフォルダを再登録し、お気に入りリストを更新してグリッドに再表示する。
-  Future<void> _undoDelete(WidgetRef ref, FavoriteFolder folder) async {
-    final repository = ref.read(favoriteRepositoryProvider);
-
+  /// [repository] と [notifier] は事前にキャプチャされたインスタンスを使用する。
+  /// ウィジェットがアンマウント済みでも安全に動作する。
+  Future<void> _undoDelete(
+    FavoriteRepository repository,
+    FavoriteList notifier,
+    FavoriteFolder folder,
+  ) async {
     try {
       // フォルダを再登録
       await repository.addFavorite(uri: folder.uri, name: folder.name);
 
       // リストを更新（グリッドに再表示）
-      await ref.read(favoriteListProvider.notifier).refresh();
+      await notifier.refresh();
     } catch (e) {
       // Undo 失敗時は静かに失敗（次回 refresh で最新状態になる）
     }
