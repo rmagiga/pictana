@@ -1,0 +1,53 @@
+name: optrig
+
+packages:
+  - .
+
+scripts:
+  analyze:
+    run: flutter analyze
+    description: 静的解析（Linter）を実行します。
+
+  test:
+    run: flutter test
+    description: ユニットテストを実行します。
+
+  test:coverage:
+    run: flutter test --coverage
+    description: カバレッジ測定付きでテストを実行します。
+
+  format:
+    run: dart format .
+    description: コードのフォーマットを整形します。
+
+  pub:get:
+    run: flutter pub get
+    description: パッケージの依存関係を取得します。
+
+  fix:
+    run: dart fix --apply
+    description: Linter警告や非推奨コードを自動修正します。
+
+  build:apk:
+    run: flutter build apk --release
+    description: Android向けのリリースAPKをビルドします。
+
+  build:windows:
+    run: flutter build windows --release
+    description: Windows向けのリリースビルドを生成します。
+
+  build_runner:
+    run: dart run build_runner build -d
+    description: コード生成（build_runner）を実行します。
+
+  watch:
+    run: dart run build_runner watch -d
+    description: ファイル変更を監視し、自動でコード生成を実行します。
+
+  icon:
+    run: dart run flutter_launcher_icons
+    description: ランチャーアイコンを生成します。
+
+  clean:
+    run: flutter clean && dart run build_runner clean
+    description: Flutterのビルド生成物およびbuild_runnerのキャッシュをクリアします。
