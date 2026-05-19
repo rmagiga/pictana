@@ -3,6 +3,7 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../application/providers/repository_providers.dart';
@@ -84,44 +85,140 @@ class GallerySortOption extends _$GallerySortOption {
   }
 }
 
-/// 指定フォルダの画像リスト (Stream ベースのインクリメンタル読み込み)
-@riverpod
-Stream<List<ImageEntry>> galleryImages(Ref ref) {
-  final folder = ref.watch(currentFolderProvider);
-  if (folder == null) return const Stream.empty();
+/// ギャラリー画像リストを管理する AsyncNotifier
+///
+/// ImageRepository の Stream を内部で購読し、500ms デバウンスで
+/// UI への通知を制御する。Stream 完了時は即座に通知する。
+@Riverpod(keepAlive: true)
+class GalleryImages extends _$GalleryImages {
+  StreamSubscription<List<ImageEntry>>? _subscription;
+  Timer? _debounceTimer;
+  List<ImageEntry> _buffer = const [];
 
-  final sortOption = ref.watch(gallerySortOptionProvider);
-  final useCase = ref.watch(loadFolderImagesUseCaseProvider);
+  /// 現在購読中のフォルダ（フォルダ変更検知用）
+  FolderEntry? _currentFolder;
 
-  // リポジトリから取得した Stream の各 emit をソートして返す。
-  // ソートオプション変更時は provider 全体が再構築されるため、
-  // 新しい sortOption が確実に適用される。
-  return useCase.execute(folder: folder, sort: sortOption).map((images) {
+  /// デバウンス間隔（テストでオーバーライド可能にするため @visibleForTesting）
+  @visibleForTesting
+  static Duration debounceDuration = const Duration(milliseconds: 500);
+
+  @override
+  FutureOr<List<ImageEntry>> build() {
+    final folder = ref.watch(currentFolderProvider);
+    final sort = ref.watch(gallerySortOptionProvider);
+
+    // Provider 破棄時にリソースをクリーンアップ
+    ref.onDispose(_cleanup);
+
+    if (folder == null) {
+      _cleanup();
+      _currentFolder = null;
+      return const [];
+    }
+
+    // フォルダが変わった場合: 前回の購読をキャンセルし loading へ遷移
+    // ソートのみ変わった場合: 既存データを保持しつつ再購読
+    final isFolderChanged = _currentFolder != folder;
+    _currentFolder = folder;
+
+    // 購読を開始
+    _subscribe(folder, sort);
+
+    if (!isFolderChanged && state.hasValue) {
+      // ソートオプション変更: 現在のデータに新しいソートを即座に適用して返す
+      // （新しいソートでの再購読は _subscribe で開始済み）
+      // Requirement 1.6: 即座にソート適用 + 再購読
+      final sorted = _applySortToCurrentData(state.value!, sort);
+      return sorted;
+    }
+
+    // フォルダ変更または初回: loading 状態で待機
+    // _onData / _onDone / _onError で state を直接設定する
+    return Completer<List<ImageEntry>>().future;
+  }
+
+  /// Stream を購読し、デバウンスロジックを適用する
+  void _subscribe(FolderEntry folder, SortOption sort) {
+    // 前回の購読をキャンセル
+    _cleanup();
+    _buffer = const [];
+
+    final useCase = ref.read(loadFolderImagesUseCaseProvider);
+    final stream = useCase.execute(folder: folder, sort: sort);
+
+    _subscription = stream.listen(_onData, onError: _onError, onDone: _onDone);
+  }
+
+  /// Stream から中間 emit を受信した時の処理
+  void _onData(List<ImageEntry> images) {
+    _buffer = images;
+
+    // 一度 AsyncData になった後はインクリメンタル読み込み中に
+    // AsyncLoading へ遷移させない（Requirement 1.4）
+    // デバウンスタイマーをリセット
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(debounceDuration, _onDebounceTimeout);
+  }
+
+  /// デバウンスタイマー発火時: バッファの内容を state へ反映
+  void _onDebounceTimeout() {
+    state = AsyncData(_buffer);
+  }
+
+  /// Stream 完了時: タイマーをキャンセルし即座に最終結果を反映
+  void _onDone() {
+    _debounceTimer?.cancel();
+    _debounceTimer = null;
+    state = AsyncData(_buffer);
+  }
+
+  /// Stream エラー時: タイマーをキャンセルし AsyncError へ遷移
+  void _onError(Object error, StackTrace stackTrace) {
+    _debounceTimer?.cancel();
+    _debounceTimer = null;
+    // Riverpod の AsyncError は自動的に previous を保持する
+    state = AsyncError<List<ImageEntry>>(error, stackTrace);
+  }
+
+  /// リソースのクリーンアップ
+  void _cleanup() {
+    _debounceTimer?.cancel();
+    _debounceTimer = null;
+    _subscription?.cancel();
+    _subscription = null;
+  }
+
+  /// 現在保持している画像リストに新しいソートオプションを即座に適用する
+  ///
+  /// リポジトリの `_sortEntries()` と同一のソートロジックを使用する。
+  /// ソートオプション変更時の即時レスポンスのために使用し、
+  /// 再購読完了後はリポジトリからソート済みデータが届く。
+  /// (Requirement 1.6, 3.3)
+  List<ImageEntry> _applySortToCurrentData(
+    List<ImageEntry> images,
+    SortOption sort,
+  ) {
+    if (images.isEmpty) return images;
     final sorted = List<ImageEntry>.of(images);
-    _sortImageEntries(sorted, sortOption);
+    final asc = sort.isAscending;
+    sorted.sort(
+      (a, b) => switch (sort.field) {
+        SortField.name =>
+          asc ? a.name.compareTo(b.name) : b.name.compareTo(a.name),
+        SortField.date =>
+          asc
+              ? a.modifiedAt.compareTo(b.modifiedAt)
+              : b.modifiedAt.compareTo(a.modifiedAt),
+        SortField.size =>
+          asc ? a.size.compareTo(b.size) : b.size.compareTo(a.size),
+        SortField.type =>
+          asc
+              ? a.extension.compareTo(b.extension)
+              : b.extension.compareTo(a.extension),
+      },
+    );
     return sorted;
-  });
-}
-
-/// Provider レベルでのソート適用（リポジトリ側のソートに加えて二重保証）
-void _sortImageEntries(List<ImageEntry> entries, SortOption sort) {
-  final asc = sort.isAscending;
-  entries.sort(
-    (a, b) => switch (sort.field) {
-      SortField.name =>
-        asc ? a.name.compareTo(b.name) : b.name.compareTo(a.name),
-      SortField.date =>
-        asc
-            ? a.modifiedAt.compareTo(b.modifiedAt)
-            : b.modifiedAt.compareTo(a.modifiedAt),
-      SortField.size =>
-        asc ? a.size.compareTo(b.size) : b.size.compareTo(a.size),
-      SortField.type =>
-        asc
-            ? a.extension.compareTo(b.extension)
-            : b.extension.compareTo(a.extension),
-    },
-  );
+  }
 }
 
 /// フォルダ内の画像総数

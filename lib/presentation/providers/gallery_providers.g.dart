@@ -268,29 +268,31 @@ abstract class _$GallerySortOption extends $Notifier<SortOption> {
   }
 }
 
-/// 指定フォルダの画像リスト (Stream ベースのインクリメンタル読み込み)
+/// ギャラリー画像リストを管理する AsyncNotifier
+///
+/// ImageRepository の Stream を内部で購読し、500ms デバウンスで
+/// UI への通知を制御する。Stream 完了時は即座に通知する。
 
-@ProviderFor(galleryImages)
+@ProviderFor(GalleryImages)
 final galleryImagesProvider = GalleryImagesProvider._();
 
-/// 指定フォルダの画像リスト (Stream ベースのインクリメンタル読み込み)
-
+/// ギャラリー画像リストを管理する AsyncNotifier
+///
+/// ImageRepository の Stream を内部で購読し、500ms デバウンスで
+/// UI への通知を制御する。Stream 完了時は即座に通知する。
 final class GalleryImagesProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<ImageEntry>>,
-          List<ImageEntry>,
-          Stream<List<ImageEntry>>
-        >
-    with $FutureModifier<List<ImageEntry>>, $StreamProvider<List<ImageEntry>> {
-  /// 指定フォルダの画像リスト (Stream ベースのインクリメンタル読み込み)
+    extends $AsyncNotifierProvider<GalleryImages, List<ImageEntry>> {
+  /// ギャラリー画像リストを管理する AsyncNotifier
+  ///
+  /// ImageRepository の Stream を内部で購読し、500ms デバウンスで
+  /// UI への通知を制御する。Stream 完了時は即座に通知する。
   GalleryImagesProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'galleryImagesProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -300,17 +302,34 @@ final class GalleryImagesProvider
 
   @$internal
   @override
-  $StreamProviderElement<List<ImageEntry>> $createElement(
-    $ProviderPointer pointer,
-  ) => $StreamProviderElement(pointer);
-
-  @override
-  Stream<List<ImageEntry>> create(Ref ref) {
-    return galleryImages(ref);
-  }
+  GalleryImages create() => GalleryImages();
 }
 
-String _$galleryImagesHash() => r'6971f452709aa77a0d579a5f08d8de301860633e';
+String _$galleryImagesHash() => r'43b8311c5ee0a7aaf7531aa66baf94c758ecf2c5';
+
+/// ギャラリー画像リストを管理する AsyncNotifier
+///
+/// ImageRepository の Stream を内部で購読し、500ms デバウンスで
+/// UI への通知を制御する。Stream 完了時は即座に通知する。
+
+abstract class _$GalleryImages extends $AsyncNotifier<List<ImageEntry>> {
+  FutureOr<List<ImageEntry>> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref =
+        this.ref as $Ref<AsyncValue<List<ImageEntry>>, List<ImageEntry>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<ImageEntry>>, List<ImageEntry>>,
+              AsyncValue<List<ImageEntry>>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}
 
 /// フォルダ内の画像総数
 

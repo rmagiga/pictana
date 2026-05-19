@@ -15,6 +15,7 @@
 /// Requirements: 1.1, 2.1, 3.1, 4.1
 library;
 
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -126,6 +127,18 @@ class _FakeThumbnailRepository implements ThumbnailRepository {
   dynamic noSuchMethod(Invocation invocation) => null;
 }
 
+/// Fake GalleryImages AsyncNotifier（テスト用）
+class _FakeGalleryImages extends GalleryImages {
+  final List<ImageEntry> _testImages;
+
+  _FakeGalleryImages(this._testImages);
+
+  @override
+  FutureOr<List<ImageEntry>> build() {
+    return _testImages;
+  }
+}
+
 /// Fake SwipeDirectionSetting Provider
 class _FakeSwipeDirectionSetting extends SwipeDirectionSetting {
   @override
@@ -150,10 +163,8 @@ Widget _createTestWidget({int initialIndex = 0, List<ImageEntry>? images}) {
 
   return ProviderScope(
     overrides: [
-      // galleryImagesProvider: テスト用画像リストを Stream で返す
-      galleryImagesProvider.overrideWith((ref) {
-        return Stream.value(testImages);
-      }),
+      // galleryImagesProvider: テスト用画像リストを返す AsyncNotifier
+      galleryImagesProvider.overrideWith(() => _FakeGalleryImages(testImages)),
       // preloadAdjacentImagesUseCaseProvider: No-op
       preloadAdjacentImagesUseCaseProvider.overrideWith((ref) {
         return _FakePreloadAdjacentImagesUseCase();

@@ -84,16 +84,14 @@ abstract class _$SearchController extends $Notifier<SearchFilterState> {
 
 /// 検索フィルターを適用した画像リストを返す computed Provider
 ///
-/// [SearchController] の状態と画像リストを監視し、
-/// `applySearchFilter` 純粋関数でフィルタリングした結果を返す。
+/// galleryImagesProvider を直接 watch し、family 引数を使用しない。
 
 @ProviderFor(filteredImages)
-final filteredImagesProvider = FilteredImagesFamily._();
+final filteredImagesProvider = FilteredImagesProvider._();
 
 /// 検索フィルターを適用した画像リストを返す computed Provider
 ///
-/// [SearchController] の状態と画像リストを監視し、
-/// `applySearchFilter` 純粋関数でフィルタリングした結果を返す。
+/// galleryImagesProvider を直接 watch し、family 引数を使用しない。
 
 final class FilteredImagesProvider
     extends
@@ -105,28 +103,20 @@ final class FilteredImagesProvider
     with $Provider<List<ImageEntry>> {
   /// 検索フィルターを適用した画像リストを返す computed Provider
   ///
-  /// [SearchController] の状態と画像リストを監視し、
-  /// `applySearchFilter` 純粋関数でフィルタリングした結果を返す。
-  FilteredImagesProvider._({
-    required FilteredImagesFamily super.from,
-    required List<ImageEntry> super.argument,
-  }) : super(
-         retry: null,
-         name: r'filteredImagesProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  /// galleryImagesProvider を直接 watch し、family 引数を使用しない。
+  FilteredImagesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'filteredImagesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$filteredImagesHash();
-
-  @override
-  String toString() {
-    return r'filteredImagesProvider'
-        ''
-        '($argument)';
-  }
 
   @$internal
   @override
@@ -135,8 +125,7 @@ final class FilteredImagesProvider
 
   @override
   List<ImageEntry> create(Ref ref) {
-    final argument = this.argument as List<ImageEntry>;
-    return filteredImages(ref, images: argument);
+    return filteredImages(ref);
   }
 
   /// {@macro riverpod.override_with_value}
@@ -146,44 +135,6 @@ final class FilteredImagesProvider
       providerOverride: $SyncValueProvider<List<ImageEntry>>(value),
     );
   }
-
-  @override
-  bool operator ==(Object other) {
-    return other is FilteredImagesProvider && other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
-  }
 }
 
-String _$filteredImagesHash() => r'0377b976e9f3e4c49924c703f97a8cd00aeceaea';
-
-/// 検索フィルターを適用した画像リストを返す computed Provider
-///
-/// [SearchController] の状態と画像リストを監視し、
-/// `applySearchFilter` 純粋関数でフィルタリングした結果を返す。
-
-final class FilteredImagesFamily extends $Family
-    with $FunctionalFamilyOverride<List<ImageEntry>, List<ImageEntry>> {
-  FilteredImagesFamily._()
-    : super(
-        retry: null,
-        name: r'filteredImagesProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: true,
-      );
-
-  /// 検索フィルターを適用した画像リストを返す computed Provider
-  ///
-  /// [SearchController] の状態と画像リストを監視し、
-  /// `applySearchFilter` 純粋関数でフィルタリングした結果を返す。
-
-  FilteredImagesProvider call({required List<ImageEntry> images}) =>
-      FilteredImagesProvider._(argument: images, from: this);
-
-  @override
-  String toString() => r'filteredImagesProvider';
-}
+String _$filteredImagesHash() => r'3f818a384010e31f115633a0b619b6984927a44a';

@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../application/usecases/gallery/search_controller.dart';
 import '../../application/usecases/storage/storage_monitor.dart';
@@ -202,9 +203,7 @@ class GalleryGridScreen extends HookConsumerWidget {
               child: imagesAsync.when(
                 data: (images) {
                   // SearchController の filteredImages を適用 (Req 11.2, 12.2)
-                  final filteredImages = ref.watch(
-                    filteredImagesProvider(images: images),
-                  );
+                  final filteredImages = ref.watch(filteredImagesProvider);
 
                   // 検索結果 0 件時のメッセージ表示 (Req 11.5, 12.5)
                   if (filteredImages.isEmpty) {
@@ -266,7 +265,7 @@ class GalleryGridScreen extends HookConsumerWidget {
                     },
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => _buildSkeletonGrid(context, ref),
                 error: (e, st) => Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -329,6 +328,45 @@ class GalleryGridScreen extends HookConsumerWidget {
           ],
         ],
       ),
+    );
+  }
+
+  /// 初回ローディング時のスケルトングリッドを構築する (Req 4.4)
+  ///
+  /// 実際のグリッドと同じレイアウト（列数・スペーシング）で
+  /// Card 形状のダミータイルを Skeletonizer で表示する。
+  Widget _buildSkeletonGrid(BuildContext context, WidgetRef ref) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final settings = ref.watch(gridColumnSettingsProvider);
+        final crossAxisCount = (constraints.maxWidth / 150)
+            .floor()
+            .clamp(settings.minColumns, settings.maxColumns)
+            .toInt();
+
+        return Skeletonizer(
+          enabled: true,
+          child: GridView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(4),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: 4,
+              mainAxisSpacing: 4,
+            ),
+            itemCount: 16,
+            itemBuilder: (context, index) {
+              return Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: const SizedBox.expand(),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

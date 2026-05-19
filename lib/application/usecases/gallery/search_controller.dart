@@ -12,6 +12,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../domain/entities/image_entry.dart';
 import '../../../domain/entities/search_filter_state.dart';
 import '../../../domain/value_objects/search_filter.dart';
+import '../../../presentation/providers/gallery_providers.dart';
 
 part 'search_controller.g.dart';
 
@@ -67,11 +68,12 @@ class SearchController extends _$SearchController {
 
 /// 検索フィルターを適用した画像リストを返す computed Provider
 ///
-/// [SearchController] の状態と画像リストを監視し、
-/// `applySearchFilter` 純粋関数でフィルタリングした結果を返す。
+/// galleryImagesProvider を直接 watch し、family 引数を使用しない。
 @riverpod
-List<ImageEntry> filteredImages(Ref ref, {required List<ImageEntry> images}) {
+List<ImageEntry> filteredImages(Ref ref) {
+  final imagesAsync = ref.watch(galleryImagesProvider);
   final filterState = ref.watch(searchControllerProvider);
+  final images = imagesAsync.value ?? const [];
   return applySearchFilter(
     images: images,
     query: filterState.query,
