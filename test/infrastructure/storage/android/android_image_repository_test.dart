@@ -21,10 +21,12 @@ library;
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/native.dart';
 import 'package:pictana/core/errors/app_exceptions.dart';
 import 'package:pictana/domain/entities/entry_id.dart';
 import 'package:pictana/domain/entities/folder_entry.dart';
 import 'package:pictana/domain/entities/image_entry.dart';
+import 'package:pictana/infrastructure/database/app_database.dart';
 import 'package:pictana/infrastructure/storage/android/android_image_repository.dart';
 import 'package:pictana/infrastructure/storage/android/saf_platform_channel.dart';
 
@@ -120,21 +122,49 @@ List<Map<String, dynamic>> _createImageMaps(int count, {int startIndex = 0}) {
 
 void main() {
   late MockSafPlatformChannel mockChannel;
+  late AppDatabase database;
   late AndroidImageRepository repository;
   late FolderEntry testFolder;
 
   setUp(() {
     mockChannel = MockSafPlatformChannel();
-    repository = AndroidImageRepository(channel: mockChannel);
+    database = AppDatabase.forTesting(NativeDatabase.memory());
+    repository = AndroidImageRepository(
+      channel: mockChannel,
+      database: database,
+    );
     testFolder = _createTestFolder();
   });
+
+  tearDown(() async {
+    await database.close();
+  });
+
+  Future<void> insertDummyImages(int count, String folderUri) async {
+    final list = List.generate(count, (i) {
+      final ext = 'jpg';
+      final nameStr = i.toString().padLeft(3, '0');
+      return ImageTableData(
+        entryId: 'primary:DCIM/Camera/IMG_$nameStr.jpg',
+        uri: 'content://example/IMG_$nameStr.jpg',
+        folderUri: folderUri,
+        name: 'IMG_$nameStr.jpg',
+        extension: ext,
+        modified: (1704067200000 + i * 1000),
+        size: 1000000,
+        mimeType: 'jpeg',
+        indexedAt: DateTime.now(),
+      );
+    });
+    await database.upsertImages(list);
+  }
 
   // =========================================================================
   // getImages テスト
   // =========================================================================
 
   group('getImages', () {
-    test('バッチサイズ 50 で Stream を emit する', () async {
+    test('バッチサイズ 50 で Stream を emit する（100件単位でのバルクupsert）', () async {
       // 120 件の画像を用意（50 + 50 + 20 の 3 バッチ）
       mockChannel.onGetImages = (treeUri, documentId, offset, limit) async {
         final totalImages = 120;
@@ -146,13 +176,10 @@ void main() {
 
       final batches = await repository.getImages(folder: testFolder).toList();
 
-      // 3 バッチが emit されること（累積方式）
-      expect(batches.length, 3);
-      // 累積リストが emit される: 50, 100, 120
-      expect(batches[0].length, 50);
-      expect(batches[1].length, 100);
-      // 最後のバッチは累積 120 件
-      expect(batches[2].length, 120);
+      // 100件および残り20件(合計120件)の2回 emit されること
+      expect(batches.length, 2);
+      expect(batches[0].length, 100);
+      expect(batches[1].length, 120);
     });
 
     test('ちょうど 50 件の場合は 1 バッチ + 空バッチ確認で終了', () async {
@@ -366,27 +393,13 @@ void main() {
 
   group('countImages', () {
     test('フォルダ内の全画像数をカウントする', () async {
-      // 120 件の画像
-      mockChannel.onGetImages = (treeUri, documentId, offset, limit) async {
-        final totalImages = 120;
-        final start = offset;
-        final end = (offset + limit).clamp(0, totalImages);
-        if (start >= totalImages) return [];
-        return _createImageMaps(end - start, startIndex: start);
-      };
-
+      await insertDummyImages(120, testFolder.uri);
       final count = await repository.countImages(folder: testFolder);
-
       expect(count, 120);
     });
 
     test('空フォルダの場合は 0 を返す', () async {
-      mockChannel.onGetImages = (treeUri, documentId, offset, limit) async {
-        return [];
-      };
-
       final count = await repository.countImages(folder: testFolder);
-
       expect(count, 0);
     });
   });
@@ -419,14 +432,7 @@ void main() {
 
   group('getImagePage', () {
     test('正しいページの結果を返す', () async {
-      int? capturedOffset;
-      int? capturedLimit;
-
-      mockChannel.onGetImages = (treeUri, documentId, offset, limit) async {
-        capturedOffset = offset;
-        capturedLimit = limit;
-        return _createImageMaps(20, startIndex: offset);
-      };
+      await insertDummyImages(60, testFolder.uri);
 
       final result = await repository.getImagePage(
         folder: testFolder,
@@ -434,41 +440,22 @@ void main() {
         pageSize: 20,
       );
 
-      // page=2, pageSize=20 → offset=40
-      expect(capturedOffset, 40);
-      expect(capturedLimit, 20);
+      // page=2, pageSize=20 (3ページ目: index 40〜59) -> 20件取得されること
       expect(result.length, 20);
+      expect(result[0].name, 'IMG_040.jpg');
     });
 
-    test('最初のページ (page=0) は offset=0 で取得する', () async {
-      int? capturedOffset;
+    test('最初のページ (page=0) は 0番目のインデックスから取得する', () async {
+      await insertDummyImages(15, testFolder.uri);
 
-      mockChannel.onGetImages = (treeUri, documentId, offset, limit) async {
-        capturedOffset = offset;
-        return _createImageMaps(10, startIndex: offset);
-      };
+      final result = await repository.getImagePage(folder: testFolder, page: 0, pageSize: 10);
 
-      await repository.getImagePage(folder: testFolder, page: 0, pageSize: 10);
-
-      expect(capturedOffset, 0);
+      expect(result.length, 10);
+      expect(result[0].name, 'IMG_000.jpg');
     });
 
-    test('変換エラーのエントリはスキップされる', () async {
-      mockChannel.onGetImages = (treeUri, documentId, offset, limit) async {
-        return [
-          _createImageMap(index: 1),
-          // 変換エラーを起こすエントリ
-          <String, dynamic>{
-            'documentId': null,
-            'name': 'broken.jpg',
-            'uri': 'content://example/broken.jpg',
-            'mimeType': 'image/jpeg',
-            'size': 100,
-            'lastModified': 1704067200000,
-          },
-          _createImageMap(index: 3),
-        ];
-      };
+    test('フィルタやページサイズ制限に従うこと', () async {
+      await insertDummyImages(3, testFolder.uri);
 
       final result = await repository.getImagePage(
         folder: testFolder,
@@ -476,7 +463,7 @@ void main() {
         pageSize: 50,
       );
 
-      expect(result.length, 2);
+      expect(result.length, 3);
     });
   });
 }

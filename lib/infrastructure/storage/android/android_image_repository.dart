@@ -13,10 +13,12 @@ import '../../../core/errors/app_exceptions.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../domain/entities/folder_entry.dart';
 import '../../../domain/entities/image_entry.dart';
+import '../../../domain/entities/entry_id.dart';
 import '../../../domain/repositories/image_repository.dart';
 import '../../../domain/value_objects/sort_option.dart';
 import 'saf_data_mappers.dart';
 import 'saf_platform_channel.dart';
+import '../../database/app_database.dart';
 
 /// 画像列挙のバッチサイズ
 const _kBatchSize = 50;
@@ -26,10 +28,14 @@ const _kDirectTransferLimit = 10 * 1024 * 1024;
 
 /// Android SAF 向け ImageRepository 実装
 class AndroidImageRepository implements ImageRepository {
-  AndroidImageRepository({required SafPlatformChannel channel})
-    : _channel = channel;
+  AndroidImageRepository({
+    required SafPlatformChannel channel,
+    required AppDatabase database,
+  })  : _channel = channel,
+        _db = database;
 
   final SafPlatformChannel _channel;
+  final AppDatabase _db;
 
   // ---------------------------------------------------------------------------
   // ImageRepository 実装
@@ -45,49 +51,81 @@ class AndroidImageRepository implements ImageRepository {
     final documentId = folder.id.rawValue;
 
     var offset = 0;
-    final accumulated = <ImageEntry>[];
+    final activeEntryIds = <String>[];
+    final batchToUpsert = <ImageTableData>[];
 
-    while (true) {
-      List<Map<String, dynamic>> batch;
-      try {
-        batch = await _channel.getImages(
+    try {
+      while (true) {
+        final batch = await _channel.getImages(
           treeUri,
           documentId,
           offset,
           _kBatchSize,
         );
-      } catch (e) {
-        // アクセス不可の場合はエラーを伝播する
-        appLogger.e('getImages バッチ取得エラー (offset=$offset)', error: e);
-        rethrow;
-      }
 
-      // 空バッチ = 全件取得完了
-      if (batch.isEmpty) break;
+        if (batch.isEmpty) break;
 
-      // Map → ImageEntry に変換し、フィルターを適用
-      for (final map in batch) {
-        try {
-          final entry = ImageEntryFromMap.fromChannelMap(map);
-          if (_matchesFilter(entry, filter)) {
-            accumulated.add(entry);
+        for (final map in batch) {
+          try {
+            final entry = ImageEntryFromMap.fromChannelMap(map);
+            activeEntryIds.add(entry.id.rawValue);
+
+            batchToUpsert.add(ImageTableData(
+              entryId: entry.id.rawValue,
+              uri: entry.uri,
+              folderUri: folder.uri,
+              name: entry.name,
+              extension: entry.extension,
+              modified: entry.modifiedAt.millisecondsSinceEpoch,
+              size: entry.size,
+              mimeType: entry.mimeType.name,
+              indexedAt: DateTime.now(),
+            ));
+          } catch (e) {
+            appLogger.w('AndroidImageRepository 同期バッチ変換エラー', error: e);
           }
-        } catch (e) {
-          // 個別エントリの変換エラーはスキップして継続（エラー耐性）
-          appLogger.w('getImages エントリ変換スキップ', error: e);
         }
+
+        // 100件ごとにDBへ一括 upsert & yield
+        if (batchToUpsert.length >= 100) {
+          await _db.upsertImages(List.of(batchToUpsert));
+          batchToUpsert.clear();
+
+          final currentImages = await _db.getImagePage(
+            folderUri: folder.uri,
+            page: 0,
+            pageSize: 1000000,
+            sort: sort,
+            filter: filter,
+          );
+          yield currentImages.map((item) => _toImageEntry(item)).toList();
+        }
+
+        if (batch.length < _kBatchSize) break;
+        offset += _kBatchSize;
       }
 
-      // 累積リストをソートして emit（インクリメンタル表示）
-      if (accumulated.isNotEmpty) {
-        _sortEntries(accumulated, sort);
-        yield List.of(accumulated);
+      if (batchToUpsert.isNotEmpty) {
+        await _db.upsertImages(batchToUpsert);
       }
 
-      // バッチサイズ未満 = 最終バッチ
-      if (batch.length < _kBatchSize) break;
+      await _db.deleteImagesNotIn(folder.uri, activeEntryIds);
 
-      offset += _kBatchSize;
+      // アクティブな画像がある場合のみ最終結果を emit
+      if (activeEntryIds.isNotEmpty) {
+        final finalImages = await _db.getImagePage(
+          folderUri: folder.uri,
+          page: 0,
+          pageSize: 1000000,
+          sort: sort,
+          filter: filter,
+        );
+        yield finalImages.map((item) => _toImageEntry(item)).toList();
+      }
+
+    } catch (e) {
+      appLogger.e('AndroidImageRepository getImages エラー: ${folder.uri}', error: e);
+      rethrow;
     }
   }
 
@@ -99,31 +137,14 @@ class AndroidImageRepository implements ImageRepository {
     SortOption sort = SortOption.defaultOption,
     ImageFilter filter = ImageFilter.none,
   }) async {
-    final treeUri = folder.uri;
-    final documentId = folder.id.rawValue;
-    final offset = page * pageSize;
-
-    final batch = await _channel.getImages(
-      treeUri,
-      documentId,
-      offset,
-      pageSize,
+    final list = await _db.getImagePage(
+      folderUri: folder.uri,
+      page: page,
+      pageSize: pageSize,
+      sort: sort,
+      filter: filter,
     );
-
-    final entries = <ImageEntry>[];
-    for (final map in batch) {
-      try {
-        final entry = ImageEntryFromMap.fromChannelMap(map);
-        if (_matchesFilter(entry, filter)) {
-          entries.add(entry);
-        }
-      } catch (e) {
-        appLogger.w('getImagePage エントリ変換スキップ', error: e);
-      }
-    }
-
-    _sortEntries(entries, sort);
-    return entries;
+    return list.map((item) => _toImageEntry(item)).toList();
   }
 
   @override
@@ -131,48 +152,12 @@ class AndroidImageRepository implements ImageRepository {
     required FolderEntry folder,
     ImageFilter filter = ImageFilter.none,
   }) async {
-    final treeUri = folder.uri;
-    final documentId = folder.id.rawValue;
-
-    var count = 0;
-    var offset = 0;
-
-    while (true) {
-      final batch = await _channel.getImages(
-        treeUri,
-        documentId,
-        offset,
-        _kBatchSize,
-      );
-
-      if (batch.isEmpty) break;
-
-      if (!filter.hasFilter) {
-        count += batch.length;
-      } else {
-        for (final map in batch) {
-          try {
-            final entry = ImageEntryFromMap.fromChannelMap(map);
-            if (_matchesFilter(entry, filter)) {
-              count++;
-            }
-          } catch (_) {
-            // 変換エラーはカウントしない
-          }
-        }
-      }
-
-      if (batch.length < _kBatchSize) break;
-      offset += _kBatchSize;
-    }
-
-    return count;
+    return _db.countImages(folderUri: folder.uri, filter: filter);
   }
 
   @override
   Future<ImageEntry> getImageMetadata(ImageEntry entry) async {
     // SAF では追加メタデータ取得が限定的なため、既存エントリをそのまま返す。
-    // 将来的に ExifInterface 等を使用する場合はここを拡張する。
     return entry;
   }
 
@@ -202,9 +187,6 @@ class AndroidImageRepository implements ImageRepository {
   // ---------------------------------------------------------------------------
 
   /// 一時ファイル経由で画像バイトを取得する
-  ///
-  /// ネイティブ側が一時ファイルに書き出し、そのパスを返す。
-  /// Dart 側でファイルを読み込み、読み込み後に一時ファイルを削除する。
   Future<List<int>> _getImageBytesViaFile(String contentUri) async {
     try {
       final tempPath = await _channel.getImageBytesViaFile(contentUri);
@@ -229,37 +211,19 @@ class AndroidImageRepository implements ImageRepository {
     }
   }
 
-  /// フィルター条件に一致するかを判定する
-  bool _matchesFilter(ImageEntry entry, ImageFilter filter) {
-    if (filter.nameQuery != null &&
-        !entry.name.toLowerCase().contains(filter.nameQuery!.toLowerCase())) {
-      return false;
-    }
-    if (filter.mimeTypes != null &&
-        !filter.mimeTypes!.contains(entry.mimeType)) {
-      return false;
-    }
-    return true;
-  }
 
-  /// ソートオプションに従ってエントリリストをソートする
-  void _sortEntries(List<ImageEntry> entries, SortOption sort) {
-    final asc = sort.isAscending;
-    entries.sort(
-      (a, b) => switch (sort.field) {
-        SortField.name =>
-          asc ? a.name.compareTo(b.name) : b.name.compareTo(a.name),
-        SortField.date =>
-          asc
-              ? a.modifiedAt.compareTo(b.modifiedAt)
-              : b.modifiedAt.compareTo(a.modifiedAt),
-        SortField.size =>
-          asc ? a.size.compareTo(b.size) : b.size.compareTo(a.size),
-        SortField.type =>
-          asc
-              ? a.extension.compareTo(b.extension)
-              : b.extension.compareTo(a.extension),
-      },
+
+  ImageEntry _toImageEntry(ImageTableData data) {
+    return ImageEntry(
+      id: EntryId.android(data.entryId),
+      name: data.name,
+      extension: data.extension,
+      uri: data.uri,
+      mimeType: ImageMimeType.values.byName(data.mimeType),
+      size: data.size,
+      modifiedAt: DateTime.fromMillisecondsSinceEpoch(data.modified),
+      width: data.width,
+      height: data.height,
     );
   }
 }

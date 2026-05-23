@@ -6,6 +6,7 @@ library;
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -109,25 +110,26 @@ class WindowsThumbnailRepository implements ThumbnailRepository {
 
   /// サムネイルを生成する
   ///
-  /// 注意: Windows では Background Isolate での dart:ui (画像デコーダー) 使用に制限があるため、
-  /// (Exception: Failed to access the internal image decoder registry)
-  /// 現在はメイン Isolate で実行しています。
+  /// UIスレッドのフリーズを回避するため、Isolate.runを用いた
+  /// バックグラウンドIsolateで画像のリサイズデコード処理を実行します。
   Future<Uint8List?> _generateInIsolate(String filePath, int targetSize) async {
     try {
-      final bytes = await File(filePath).readAsBytes();
+      return await Isolate.run(() async {
+        final bytes = await File(filePath).readAsBytes();
 
-      // Flutter の codec でデコード
-      final codec = await ui.instantiateImageCodec(
-        bytes,
-        targetWidth: targetSize,
-        targetHeight: targetSize,
-      );
-      final frame = await codec.getNextFrame();
-      final image = frame.image;
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      image.dispose();
+        // Flutter の codec でデコード
+        final codec = await ui.instantiateImageCodec(
+          bytes,
+          targetWidth: targetSize,
+          targetHeight: targetSize,
+        );
+        final frame = await codec.getNextFrame();
+        final image = frame.image;
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        image.dispose();
 
-      return byteData?.buffer.asUint8List();
+        return byteData?.buffer.asUint8List();
+      });
     } catch (e) {
       appLogger.w('サムネイル生成エラー: $filePath', error: e);
       return null;

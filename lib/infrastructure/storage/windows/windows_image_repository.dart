@@ -13,6 +13,7 @@ import '../../../domain/entities/folder_entry.dart';
 import '../../../domain/entities/image_entry.dart';
 import '../../../domain/repositories/image_repository.dart';
 import '../../../domain/value_objects/sort_option.dart';
+import '../../database/app_database.dart';
 
 /// Windows で対応する画像拡張子 → MimeType マップ
 /// (bmp は ImageMimeType に存在しないため unknown へ)
@@ -29,7 +30,9 @@ const _kSupportedExtensions = <String, ImageMimeType>{
 
 /// Windows 向け ImageRepository 実装
 class WindowsImageRepository implements ImageRepository {
-  const WindowsImageRepository();
+  WindowsImageRepository({required AppDatabase database}) : _db = database;
+
+  final AppDatabase _db;
 
   // ---------------------------------------------------------------------------
   // ImageRepository 実装
@@ -46,32 +49,71 @@ class WindowsImageRepository implements ImageRepository {
       throw StorageDisconnectedException(message: '${folder.name} が見つかりません');
     }
 
-    final accumulated = <ImageEntry>[];
-    var emittedCount = 0;
+    final activeEntryIds = <String>[];
+    final batchToUpsert = <ImageTableData>[];
+
     try {
       await for (final entity in dir.list(followLinks: false)) {
         if (entity is! File) continue;
-        final entry = await _fileToImageEntry(entity, folder.id);
-        if (entry == null) continue;
-        if (!_matchesFilter(entry, filter)) continue;
 
-        accumulated.add(entry);
-        // 50件ごとに累積リストを emit する（インクリメンタル表示）
-        if (accumulated.length - emittedCount >= 50) {
-          _sortEntries(accumulated, sort);
-          yield List.of(accumulated);
-          emittedCount = accumulated.length;
+        final ext = p.extension(entity.path).toLowerCase().replaceFirst('.', '');
+        final mime = _kSupportedExtensions[ext];
+        if (mime == null) continue;
+
+        final entryId = EntryId.windows(entity.path).rawValue;
+        activeEntryIds.add(entryId);
+
+        final stat = await entity.stat();
+        batchToUpsert.add(ImageTableData(
+          entryId: entryId,
+          uri: entity.path,
+          folderUri: folder.uri,
+          name: p.basename(entity.path),
+          extension: ext,
+          modified: stat.modified.millisecondsSinceEpoch,
+          size: stat.size,
+          mimeType: mime.name,
+          indexedAt: DateTime.now(),
+        ));
+
+        // 100件ごとにDBへ一括 upsert & yield (有限Streamとして完了を保証するため)
+        if (batchToUpsert.length >= 100) {
+          await _db.upsertImages(List.of(batchToUpsert));
+          batchToUpsert.clear();
+
+          final currentImages = await _db.getImagePage(
+            folderUri: folder.uri,
+            page: 0,
+            pageSize: 1000000,
+            sort: sort,
+            filter: filter,
+          );
+          yield currentImages.map((item) => _toImageEntry(item)).toList();
         }
       }
-    } catch (e) {
-      appLogger.e('getImages エラー: ${folder.uri}', error: e);
-      throw StorageDisconnectedException(cause: e);
-    }
 
-    // 最終バッチ（未 emit 分がある場合）をソートして emit
-    if (accumulated.length > emittedCount) {
-      _sortEntries(accumulated, sort);
-      yield List.of(accumulated);
+      if (batchToUpsert.isNotEmpty) {
+        await _db.upsertImages(batchToUpsert);
+      }
+
+      // 存在しない画像をクリーンアップ
+      await _db.deleteImagesNotIn(folder.uri, activeEntryIds);
+
+      // アクティブな画像がある場合のみ最終結果を emit
+      if (activeEntryIds.isNotEmpty) {
+        final finalImages = await _db.getImagePage(
+          folderUri: folder.uri,
+          page: 0,
+          pageSize: 1000000,
+          sort: sort,
+          filter: filter,
+        );
+        yield finalImages.map((item) => _toImageEntry(item)).toList();
+      }
+
+    } catch (e) {
+      appLogger.e('getImages 同期・取得エラー: ${folder.uri}', error: e);
+      throw StorageDisconnectedException(cause: e);
     }
   }
 
@@ -83,31 +125,14 @@ class WindowsImageRepository implements ImageRepository {
     SortOption sort = SortOption.defaultOption,
     ImageFilter filter = ImageFilter.none,
   }) async {
-    final dir = Directory(folder.uri);
-    if (!await dir.exists()) {
-      throw StorageDisconnectedException(message: '${folder.name} が見つかりません');
-    }
-
-    final allEntries = <ImageEntry>[];
-    try {
-      await for (final entity in dir.list(followLinks: false)) {
-        if (entity is! File) continue;
-        final entry = await _fileToImageEntry(entity, folder.id);
-        if (entry == null) continue;
-        if (!_matchesFilter(entry, filter)) continue;
-        allEntries.add(entry);
-      }
-    } catch (e) {
-      throw StorageDisconnectedException(cause: e);
-    }
-
-    _sortEntries(allEntries, sort);
-    final start = page * pageSize;
-    if (start >= allEntries.length) return [];
-    return allEntries.sublist(
-      start,
-      (start + pageSize).clamp(0, allEntries.length),
+    final list = await _db.getImagePage(
+      folderUri: folder.uri,
+      page: page,
+      pageSize: pageSize,
+      sort: sort,
+      filter: filter,
     );
+    return list.map((item) => _toImageEntry(item)).toList();
   }
 
   @override
@@ -115,29 +140,7 @@ class WindowsImageRepository implements ImageRepository {
     required FolderEntry folder,
     ImageFilter filter = ImageFilter.none,
   }) async {
-    final dir = Directory(folder.uri);
-    if (!await dir.exists()) return 0;
-
-    var count = 0;
-    try {
-      await for (final entity in dir.list(followLinks: false)) {
-        if (entity is! File) continue;
-        final ext = p
-            .extension(entity.path)
-            .toLowerCase()
-            .replaceFirst('.', '');
-        if (!_kSupportedExtensions.containsKey(ext)) continue;
-        if (filter.nameQuery != null &&
-            !p
-                .basename(entity.path)
-                .toLowerCase()
-                .contains(filter.nameQuery!.toLowerCase())) {
-          continue;
-        }
-        count++;
-      }
-    } catch (_) {}
-    return count;
+    return _db.countImages(folderUri: folder.uri, filter: filter);
   }
 
   @override
@@ -160,58 +163,19 @@ class WindowsImageRepository implements ImageRepository {
   // private ヘルパー
   // ---------------------------------------------------------------------------
 
-  Future<ImageEntry?> _fileToImageEntry(File file, EntryId parentId) async {
-    final ext = p.extension(file.path).toLowerCase().replaceFirst('.', '');
-    final mime = _kSupportedExtensions[ext];
-    if (mime == null) return null;
 
-    try {
-      final stat = await file.stat();
-      return ImageEntry(
-        id: EntryId.windows(file.path),
-        name: p.basename(file.path),
-        extension: ext,
-        uri: file.path,
-        mimeType: mime,
-        size: stat.size,
-        modifiedAt: stat.modified,
-        createdAt: stat.changed,
-      );
-    } catch (e) {
-      appLogger.w('_fileToImageEntry スキップ: ${file.path}', error: e);
-      return null;
-    }
-  }
 
-  bool _matchesFilter(ImageEntry entry, ImageFilter filter) {
-    if (filter.nameQuery != null &&
-        !entry.name.toLowerCase().contains(filter.nameQuery!.toLowerCase())) {
-      return false;
-    }
-    if (filter.mimeTypes != null &&
-        !filter.mimeTypes!.contains(entry.mimeType)) {
-      return false;
-    }
-    return true;
-  }
-
-  void _sortEntries(List<ImageEntry> entries, SortOption sort) {
-    final asc = sort.isAscending;
-    entries.sort(
-      (a, b) => switch (sort.field) {
-        SortField.name =>
-          asc ? a.name.compareTo(b.name) : b.name.compareTo(a.name),
-        SortField.date =>
-          asc
-              ? a.modifiedAt.compareTo(b.modifiedAt)
-              : b.modifiedAt.compareTo(a.modifiedAt),
-        SortField.size =>
-          asc ? a.size.compareTo(b.size) : b.size.compareTo(a.size),
-        SortField.type =>
-          asc
-              ? a.extension.compareTo(b.extension)
-              : b.extension.compareTo(a.extension),
-      },
+  ImageEntry _toImageEntry(ImageTableData data) {
+    return ImageEntry(
+      id: EntryId.windows(data.uri),
+      name: data.name,
+      extension: data.extension,
+      uri: data.uri,
+      mimeType: ImageMimeType.values.byName(data.mimeType),
+      size: data.size,
+      modifiedAt: DateTime.fromMillisecondsSinceEpoch(data.modified),
+      width: data.width,
+      height: data.height,
     );
   }
 }

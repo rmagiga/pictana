@@ -10,7 +10,7 @@ part of 'search_controller.dart';
 // ignore_for_file: type=lint, type=warning
 /// 検索・フィルター状態を管理する Provider
 ///
-/// - [updateQuery]: 300ms デバウンス付きでクエリを更新
+/// - [updateQuery]: 150ms デバウンス付きでクエリを更新
 /// - [updateMimeTypeFilter]: MIME type フィルターを即時更新
 /// - [clearAll]: 全フィルターをリセット
 
@@ -19,14 +19,14 @@ final searchControllerProvider = SearchControllerProvider._();
 
 /// 検索・フィルター状態を管理する Provider
 ///
-/// - [updateQuery]: 300ms デバウンス付きでクエリを更新
+/// - [updateQuery]: 150ms デバウンス付きでクエリを更新
 /// - [updateMimeTypeFilter]: MIME type フィルターを即時更新
 /// - [clearAll]: 全フィルターをリセット
 final class SearchControllerProvider
     extends $NotifierProvider<SearchController, SearchFilterState> {
   /// 検索・フィルター状態を管理する Provider
   ///
-  /// - [updateQuery]: 300ms デバウンス付きでクエリを更新
+  /// - [updateQuery]: 150ms デバウンス付きでクエリを更新
   /// - [updateMimeTypeFilter]: MIME type フィルターを即時更新
   /// - [clearAll]: 全フィルターをリセット
   SearchControllerProvider._()
@@ -56,11 +56,11 @@ final class SearchControllerProvider
   }
 }
 
-String _$searchControllerHash() => r'944ac88e2cda0da2ac7fd706e97681fa5e9fdbfa';
+String _$searchControllerHash() => r'42e30a0a146c2c75583933022ecffe2289263dd1';
 
 /// 検索・フィルター状態を管理する Provider
 ///
-/// - [updateQuery]: 300ms デバウンス付きでクエリを更新
+/// - [updateQuery]: 150ms デバウンス付きでクエリを更新
 /// - [updateMimeTypeFilter]: MIME type フィルターを即時更新
 /// - [clearAll]: 全フィルターをリセット
 
@@ -137,4 +137,4 @@ final class FilteredImagesProvider
   }
 }
 
-String _$filteredImagesHash() => r'3f818a384010e31f115633a0b619b6984927a44a';
+String _$filteredImagesHash() => r'c8ee0cb35c4f3309d3dcc66af17b94f7a04e7bcd';

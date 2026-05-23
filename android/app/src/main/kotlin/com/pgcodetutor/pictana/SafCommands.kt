@@ -404,10 +404,25 @@ object SafCommands {
     ): Bitmap? {
         var original: Bitmap? = null
         try {
+            // 1. 画像のサイズを取得する (inJustDecodeBounds = true)
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            context.contentResolver.openInputStream(contentUri)?.use { stream ->
+                BitmapFactory.decodeStream(stream, null, options)
+            }
+
+            // 2. inSampleSize を計算
+            options.inSampleSize = calculateInSampleSize(options, width, height)
+            options.inJustDecodeBounds = false
+            // RGB_565 を指定してメモリ使用量を半分にする
+            options.inPreferredConfig = Bitmap.Config.RGB_565
+
+            // 3. 縮小デコードを実行
             val inputStream = context.contentResolver.openInputStream(contentUri)
                 ?: return null
             original = inputStream.use { stream ->
-                BitmapFactory.decodeStream(stream)
+                BitmapFactory.decodeStream(stream, null, options)
             } ?: return null
 
             // アスペクト比を維持してスケール計算
@@ -430,6 +445,26 @@ object SafCommands {
             original?.recycle()
             return null
         }
+    }
+
+    private fun calculateInSampleSize(
+        options: BitmapFactory.Options,
+        reqWidth: Int,
+        reqHeight: Int
+    ): Int {
+        val height = options.outHeight
+        val width = options.outWidth
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight = height / 2
+            val halfWidth = width / 2
+
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+        return inSampleSize
     }
 
     /// デフォルト画像フォルダ（DCIM > Pictures）を検出する

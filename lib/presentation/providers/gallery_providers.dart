@@ -13,6 +13,8 @@ import '../../application/usecases/gallery/sort_images_usecase.dart';
 import '../../domain/entities/folder_entry.dart';
 import '../../domain/entities/image_entry.dart';
 import '../../domain/value_objects/sort_option.dart';
+import '../../domain/repositories/image_repository.dart';
+import '../../application/usecases/gallery/search_controller.dart';
 
 part 'gallery_providers.g.dart';
 
@@ -106,6 +108,7 @@ class GalleryImages extends _$GalleryImages {
   FutureOr<List<ImageEntry>> build() {
     final folder = ref.watch(currentFolderProvider);
     final sort = ref.watch(gallerySortOptionProvider);
+    final filterState = ref.watch(searchControllerProvider);
 
     // Provider 破棄時にリソースをクリーンアップ
     ref.onDispose(_cleanup);
@@ -117,34 +120,36 @@ class GalleryImages extends _$GalleryImages {
     }
 
     // フォルダが変わった場合: 前回の購読をキャンセルし loading へ遷移
-    // ソートのみ変わった場合: 既存データを保持しつつ再購読
+    // ソートやフィルタのみ変わった場合: 既存データを保持しつつ再購読
     final isFolderChanged = _currentFolder != folder;
     _currentFolder = folder;
 
+    final filter = ImageFilter(
+      nameQuery: filterState.query.isEmpty ? null : filterState.query,
+      mimeTypes: filterState.selectedMimeType == null ? null : {filterState.selectedMimeType!},
+    );
+
     // 購読を開始
-    _subscribe(folder, sort);
+    _subscribe(folder, sort, filter);
 
     if (!isFolderChanged && state.hasValue) {
-      // ソートオプション変更: 現在のデータに新しいソートを即座に適用して返す
-      // （新しいソートでの再購読は _subscribe で開始済み）
-      // Requirement 1.6: 即座にソート適用 + 再購読
+      // ソートやフィルタオプション変更: 現在のデータに新しいソートを即座に適用して返す
       final sorted = _applySortToCurrentData(state.value!, sort);
       return sorted;
     }
 
     // フォルダ変更または初回: loading 状態で待機
-    // _onData / _onDone / _onError で state を直接設定する
     return Completer<List<ImageEntry>>().future;
   }
 
   /// Stream を購読し、デバウンスロジックを適用する
-  void _subscribe(FolderEntry folder, SortOption sort) {
+  void _subscribe(FolderEntry folder, SortOption sort, ImageFilter filter) {
     // 前回の購読をキャンセル
     _cleanup();
     _buffer = const [];
 
     final useCase = ref.read(loadFolderImagesUseCaseProvider);
-    final stream = useCase.execute(folder: folder, sort: sort);
+    final stream = useCase.execute(folder: folder, sort: sort, filter: filter);
 
     _subscription = stream.listen(_onData, onError: _onError, onDone: _onDone);
   }

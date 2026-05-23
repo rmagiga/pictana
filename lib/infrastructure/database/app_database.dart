@@ -12,12 +12,15 @@ import 'tables/app_settings_table.dart';
 import 'tables/favorite_folders_table.dart';
 import 'tables/recent_folders_table.dart';
 import 'tables/thumbnail_cache_table.dart';
+import 'tables/images_table.dart';
+import '../../domain/value_objects/sort_option.dart';
+import '../../domain/repositories/image_repository.dart';
 
 part 'app_database.g.dart';
 
 /// アプリ全体で使用するDriftデータベース
 @DriftDatabase(
-  tables: [RecentFolders, ThumbnailCaches, AppSettings, FavoriteFolders],
+  tables: [RecentFolders, ThumbnailCaches, AppSettings, FavoriteFolders, Images],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -25,15 +28,27 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-    onCreate: (m) => m.createAll(),
+    onCreate: (m) async {
+      await m.createAll();
+      await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_name ON images (folder_uri, name)');
+      await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_modified ON images (folder_uri, modified)');
+      await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_size ON images (folder_uri, size)');
+    },
     onUpgrade: (m, from, to) async {
       // v1 → v2: お気に入りフォルダテーブルを追加
       if (from < 2) {
         await m.createTable(favoriteFolders);
+      }
+      // v2 → v3: 画像メタデータテーブルを追加
+      if (from < 3) {
+        await m.createTable(images);
+        await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_name ON images (folder_uri, name)');
+        await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_modified ON images (folder_uri, modified)');
+        await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_size ON images (folder_uri, size)');
       }
     },
   );
@@ -143,6 +158,147 @@ class AppDatabase extends _$AppDatabase {
     final result = await query.getSingle();
     return result.read(count) ?? 0;
   }
+
+  // --- Images クエリ ---
+
+  /// 指定フォルダ内の画像エントリをソート・フィルタした結果をStreamで監視する
+  Stream<List<ImageTableData>> watchImagesInFolder({
+    required String folderUri,
+    required SortOption sort,
+    required ImageFilter filter,
+  }) {
+    final query = select(images)..where((t) => t.folderUri.equals(folderUri));
+
+    // フィルター: nameQuery (部分一致)
+    if (filter.nameQuery != null && filter.nameQuery!.trim().isNotEmpty) {
+      final nameLower = '%${filter.nameQuery!.trim().toLowerCase()}%';
+      query.where((t) => t.name.lower().like(nameLower));
+    }
+
+    // フィルター: mimeTypes
+    if (filter.mimeTypes != null && filter.mimeTypes!.isNotEmpty) {
+      final mimes = filter.mimeTypes!.map((m) => m.name).toList();
+      query.where((t) => t.mimeType.isIn(mimes));
+    }
+
+    // ソート
+    final asc = sort.isAscending;
+    query.orderBy([
+      (t) => switch (sort.field) {
+            SortField.name =>
+              asc ? OrderingTerm.asc(t.name) : OrderingTerm.desc(t.name),
+            SortField.date =>
+              asc ? OrderingTerm.asc(t.modified) : OrderingTerm.desc(t.modified),
+            SortField.size =>
+              asc ? OrderingTerm.asc(t.size) : OrderingTerm.desc(t.size),
+            SortField.type =>
+              asc ? OrderingTerm.asc(t.extension) : OrderingTerm.desc(t.extension),
+          }
+    ]);
+
+    return query.watch();
+  }
+
+  /// 指定ページの画像リストを返す (一括・ページネーション用)
+  Future<List<ImageTableData>> getImagePage({
+    required String folderUri,
+    required int page,
+    required int pageSize,
+    required SortOption sort,
+    required ImageFilter filter,
+  }) async {
+    final query = select(images)..where((t) => t.folderUri.equals(folderUri));
+
+    // フィルター: nameQuery
+    if (filter.nameQuery != null && filter.nameQuery!.trim().isNotEmpty) {
+      final nameLower = '%${filter.nameQuery!.trim().toLowerCase()}%';
+      query.where((t) => t.name.lower().like(nameLower));
+    }
+
+    // フィルター: mimeTypes
+    if (filter.mimeTypes != null && filter.mimeTypes!.isNotEmpty) {
+      final mimes = filter.mimeTypes!.map((m) => m.name).toList();
+      query.where((t) => t.mimeType.isIn(mimes));
+    }
+
+    // ソート
+    final asc = sort.isAscending;
+    query.orderBy([
+      (t) => switch (sort.field) {
+            SortField.name =>
+              asc ? OrderingTerm.asc(t.name) : OrderingTerm.desc(t.name),
+            SortField.date =>
+              asc ? OrderingTerm.asc(t.modified) : OrderingTerm.desc(t.modified),
+            SortField.size =>
+              asc ? OrderingTerm.asc(t.size) : OrderingTerm.desc(t.size),
+            SortField.type =>
+              asc ? OrderingTerm.asc(t.extension) : OrderingTerm.desc(t.extension),
+          }
+    ]);
+
+    query.limit(pageSize, offset: page * pageSize);
+    return query.get();
+  }
+
+  /// フォルダ内の画像総数を返す
+  Future<int> countImages({
+    required String folderUri,
+    required ImageFilter filter,
+  }) async {
+    final countExp = images.entryId.count();
+    final query = selectOnly(images)
+      ..addColumns([countExp])
+      ..where(images.folderUri.equals(folderUri));
+
+    // フィルター: nameQuery
+    if (filter.nameQuery != null && filter.nameQuery!.trim().isNotEmpty) {
+      final nameLower = '%${filter.nameQuery!.trim().toLowerCase()}%';
+      query.where(images.name.lower().like(nameLower));
+    }
+
+    // フィルター: mimeTypes
+    if (filter.mimeTypes != null && filter.mimeTypes!.isNotEmpty) {
+      final mimes = filter.mimeTypes!.map((m) => m.name).toList();
+      query.where(images.mimeType.isIn(mimes));
+    }
+
+    final row = await query.getSingle();
+    return row.read(countExp) ?? 0;
+  }
+
+  /// 画像エントリを複数 upsert する
+  Future<void> upsertImages(List<ImageTableData> list) async {
+    await batch((batch) {
+      batch.insertAll(
+        images,
+        list.map((item) => ImagesCompanion.insert(
+          entryId: item.entryId,
+          uri: item.uri,
+          folderUri: item.folderUri,
+          name: item.name,
+          extension: item.extension,
+          modified: item.modified,
+          size: item.size,
+          mimeType: item.mimeType,
+          width: Value(item.width),
+          height: Value(item.height),
+          indexedAt: DateTime.now(),
+        )),
+        mode: InsertMode.insertOrReplace,
+      );
+    });
+  }
+
+  /// 同期時に指定したフォルダ内のアクティブでない（削除された）画像を消す
+  Future<void> deleteImagesNotIn(String folderUri, List<String> activeEntryIds) async {
+    await (delete(images)
+          ..where((t) => t.folderUri.equals(folderUri) & t.entryId.isNotIn(activeEntryIds)))
+        .go();
+  }
+
+  /// 指定フォルダ内の画像を全て削除する
+  Future<void> deleteImagesInFolder(String folderUri) =>
+      (delete(images)..where((t) => t.folderUri.equals(folderUri))).go();
 }
 
 /// データベースファイルへの接続を開く

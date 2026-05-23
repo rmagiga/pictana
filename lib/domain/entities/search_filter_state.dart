@@ -19,5 +19,8 @@ abstract class SearchFilterState with _$SearchFilterState {
 
     /// 検索バー展開状態
     @Default(false) bool isSearchBarExpanded,
+
+    /// 検索中フラグ（サムネイルリクエストの抑制用）
+    @Default(false) bool isSearching,
   }) = _SearchFilterState;
 }

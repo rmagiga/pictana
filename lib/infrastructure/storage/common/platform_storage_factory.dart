@@ -37,10 +37,10 @@ abstract final class PlatformStorageFactory {
   /// ImageRepository を生成する
   static ImageRepository createImageRepository(AppDatabase db) {
     if (Platform.isWindows) {
-      return const WindowsImageRepository();
+      return WindowsImageRepository(database: db);
     }
     if (Platform.isAndroid) {
-      return AndroidImageRepository(channel: _safChannel);
+      return AndroidImageRepository(database: db, channel: _safChannel);
     }
     throw UnsupportedError('未対応のプラットフォーム: ${Platform.operatingSystem}');
   }

@@ -11,14 +11,13 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/entities/image_entry.dart';
 import '../../../domain/entities/search_filter_state.dart';
-import '../../../domain/value_objects/search_filter.dart';
 import '../../../presentation/providers/gallery_providers.dart';
 
 part 'search_controller.g.dart';
 
 /// 検索・フィルター状態を管理する Provider
 ///
-/// - [updateQuery]: 300ms デバウンス付きでクエリを更新
+/// - [updateQuery]: 150ms デバウンス付きでクエリを更新
 /// - [updateMimeTypeFilter]: MIME type フィルターを即時更新
 /// - [clearAll]: 全フィルターをリセット
 @riverpod
@@ -34,14 +33,17 @@ class SearchController extends _$SearchController {
     return const SearchFilterState();
   }
 
-  /// 検索クエリを更新する（300ms デバウンス付き）
+  /// 検索クエリを更新する（150ms デバウンス付き）
   ///
   /// 新しい入力があるたびに前のタイマーをキャンセルし、
-  /// 最後の入力から 300ms 経過後に状態を更新する。
+  /// 最後の入力から 150ms 経過後に状態を更新する。
   void updateQuery(String query) {
+    // 検索進行中フラグを立てる
+    state = state.copyWith(isSearching: true);
+
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-      state = state.copyWith(query: query);
+    _debounceTimer = Timer(const Duration(milliseconds: 150), () {
+      state = state.copyWith(query: query, isSearching: false);
     });
   }
 
@@ -72,11 +74,5 @@ class SearchController extends _$SearchController {
 @riverpod
 List<ImageEntry> filteredImages(Ref ref) {
   final imagesAsync = ref.watch(galleryImagesProvider);
-  final filterState = ref.watch(searchControllerProvider);
-  final images = imagesAsync.value ?? const [];
-  return applySearchFilter(
-    images: images,
-    query: filterState.query,
-    mimeTypeFilter: filterState.selectedMimeType,
-  );
+  return imagesAsync.value ?? const [];
 }

@@ -10,17 +10,18 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:skeletonizer/skeletonizer.dart';
+import 'package:extended_image/extended_image.dart';
 
 import '../../application/usecases/settings/thumbnail_size_setting.dart';
+import '../../application/usecases/gallery/search_controller.dart';
 import '../../domain/entities/image_entry.dart';
 import '../providers/gallery_providers.dart';
 
 /// サムネイル読み込みタイムアウト時間
 const _kThumbnailTimeout = Duration(seconds: 10);
 
-/// フェードトランジション時間
-const _kFadeDuration = Duration(milliseconds: 150);
+/// フェードトランジション時間（100ms以下）
+const _kFadeDuration = Duration(milliseconds: 100);
 
 class ImageGridTile extends ConsumerStatefulWidget {
   const ImageGridTile({super.key, required this.image, required this.onTap});
@@ -75,6 +76,12 @@ class _ImageGridTileState extends ConsumerState<ImageGridTile> {
   }
 
   Future<void> _loadThumbnail() async {
+    final isSearching = ref.read(searchControllerProvider.select((s) => s.isSearching));
+    if (isSearching) {
+      // 検索中の場合はリクエストを行わない（プレースホルダー状態を維持）
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _thumbnailBytes = null;
@@ -103,6 +110,16 @@ class _ImageGridTileState extends ConsumerState<ImageGridTile> {
 
   @override
   Widget build(BuildContext context) {
+    // 検索中フラグが解除されたら、未ロードのサムネイルのロードを開始する
+    ref.listen<bool>(
+      searchControllerProvider.select((s) => s.isSearching),
+      (previous, isSearching) {
+        if (!isSearching && _thumbnailBytes == null && _isLoading) {
+          _loadThumbnail();
+        }
+      },
+    );
+
     return Card(
       clipBehavior: Clip.antiAlias,
       elevation: 0,
@@ -158,22 +175,20 @@ class _ImageGridTileState extends ConsumerState<ImageGridTile> {
   Widget _buildContent(BuildContext context) {
     if (_thumbnailBytes != null) {
       // サムネイル読み込み完了
-      return Image.memory(
+      return ExtendedImage.memory(
         _thumbnailBytes!,
         key: const ValueKey('thumbnail'),
         fit: BoxFit.cover,
         gaplessPlayback: true,
+        clearMemoryCacheWhenDispose: true,
       );
     } else if (_isLoading) {
-      // スケルトン表示（読み込み中）
-      return Skeletonizer(
+      // 単純な灰色 Box（Skeletonizer を排除して GPU 負荷を軽減）
+      return Container(
         key: const ValueKey('skeleton'),
-        enabled: true,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
-          ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(8),
         ),
       );
     } else {
