@@ -22,6 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pictana/application/usecases/gallery/load_thumbnail_usecase.dart';
+import 'package:pictana/core/utils/cancel_token.dart';
 import 'package:pictana/application/usecases/settings/swipe_direction_setting.dart';
 import 'package:pictana/application/usecases/viewer/preload_adjacent_images_usecase.dart';
 import 'package:pictana/domain/entities/entry_id.dart';
@@ -110,6 +111,7 @@ class _FakeLoadThumbnailUseCase extends LoadThumbnailUseCase {
   Future<Uint8List?> execute(
     ImageEntry entry, {
     ThumbnailSizeOption size = ThumbnailSizeOption.medium,
+    CancelToken? cancelToken,
   }) async {
     return _testImageBytes;
   }

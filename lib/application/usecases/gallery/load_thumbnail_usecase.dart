@@ -7,6 +7,7 @@ library;
 
 import 'dart:typed_data';
 
+import '../../../core/utils/cancel_token.dart';
 import '../../../domain/entities/image_entry.dart';
 import '../../../domain/repositories/thumbnail_repository.dart';
 import '../../../domain/value_objects/thumbnail_size_option.dart';
@@ -24,8 +25,9 @@ class LoadThumbnailUseCase {
   Future<Uint8List?> execute(
     ImageEntry entry, {
     ThumbnailSizeOption size = ThumbnailSizeOption.medium,
+    CancelToken? cancelToken,
   }) {
-    return _repo.getThumbnail(entry, size: size);
+    return _repo.getThumbnail(entry, size: size, cancelToken: cancelToken);
   }
 
   /// キャッシュの使用サイズ（bytes）を返す。

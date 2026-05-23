@@ -98,11 +98,11 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 100));
 
-      // AppBarに「フォルダを選択」と表示されていることを確認
+      // AppBarに「Pictana」と表示されていることを確認
       expect(
         find.descendant(
           of: find.byType(AppBar),
-          matching: find.text('フォルダを選択'),
+          matching: find.text('Pictana'),
         ),
         findsOneWidget,
       );

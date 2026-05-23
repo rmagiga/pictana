@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:extended_image/extended_image.dart';
 
+import '../../core/utils/cancel_token.dart';
 import '../../application/usecases/settings/thumbnail_size_setting.dart';
 import '../../application/usecases/gallery/search_controller.dart';
 import '../../domain/entities/image_entry.dart';
@@ -37,6 +38,7 @@ class _ImageGridTileState extends ConsumerState<ImageGridTile> {
   Uint8List? _thumbnailBytes;
   bool _isLoading = true;
   Timer? _timeoutTimer;
+  CancelToken? _cancelToken;
 
   @override
   void initState() {
@@ -48,6 +50,7 @@ class _ImageGridTileState extends ConsumerState<ImageGridTile> {
   void didUpdateWidget(covariant ImageGridTile oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.image.uri != widget.image.uri) {
+      _cancelToken?.cancel();
       _cancelTimeout();
       _loadThumbnail();
     }
@@ -55,6 +58,7 @@ class _ImageGridTileState extends ConsumerState<ImageGridTile> {
 
   @override
   void dispose() {
+    _cancelToken?.cancel();
     _cancelTimeout();
     super.dispose();
   }
@@ -82,6 +86,10 @@ class _ImageGridTileState extends ConsumerState<ImageGridTile> {
       return;
     }
 
+    _cancelToken?.cancel();
+    final token = CancelToken();
+    _cancelToken = token;
+
     setState(() {
       _isLoading = true;
       _thumbnailBytes = null;
@@ -90,9 +98,10 @@ class _ImageGridTileState extends ConsumerState<ImageGridTile> {
 
     final useCase = ref.read(loadThumbnailUseCaseProvider);
     final sizeOption = ref.read(thumbnailSizeSettingProvider);
-    final bytes = await useCase.execute(widget.image, size: sizeOption);
+    final bytes = await useCase.execute(widget.image, size: sizeOption, cancelToken: token);
 
     if (!mounted) return;
+    if (token.isCancelled) return;
     _cancelTimeout();
 
     if (bytes != null) {

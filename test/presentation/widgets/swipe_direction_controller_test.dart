@@ -96,7 +96,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final pageView = tester.widget<PageView>(find.byType(PageView));
-      expect(pageView.physics, isA<BouncingScrollPhysics>());
+      expect(pageView.physics, isA<ClampingScrollPhysics>());
     });
   });
 
@@ -123,7 +123,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final pageView = tester.widget<PageView>(find.byType(PageView));
-      expect(pageView.physics, isA<BouncingScrollPhysics>());
+      expect(pageView.physics, isA<ClampingScrollPhysics>());
     });
   });
 
@@ -170,7 +170,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final pageView = tester.widget<PageView>(find.byType(PageView));
-      expect(pageView.physics, isA<BouncingScrollPhysics>());
+      expect(pageView.physics, isA<ClampingScrollPhysics>());
     });
   });
 
@@ -252,7 +252,7 @@ void main() {
       await tester.pumpAndSettle();
 
       pageView = tester.widget<PageView>(find.byType(PageView));
-      expect(pageView.physics, isA<BouncingScrollPhysics>());
+      expect(pageView.physics, isA<ClampingScrollPhysics>());
     });
   });
 

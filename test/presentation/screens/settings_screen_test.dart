@@ -15,9 +15,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pictana/application/usecases/settings/cache_size_limit_setting.dart';
+import 'package:pictana/application/usecases/settings/swipe_direction_setting.dart';
 import 'package:pictana/application/usecases/settings/thumbnail_size_setting.dart';
 import 'package:pictana/domain/value_objects/cache_size_limit.dart';
 import 'package:pictana/domain/value_objects/grid_column_settings.dart';
+import 'package:pictana/domain/value_objects/swipe_direction.dart';
 import 'package:pictana/domain/value_objects/thumbnail_size_option.dart';
 import 'package:pictana/presentation/providers/grid_column_settings_provider.dart';
 import 'package:pictana/presentation/providers/theme_provider.dart';
@@ -45,6 +47,16 @@ class _FakeCacheSizeLimitSetting extends CacheSizeLimitSetting {
   @override
   Future<void> update(CacheSizeLimit limit) async {
     state = limit;
+  }
+}
+
+class _FakeSwipeDirectionSetting extends SwipeDirectionSetting {
+  @override
+  SwipeDirection build() => SwipeDirection.horizontal;
+
+  @override
+  Future<void> update(SwipeDirection direction) async {
+    state = direction;
   }
 }
 
@@ -114,6 +126,9 @@ Widget _createTestWidget({CacheSize? cacheSizeOverride}) {
       cacheSizeLimitSettingProvider.overrideWith(
         () => _FakeCacheSizeLimitSetting(),
       ),
+      swipeDirectionSettingProvider.overrideWith(
+        () => _FakeSwipeDirectionSetting(),
+      ),
       themeModeProvider.overrideWith(() => _FakeThemeModeNotifier()),
       cacheSizeProvider.overrideWith(
         () => cacheSizeOverride ?? _FakeCacheSize(),
@@ -131,6 +146,18 @@ Widget _createTestWidget({CacheSize? cacheSizeOverride}) {
 // ---------------------------------------------------------------------------
 
 void main() {
+  setUp(() {
+    final binding = TestWidgetsFlutterBinding.ensureInitialized();
+    binding.platformDispatcher.views.first.physicalSize = const Size(800, 1600);
+    binding.platformDispatcher.views.first.devicePixelRatio = 1.0;
+  });
+
+  tearDown(() {
+    final binding = TestWidgetsFlutterBinding.ensureInitialized();
+    binding.platformDispatcher.views.first.resetPhysicalSize();
+    binding.platformDispatcher.views.first.resetDevicePixelRatio();
+  });
+
   group('SettingsScreen - サムネイルサイズ設定 (Req 8.1)', () {
     testWidgets('サムネイルサイズの DropdownButton が表示される', (tester) async {
       await tester.pumpWidget(_createTestWidget());

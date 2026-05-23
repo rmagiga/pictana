@@ -183,4 +183,122 @@ class ExifProcessorImpl implements ExifProcessor {
           bytes[offset + 3];
     }
   }
+
+  @override
+  List<int>? extractThumbnail(List<int> bytes) {
+    try {
+      if (bytes.length < 12) return null;
+
+      // JPEG 判定: SOI マーカー (0xFF 0xD8)
+      if (bytes[0] == 0xFF && bytes[1] == 0xD8) {
+        return _parseJpegThumbnail(bytes);
+      }
+
+      // TIFF 判定: "II" または "MM"
+      if ((bytes[0] == 0x49 && bytes[1] == 0x49) ||
+          (bytes[0] == 0x4D && bytes[1] == 0x4D)) {
+        return _parseTiffThumbnail(bytes, 0);
+      }
+
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// JPEG バイトデータから埋め込みサムネイルを探す。
+  List<int>? _parseJpegThumbnail(List<int> bytes) {
+    var offset = 2; // SOI の次から開始
+
+    while (offset + 4 <= bytes.length) {
+      if (bytes[offset] != 0xFF) return null;
+
+      final marker = bytes[offset + 1];
+      if (marker == 0xDA) return null; // SOS到達
+
+      final segmentLength = (bytes[offset + 2] << 8) | bytes[offset + 3];
+
+      if (marker == 0xE1) {
+        final exifStart = offset + 4;
+        if (exifStart + 6 > bytes.length) return null;
+        if (bytes[exifStart] != 0x45 || // 'E'
+            bytes[exifStart + 1] != 0x78 || // 'x'
+            bytes[exifStart + 2] != 0x69 || // 'i'
+            bytes[exifStart + 3] != 0x66 || // 'f'
+            bytes[exifStart + 4] != 0x00 ||
+            bytes[exifStart + 5] != 0x00) {
+          offset += 2 + segmentLength;
+          continue;
+        }
+
+        final tiffStart = exifStart + 6;
+        return _parseTiffThumbnail(bytes, tiffStart);
+      }
+
+      offset += 2 + segmentLength;
+    }
+
+    return null;
+  }
+
+  /// TIFF ヘッダーから埋め込みサムネイル情報を取得する。
+  List<int>? _parseTiffThumbnail(List<int> bytes, int tiffOffset) {
+    if (tiffOffset + 8 > bytes.length) return null;
+
+    final bool isLittleEndian;
+    if (bytes[tiffOffset] == 0x49 && bytes[tiffOffset + 1] == 0x49) {
+      isLittleEndian = true;
+    } else if (bytes[tiffOffset] == 0x4D && bytes[tiffOffset + 1] == 0x4D) {
+      isLittleEndian = false;
+    } else {
+      return null;
+    }
+
+    final magic = _readUint16(bytes, tiffOffset + 2, isLittleEndian);
+    if (magic != 0x002A) return null;
+
+    final ifdOffset = _readUint32(bytes, tiffOffset + 4, isLittleEndian);
+    final ifdAbsolute = tiffOffset + ifdOffset;
+    if (ifdAbsolute + 2 > bytes.length) return null;
+
+    final entryCount = _readUint16(bytes, ifdAbsolute, isLittleEndian);
+    final nextIfdOffsetLocation = ifdAbsolute + 2 + (entryCount * 12);
+    if (nextIfdOffsetLocation + 4 > bytes.length) return null;
+
+    final ifd1Offset = _readUint32(bytes, nextIfdOffsetLocation, isLittleEndian);
+    if (ifd1Offset == 0) return null; // IFD1 なし
+
+    final ifd1Absolute = tiffOffset + ifd1Offset;
+    if (ifd1Absolute + 2 > bytes.length) return null;
+
+    final ifd1EntryCount = _readUint16(bytes, ifd1Absolute, isLittleEndian);
+    var entryOffset = ifd1Absolute + 2;
+
+    int? thumbnailOffset;
+    int? thumbnailLength;
+
+    for (var i = 0; i < ifd1EntryCount; i++) {
+      if (entryOffset + 12 > bytes.length) break;
+
+      final tag = _readUint16(bytes, entryOffset, isLittleEndian);
+
+      if (tag == 0x0201) {
+        thumbnailOffset = _readUint32(bytes, entryOffset + 8, isLittleEndian);
+      } else if (tag == 0x0202) {
+        thumbnailLength = _readUint32(bytes, entryOffset + 8, isLittleEndian);
+      }
+
+      entryOffset += 12;
+    }
+
+    if (thumbnailOffset != null && thumbnailLength != null) {
+      final start = tiffOffset + thumbnailOffset;
+      final end = start + thumbnailLength;
+      if (start >= 0 && end <= bytes.length && start < end) {
+        return bytes.sublist(start, end);
+      }
+    }
+
+    return null;
+  }
 }

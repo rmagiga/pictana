@@ -175,7 +175,18 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
       ref.read(preloadAdjacentImagesUseCaseProvider).execute(images, index);
     }
 
-    // 全プラットフォーム: SwipeDirectionController でスワイプ方向を制御する (Req 4.1, 7.4)
+    // Windows: 標準の PageView を使用し、スワイプ方向制御は行わない (Req 4.1)
+    if (Platform.isWindows) {
+      return PageView.builder(
+        controller: _pageController,
+        scrollDirection: Axis.horizontal,
+        itemCount: images.length,
+        onPageChanged: onPageChanged,
+        itemBuilder: itemBuilder,
+      );
+    }
+
+    // Android: SwipeDirectionController でスワイプ方向を制御する (Req 4.1, 7.4)
     final swipeDirection = ref.watch(swipeDirectionSettingProvider);
     return SwipeDirectionController(
       direction: swipeDirection,

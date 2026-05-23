@@ -15,6 +15,8 @@ import 'dart:typed_data';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../../core/utils/cancel_token.dart';
+import '../../../core/utils/cancelable_task_queue.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../domain/entities/image_entry.dart';
 import '../../../domain/repositories/thumbnail_repository.dart';
@@ -28,10 +30,12 @@ class AndroidThumbnailRepository implements ThumbnailRepository {
     required AppDatabase database,
     required SafPlatformChannel channel,
   }) : _db = database,
-       _channel = channel;
+       _channel = channel,
+       _taskQueue = CancelableTaskQueue(3); // 同時実行数を3に制限
 
   final AppDatabase _db;
   final SafPlatformChannel _channel;
+  final CancelableTaskQueue _taskQueue;
 
   /// メモリキャッシュ（URI → サムネイルバイト）
   ///
@@ -56,6 +60,7 @@ class AndroidThumbnailRepository implements ThumbnailRepository {
   Future<Uint8List?> getThumbnail(
     ImageEntry entry, {
     ThumbnailSizeOption size = ThumbnailSizeOption.medium,
+    CancelToken? cancelToken,
   }) async {
     final cacheKey = _buildCacheKey(entry.uri, size);
 
@@ -84,9 +89,17 @@ class AndroidThumbnailRepository implements ThumbnailRepository {
       }
     }
 
-    // 3. ネイティブ生成
-    final thumbnail = await _generateFromNative(entry.uri, size);
+    if (cancelToken?.isCancelled == true) return null;
+
+    // 3. ネイティブ生成 (キュー経由で並列実行数を制限)
+    final thumbnail = await _taskQueue.run(() async {
+      if (cancelToken?.isCancelled == true) return null;
+      return _generateFromNative(entry.uri, size);
+    }, token: cancelToken);
+
     if (thumbnail == null) return null;
+
+    if (cancelToken?.isCancelled == true) return null;
 
     // メモリ + DB に保存
     _putMemoryCache(cacheKey, thumbnail);

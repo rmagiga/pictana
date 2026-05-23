@@ -14,17 +14,23 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../../core/utils/cancel_token.dart';
+import '../../../core/utils/cancelable_task_queue.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../domain/entities/image_entry.dart';
 import '../../../domain/repositories/thumbnail_repository.dart';
 import '../../../domain/value_objects/thumbnail_size_option.dart';
 import '../../database/app_database.dart';
+import '../common/exif_processor_impl.dart';
 
 /// Windows 向け ThumbnailRepository 実装
 class WindowsThumbnailRepository implements ThumbnailRepository {
-  WindowsThumbnailRepository({required AppDatabase database}) : _db = database;
+  WindowsThumbnailRepository({required AppDatabase database})
+      : _db = database,
+        _taskQueue = CancelableTaskQueue(3); // 同時実行数を3に制限
 
   final AppDatabase _db;
+  final CancelableTaskQueue _taskQueue;
 
   /// ディスクキャッシュのベースディレクトリ
   Directory? _cacheDir;
@@ -37,6 +43,7 @@ class WindowsThumbnailRepository implements ThumbnailRepository {
   Future<Uint8List?> getThumbnail(
     ImageEntry entry, {
     ThumbnailSizeOption size = ThumbnailSizeOption.medium,
+    CancelToken? cancelToken,
   }) async {
     // 1. DB キャッシュ確認
     final cached = await _db.getThumbnailCache(entry.uri);
@@ -52,9 +59,17 @@ class WindowsThumbnailRepository implements ThumbnailRepository {
       }
     }
 
-    // 2. Isolate でサムネイル生成
-    final thumbnail = await _generateInIsolate(entry.uri, size.px);
+    if (cancelToken?.isCancelled == true) return null;
+
+    // 2. Isolate でサムネイル生成 (キュー経由で並列実行数を制限)
+    final thumbnail = await _taskQueue.run(() async {
+      if (cancelToken?.isCancelled == true) return null;
+      return _generateInIsolate(entry.uri, size.px);
+    }, token: cancelToken);
+
     if (thumbnail == null) return null;
+
+    if (cancelToken?.isCancelled == true) return null;
 
     // 3. ディスクへ保存
     await _saveToDisk(entry.uri, thumbnail, size);
@@ -115,11 +130,23 @@ class WindowsThumbnailRepository implements ThumbnailRepository {
   Future<Uint8List?> _generateInIsolate(String filePath, int targetSize) async {
     try {
       return await Isolate.run(() async {
-        final bytes = await File(filePath).readAsBytes();
+        final fileBytes = await File(filePath).readAsBytes();
+
+        // 対応案3: EXIF 埋め込みサムネイルの優先抽出
+        List<int>? decodableBytes;
+        try {
+          final exif = ExifProcessorImpl();
+          decodableBytes = exif.extractThumbnail(fileBytes);
+        } catch (_) {
+          // EXIF抽出失敗時は無視してオリジナル画像を使用
+        }
+
+        // EXIFサムネイルがない場合はオリジナル画像データを使用
+        decodableBytes ??= fileBytes;
 
         // Flutter の codec でデコード
         final codec = await ui.instantiateImageCodec(
-          bytes,
+          Uint8List.fromList(decodableBytes),
           targetWidth: targetSize,
           targetHeight: targetSize,
         );

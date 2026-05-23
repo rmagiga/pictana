@@ -13,6 +13,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glados/glados.dart' hide expect, group, setUp, tearDown, test;
 import 'package:pictana/application/usecases/storage/get_folder_thumbnails_usecase.dart';
+import 'package:pictana/core/utils/cancel_token.dart';
 import 'package:pictana/domain/entities/entry_id.dart';
 import 'package:pictana/domain/entities/favorite_folder.dart';
 import 'package:pictana/domain/entities/folder_entry.dart';
@@ -83,6 +84,7 @@ class FakeThumbnailRepository implements ThumbnailRepository {
   Future<Uint8List?> getThumbnail(
     ImageEntry entry, {
     ThumbnailSizeOption size = ThumbnailSizeOption.medium,
+    CancelToken? cancelToken,
   }) async {
     final index = _callIndex++;
     if (index < thumbnailResults.length && thumbnailResults[index]) {
