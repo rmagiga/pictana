@@ -73,7 +73,12 @@ class StorageSelectionScreen extends ConsumerWidget {
       ),
       body: hasFavorites
           ? SingleChildScrollView(
-              padding: const EdgeInsets.only(top: 16.0, bottom: 24.0),
+              // システムジェスチャーバー（ナビゲーションバー）の高さ分を
+              // bottomパディングに加算して、最後のカードが隠れないようにする
+              padding: EdgeInsets.only(
+                top: 16.0,
+                bottom: 24.0 + MediaQuery.of(context).viewPadding.bottom,
+              ),
               child: FavoriteNavigationHandler(
                 child: FavoriteGridSection(
                   onFolderTap: (folder) =>

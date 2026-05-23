@@ -111,6 +111,10 @@ class GalleryGridScreen extends HookConsumerWidget {
       }
     });
 
+    // Scaffold より外側の context でシステムナビゲーションバーの高さを取得する
+    // （Scaffold の body 内では viewPadding.bottom が 0 になるため）
+    final navBarHeight = MediaQuery.of(context).viewPadding.bottom;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -234,7 +238,12 @@ class GalleryGridScreen extends HookConsumerWidget {
                         // スクロール時にキーボードを閉じる（Android 向け）
                         keyboardDismissBehavior:
                             ScrollViewKeyboardDismissBehavior.onDrag,
-                        padding: const EdgeInsets.all(4),
+                        padding: EdgeInsets.only(
+                          left: 4,
+                          right: 4,
+                          top: 4,
+                          bottom: 4 + navBarHeight,
+                        ),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: crossAxisCount,
                           crossAxisSpacing: 4,
@@ -265,7 +274,7 @@ class GalleryGridScreen extends HookConsumerWidget {
                     },
                   );
                 },
-                loading: () => _buildSkeletonGrid(context, ref),
+                loading: () => _buildSkeletonGrid(context, ref, navBarHeight),
                 error: (e, st) => Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -335,7 +344,11 @@ class GalleryGridScreen extends HookConsumerWidget {
   ///
   /// 実際のグリッドと同じレイアウト（列数・スペーシング）で
   /// Card 形状のダミータイルを Skeletonizer で表示する。
-  Widget _buildSkeletonGrid(BuildContext context, WidgetRef ref) {
+  Widget _buildSkeletonGrid(
+    BuildContext context,
+    WidgetRef ref,
+    double navBarHeight,
+  ) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final settings = ref.watch(gridColumnSettingsProvider);
@@ -348,7 +361,12 @@ class GalleryGridScreen extends HookConsumerWidget {
           enabled: true,
           child: GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(4),
+            padding: EdgeInsets.only(
+              left: 4,
+              right: 4,
+              top: 4,
+              bottom: 4 + navBarHeight,
+            ),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: 4,
