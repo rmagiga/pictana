@@ -357,6 +357,12 @@ class GalleryGridScreen extends HookConsumerWidget {
             .clamp(settings.minColumns, settings.maxColumns)
             .toInt();
 
+        // 画面全体を覆うのに必要なアイテム数を動的に計算する
+        // タイルのアスペクト比は 1.0 (正方形) なので、高さは幅と同じ
+        final tileHeight = constraints.maxWidth / crossAxisCount;
+        final rowCount = (constraints.maxHeight / tileHeight).ceil() + 1;
+        final itemCount = crossAxisCount * rowCount;
+
         return Skeletonizer(
           enabled: true,
           child: GridView.builder(
@@ -372,7 +378,7 @@ class GalleryGridScreen extends HookConsumerWidget {
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
             ),
-            itemCount: 16,
+            itemCount: itemCount,
             itemBuilder: (context, index) {
               return Card(
                 shape: RoundedRectangleBorder(

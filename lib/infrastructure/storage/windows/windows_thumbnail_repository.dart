@@ -6,7 +6,6 @@ library;
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -61,10 +60,10 @@ class WindowsThumbnailRepository implements ThumbnailRepository {
 
     if (cancelToken?.isCancelled == true) return null;
 
-    // 2. Isolate でサムネイル生成 (キュー経由で並列実行数を制限)
+    // 2. サムネイル生成 (キュー経由で並列実行数を制限)
     final thumbnail = await _taskQueue.run(() async {
       if (cancelToken?.isCancelled == true) return null;
-      return _generateInIsolate(entry.uri, size.px);
+      return _generateThumbnail(entry.uri, size.px);
     }, token: cancelToken);
 
     if (thumbnail == null) return null;
@@ -125,38 +124,36 @@ class WindowsThumbnailRepository implements ThumbnailRepository {
 
   /// サムネイルを生成する
   ///
-  /// UIスレッドのフリーズを回避するため、Isolate.runを用いた
-  /// バックグラウンドIsolateで画像のリサイズデコード処理を実行します。
-  Future<Uint8List?> _generateInIsolate(String filePath, int targetSize) async {
+  /// Flutter エンジンの非同期画像デコード機能（ui.instantiateImageCodec）を利用して、
+  /// UIスレッドをブロッキングせずにリサイズデコード処理を実行します。
+  Future<Uint8List?> _generateThumbnail(String filePath, int targetSize) async {
     try {
-      return await Isolate.run(() async {
-        final fileBytes = await File(filePath).readAsBytes();
+      final fileBytes = await File(filePath).readAsBytes();
 
-        // 対応案3: EXIF 埋め込みサムネイルの優先抽出
-        List<int>? decodableBytes;
-        try {
-          final exif = ExifProcessorImpl();
-          decodableBytes = exif.extractThumbnail(fileBytes);
-        } catch (_) {
-          // EXIF抽出失敗時は無視してオリジナル画像を使用
-        }
+      // 対応案3: EXIF 埋め込みサムネイルの優先抽出
+      List<int>? decodableBytes;
+      try {
+        final exif = ExifProcessorImpl();
+        decodableBytes = exif.extractThumbnail(fileBytes);
+      } catch (_) {
+        // EXIF抽出失敗時は無視してオリジナル画像を使用
+      }
 
-        // EXIFサムネイルがない場合はオリジナル画像データを使用
-        decodableBytes ??= fileBytes;
+      // EXIFサムネイルがない場合はオリジナル画像データを使用
+      decodableBytes ??= fileBytes;
 
-        // Flutter の codec でデコード
-        final codec = await ui.instantiateImageCodec(
-          Uint8List.fromList(decodableBytes),
-          targetWidth: targetSize,
-          targetHeight: targetSize,
-        );
-        final frame = await codec.getNextFrame();
-        final image = frame.image;
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-        image.dispose();
+      // Flutter の codec でデコード
+      final codec = await ui.instantiateImageCodec(
+        Uint8List.fromList(decodableBytes),
+        targetWidth: targetSize,
+        targetHeight: targetSize,
+      );
+      final frame = await codec.getNextFrame();
+      final image = frame.image;
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
 
-        return byteData?.buffer.asUint8List();
-      });
+      return byteData?.buffer.asUint8List();
     } catch (e) {
       appLogger.w('サムネイル生成エラー: $filePath', error: e);
       return null;
