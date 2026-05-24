@@ -66,6 +66,7 @@ class GalleryGridScreen extends HookConsumerWidget {
     final imagesAsync = ref.watch(galleryImagesProvider);
     final countAsync = ref.watch(galleryImageCountProvider);
     final searchFilterState = ref.watch(searchControllerProvider);
+    final isSyncing = ref.watch(gallerySyncStateProvider);
 
     // 高速スクロール用 ScrollController
     final scrollController = useScrollController();
@@ -175,6 +176,10 @@ class GalleryGridScreen extends HookConsumerWidget {
         body: Column(
           children: [
             const StorageDisconnectBanner(), // USB切断時のみ表示される
+            if (isSyncing)
+              const LinearProgressIndicator(
+                minHeight: 2,
+              ),
             // 検索バーウィジェット (Req 11.1, 11.5)
             // 展開時のみ表示
             if (searchFilterState.isSearchBarExpanded)

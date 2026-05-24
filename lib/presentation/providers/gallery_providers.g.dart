@@ -152,6 +152,64 @@ final class SortImagesUseCaseProvider
 
 String _$sortImagesUseCaseHash() => r'1a0a55342c784fb78ec4e9e35480f07b6a4af5a6';
 
+/// ギャラリーの同期状態（差分スキャン中かどうか）を表すプロバイダ
+
+@ProviderFor(GallerySyncState)
+final gallerySyncStateProvider = GallerySyncStateProvider._();
+
+/// ギャラリーの同期状態（差分スキャン中かどうか）を表すプロバイダ
+final class GallerySyncStateProvider
+    extends $NotifierProvider<GallerySyncState, bool> {
+  /// ギャラリーの同期状態（差分スキャン中かどうか）を表すプロバイダ
+  GallerySyncStateProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'gallerySyncStateProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$gallerySyncStateHash();
+
+  @$internal
+  @override
+  GallerySyncState create() => GallerySyncState();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$gallerySyncStateHash() => r'2186c4f414c480d77c8ca7c4786f9cb57224d94a';
+
+/// ギャラリーの同期状態（差分スキャン中かどうか）を表すプロバイダ
+
+abstract class _$GallerySyncState extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}
+
 /// 現在選択されているフォルダ
 
 @ProviderFor(CurrentFolder)
@@ -305,7 +363,7 @@ final class GalleryImagesProvider
   GalleryImages create() => GalleryImages();
 }
 
-String _$galleryImagesHash() => r'9f0eeb76cd6166337b406a11aacc9904a589be1d';
+String _$galleryImagesHash() => r'4952535e597d37fc27332ddca15f6373c5c1f000';
 
 /// ギャラリー画像リストを管理する AsyncNotifier
 ///

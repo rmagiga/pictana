@@ -15,6 +15,8 @@ import '../../domain/entities/image_entry.dart';
 import '../../domain/value_objects/sort_option.dart';
 import '../../domain/repositories/image_repository.dart';
 import '../../application/usecases/gallery/search_controller.dart';
+import 'app_lifecycle_provider.dart';
+import 'package:flutter/widgets.dart';
 
 part 'gallery_providers.g.dart';
 
@@ -44,6 +46,17 @@ SortImagesUseCase sortImagesUseCase(Ref ref) {
 // ---------------------------------------------------------------------------
 // State Providers
 // ---------------------------------------------------------------------------
+
+/// ギャラリーの同期状態（差分スキャン中かどうか）を表すプロバイダ
+@Riverpod(keepAlive: true)
+class GallerySyncState extends _$GallerySyncState {
+  @override
+  bool build() => false;
+
+  void setSyncing(bool syncing) {
+    state = syncing;
+  }
+}
 
 /// 現在選択されているフォルダ
 @Riverpod(keepAlive: true)
@@ -113,6 +126,19 @@ class GalleryImages extends _$GalleryImages {
     // Provider 破棄時にリソースをクリーンアップ
     ref.onDispose(_cleanup);
 
+    final filter = ImageFilter(
+      nameQuery: filterState.query.isEmpty ? null : filterState.query,
+      mimeTypes: filterState.selectedMimeType == null ? null : {filterState.selectedMimeType!},
+    );
+
+    // アプリ復帰（resumed）時に差分チェック同期を走らせる
+    ref.listen<AppLifecycleState>(appLifecycleProvider, (previous, next) {
+      if (next == AppLifecycleState.resumed && folder != null) {
+        // loading に遷移させずに、静かに再スキャン（再購読）を開始する
+        _subscribe(folder, sort, filter);
+      }
+    });
+
     if (folder == null) {
       _cleanup();
       _currentFolder = null;
@@ -123,11 +149,6 @@ class GalleryImages extends _$GalleryImages {
     // ソートやフィルタのみ変わった場合: 既存データを保持しつつ再購読
     final isFolderChanged = _currentFolder != folder;
     _currentFolder = folder;
-
-    final filter = ImageFilter(
-      nameQuery: filterState.query.isEmpty ? null : filterState.query,
-      mimeTypes: filterState.selectedMimeType == null ? null : {filterState.selectedMimeType!},
-    );
 
     // 購読を開始
     _subscribe(folder, sort, filter);
@@ -147,6 +168,11 @@ class GalleryImages extends _$GalleryImages {
     // 前回の購読をキャンセル
     _cleanup();
     _buffer = const [];
+
+    // 同期状態を開始にする（build 中の副作用によるクラッシュを避けるためマイクロタスクで遅延実行）
+    Future.microtask(() {
+      ref.read(gallerySyncStateProvider.notifier).setSyncing(true);
+    });
 
     final useCase = ref.read(loadFolderImagesUseCaseProvider);
     final stream = useCase.execute(folder: folder, sort: sort, filter: filter);
@@ -175,6 +201,9 @@ class GalleryImages extends _$GalleryImages {
     _debounceTimer?.cancel();
     _debounceTimer = null;
     state = AsyncData(_buffer);
+    Future.microtask(() {
+      ref.read(gallerySyncStateProvider.notifier).setSyncing(false);
+    });
   }
 
   /// Stream エラー時: タイマーをキャンセルし AsyncError へ遷移
@@ -183,6 +212,9 @@ class GalleryImages extends _$GalleryImages {
     _debounceTimer = null;
     // Riverpod の AsyncError は自動的に previous を保持する
     state = AsyncError<List<ImageEntry>>(error, stackTrace);
+    Future.microtask(() {
+      ref.read(gallerySyncStateProvider.notifier).setSyncing(false);
+    });
   }
 
   /// リソースのクリーンアップ
