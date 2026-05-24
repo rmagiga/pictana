@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'tables/app_settings_table.dart';
 import 'tables/favorite_folders_table.dart';
 import 'tables/recent_folders_table.dart';
+import 'tables/recent_images_table.dart';
 import 'tables/thumbnail_cache_table.dart';
 import 'tables/images_table.dart';
 import '../../domain/value_objects/sort_option.dart';
@@ -20,7 +21,7 @@ part 'app_database.g.dart';
 
 /// アプリ全体で使用するDriftデータベース
 @DriftDatabase(
-  tables: [RecentFolders, ThumbnailCaches, AppSettings, FavoriteFolders, Images],
+  tables: [RecentFolders, RecentImages, ThumbnailCaches, AppSettings, FavoriteFolders, Images],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -28,7 +29,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -49,6 +50,10 @@ class AppDatabase extends _$AppDatabase {
         await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_name ON images (folder_uri, name)');
         await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_modified ON images (folder_uri, modified)');
         await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_size ON images (folder_uri, size)');
+      }
+      // v3 → v4: 最近開いた画像履歴テーブルを追加
+      if (from < 4) {
+        await m.createTable(recentImages);
       }
     },
   );
@@ -75,6 +80,48 @@ class AppDatabase extends _$AppDatabase {
       lastOpenedAt: DateTime.now(),
     ),
   );
+
+  // --- RecentImages クエリ ---
+
+  /// 最近開いた画像一覧（最新順 上限20件）
+  Future<List<RecentImage>> getRecentImages({int limit = 20}) =>
+      (select(recentImages)
+            ..orderBy([(t) => OrderingTerm.desc(t.lastViewedAt)])
+            ..limit(limit))
+          .get();
+
+  /// 画像を最近開いた画像に追加/更新する
+  Future<void> upsertRecentImage({
+    required String entryId,
+    required String uri,
+    required String folderUri,
+    required String name,
+    required String extension,
+    required int size,
+    required String mimeType,
+    int? width,
+    int? height,
+    required String platformType,
+  }) => into(recentImages).insertOnConflictUpdate(
+    RecentImagesCompanion.insert(
+      entryId: entryId,
+      uri: uri,
+      folderUri: folderUri,
+      name: name,
+      extension: extension,
+      size: size,
+      mimeType: mimeType,
+      width: Value(width),
+      height: Value(height),
+      platformType: platformType,
+      lastViewedAt: DateTime.now(),
+    ),
+  );
+
+  /// 指定 EntryId の最近開いた画像を削除する
+  Future<int> deleteRecentImageByEntryId(String entryId) =>
+      (delete(recentImages)..where((t) => t.entryId.equals(entryId))).go();
+
 
   // --- AppSettings クエリ ---
 
@@ -299,7 +346,12 @@ class AppDatabase extends _$AppDatabase {
   /// 指定フォルダ内の画像を全て削除する
   Future<void> deleteImagesInFolder(String folderUri) =>
       (delete(images)..where((t) => t.folderUri.equals(folderUri))).go();
+
+  /// 指定 EntryId の画像メタデータを取得する
+  Future<ImageTableData?> getImageByEntryId(String entryId) =>
+      (select(images)..where((t) => t.entryId.equals(entryId))).getSingleOrNull();
 }
+
 
 /// データベースファイルへの接続を開く
 QueryExecutor _openConnection() {

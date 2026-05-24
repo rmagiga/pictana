@@ -20,6 +20,7 @@ part 'grid_column_settings_provider.g.dart';
 class GridColumnSettingsNotifier extends _$GridColumnSettingsNotifier {
   static const _kMinColumnsKey = 'grid_min_columns';
   static const _kMaxColumnsKey = 'grid_max_columns';
+  static const _kCurrentColumnsKey = 'grid_current_columns';
 
   @override
   GridColumnSettings build() {
@@ -32,13 +33,22 @@ class GridColumnSettingsNotifier extends _$GridColumnSettingsNotifier {
       final db = ref.read(appDatabaseProvider);
       final minStr = await db.getSetting(_kMinColumnsKey);
       final maxStr = await db.getSetting(_kMaxColumnsKey);
+      final curStr = await db.getSetting(_kCurrentColumnsKey);
 
       final min = minStr != null ? (int.tryParse(minStr) ?? 3) : 3;
       final max = maxStr != null ? (int.tryParse(maxStr) ?? 12) : 12;
 
       // DB から読み込んだ値でも制約を保証する
       final adjustedMax = max >= min + 2 ? max : min + 2;
-      state = GridColumnSettings(minColumns: min, maxColumns: adjustedMax);
+      
+      final cur = curStr != null ? (int.tryParse(curStr) ?? 5) : 5;
+      final adjustedCur = cur.clamp(min, adjustedMax);
+
+      state = GridColumnSettings(
+        minColumns: min,
+        maxColumns: adjustedMax,
+        currentColumns: adjustedCur,
+      );
     } catch (_) {
       // DB 読み込み失敗時はデフォルト値を維持
     }
@@ -50,8 +60,13 @@ class GridColumnSettingsNotifier extends _$GridColumnSettingsNotifier {
   Future<void> setMinColumns(int min) async {
     final currentMax = state.maxColumns;
     final adjustedMax = currentMax >= min + 2 ? currentMax : min + 2;
+    final adjustedCur = state.currentColumns.clamp(min, adjustedMax);
 
-    state = GridColumnSettings(minColumns: min, maxColumns: adjustedMax);
+    state = GridColumnSettings(
+      minColumns: min,
+      maxColumns: adjustedMax,
+      currentColumns: adjustedCur,
+    );
 
     try {
       final db = ref.read(appDatabaseProvider);
@@ -59,6 +74,7 @@ class GridColumnSettingsNotifier extends _$GridColumnSettingsNotifier {
       if (adjustedMax != currentMax) {
         await db.setSetting(_kMaxColumnsKey, adjustedMax.toString());
       }
+      await db.setSetting(_kCurrentColumnsKey, adjustedCur.toString());
     } catch (_) {
       // DB 書き込み失敗時はメモリ上の設定は適用済み
     }
@@ -71,14 +87,34 @@ class GridColumnSettingsNotifier extends _$GridColumnSettingsNotifier {
   Future<void> setMaxColumns(int max) async {
     final currentMin = state.minColumns;
     final adjustedMax = max >= currentMin + 2 ? max : currentMin + 2;
+    final adjustedCur = state.currentColumns.clamp(currentMin, adjustedMax);
 
-    state = state.copyWith(maxColumns: adjustedMax);
+    state = GridColumnSettings(
+      minColumns: currentMin,
+      maxColumns: adjustedMax,
+      currentColumns: adjustedCur,
+    );
 
     try {
       final db = ref.read(appDatabaseProvider);
       await db.setSetting(_kMaxColumnsKey, adjustedMax.toString());
+      await db.setSetting(_kCurrentColumnsKey, adjustedCur.toString());
+    } catch (_) {
+      // DB 書き込み失敗時はメモリ上の設定は適用済み
+    }
+  }
+
+  /// 現在の列数を設定する
+  Future<void> setCurrentColumns(int cols) async {
+    final clamped = cols.clamp(state.minColumns, state.maxColumns);
+    state = state.copyWith(currentColumns: clamped);
+
+    try {
+      final db = ref.read(appDatabaseProvider);
+      await db.setSetting(_kCurrentColumnsKey, clamped.toString());
     } catch (_) {
       // DB 書き込み失敗時はメモリ上の設定は適用済み
     }
   }
 }
+

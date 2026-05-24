@@ -104,6 +104,102 @@ final class PreloadAdjacentImagesUseCaseProvider
 String _$preloadAdjacentImagesUseCaseHash() =>
     r'c26c80909b8a4d030ba451d04654fdc7a4c36001';
 
+@ProviderFor(recordRecentImageUseCase)
+final recordRecentImageUseCaseProvider = RecordRecentImageUseCaseProvider._();
+
+final class RecordRecentImageUseCaseProvider
+    extends
+        $FunctionalProvider<
+          RecordRecentImageUseCase,
+          RecordRecentImageUseCase,
+          RecordRecentImageUseCase
+        >
+    with $Provider<RecordRecentImageUseCase> {
+  RecordRecentImageUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'recordRecentImageUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$recordRecentImageUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<RecordRecentImageUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  RecordRecentImageUseCase create(Ref ref) {
+    return recordRecentImageUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(RecordRecentImageUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<RecordRecentImageUseCase>(value),
+    );
+  }
+}
+
+String _$recordRecentImageUseCaseHash() =>
+    r'ffa65f44090f1ad8403bf657cc3f2b238932bac1';
+
+@ProviderFor(getRecentImagesUseCase)
+final getRecentImagesUseCaseProvider = GetRecentImagesUseCaseProvider._();
+
+final class GetRecentImagesUseCaseProvider
+    extends
+        $FunctionalProvider<
+          GetRecentImagesUseCase,
+          GetRecentImagesUseCase,
+          GetRecentImagesUseCase
+        >
+    with $Provider<GetRecentImagesUseCase> {
+  GetRecentImagesUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'getRecentImagesUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$getRecentImagesUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<GetRecentImagesUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  GetRecentImagesUseCase create(Ref ref) {
+    return getRecentImagesUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(GetRecentImagesUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<GetRecentImagesUseCase>(value),
+    );
+  }
+}
+
+String _$getRecentImagesUseCaseHash() =>
+    r'877da260b77a9fa605a120ee0d038e617bcf147c';
+
 /// 指定された画像のメタデータを取得する Provider
 
 @ProviderFor(imageMetadata)
@@ -376,4 +472,55 @@ final class ImageExifRotationFamily extends $Family
 
   @override
   String toString() => r'imageExifRotationProvider';
+}
+
+/// 最近見た画像リストの状態管理プロバイダ
+
+@ProviderFor(RecentImagesList)
+final recentImagesListProvider = RecentImagesListProvider._();
+
+/// 最近見た画像リストの状態管理プロバイダ
+final class RecentImagesListProvider
+    extends $AsyncNotifierProvider<RecentImagesList, List<ImageEntry>> {
+  /// 最近見た画像リストの状態管理プロバイダ
+  RecentImagesListProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'recentImagesListProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$recentImagesListHash();
+
+  @$internal
+  @override
+  RecentImagesList create() => RecentImagesList();
+}
+
+String _$recentImagesListHash() => r'97b494d3e33d297e3d1665cd654718ca77167e91';
+
+/// 最近見た画像リストの状態管理プロバイダ
+
+abstract class _$RecentImagesList extends $AsyncNotifier<List<ImageEntry>> {
+  FutureOr<List<ImageEntry>> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref =
+        this.ref as $Ref<AsyncValue<List<ImageEntry>>, List<ImageEntry>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<ImageEntry>>, List<ImageEntry>>,
+              AsyncValue<List<ImageEntry>>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
 }

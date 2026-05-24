@@ -16,7 +16,8 @@ mixin _$GridColumnSettings {
 
 /// 最小列数（デフォルト: 3）
  int get minColumns;/// 最大列数（デフォルト: 12）
- int get maxColumns;
+ int get maxColumns;/// 現在の列数（デフォルト: 5）
+ int get currentColumns;
 /// Create a copy of GridColumnSettings
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -27,16 +28,16 @@ $GridColumnSettingsCopyWith<GridColumnSettings> get copyWith => _$GridColumnSett
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GridColumnSettings&&(identical(other.minColumns, minColumns) || other.minColumns == minColumns)&&(identical(other.maxColumns, maxColumns) || other.maxColumns == maxColumns));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GridColumnSettings&&(identical(other.minColumns, minColumns) || other.minColumns == minColumns)&&(identical(other.maxColumns, maxColumns) || other.maxColumns == maxColumns)&&(identical(other.currentColumns, currentColumns) || other.currentColumns == currentColumns));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,minColumns,maxColumns);
+int get hashCode => Object.hash(runtimeType,minColumns,maxColumns,currentColumns);
 
 @override
 String toString() {
-  return 'GridColumnSettings(minColumns: $minColumns, maxColumns: $maxColumns)';
+  return 'GridColumnSettings(minColumns: $minColumns, maxColumns: $maxColumns, currentColumns: $currentColumns)';
 }
 
 
@@ -47,7 +48,7 @@ abstract mixin class $GridColumnSettingsCopyWith<$Res>  {
   factory $GridColumnSettingsCopyWith(GridColumnSettings value, $Res Function(GridColumnSettings) _then) = _$GridColumnSettingsCopyWithImpl;
 @useResult
 $Res call({
- int minColumns, int maxColumns
+ int minColumns, int maxColumns, int currentColumns
 });
 
 
@@ -64,10 +65,11 @@ class _$GridColumnSettingsCopyWithImpl<$Res>
 
 /// Create a copy of GridColumnSettings
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? minColumns = null,Object? maxColumns = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? minColumns = null,Object? maxColumns = null,Object? currentColumns = null,}) {
   return _then(_self.copyWith(
 minColumns: null == minColumns ? _self.minColumns : minColumns // ignore: cast_nullable_to_non_nullable
 as int,maxColumns: null == maxColumns ? _self.maxColumns : maxColumns // ignore: cast_nullable_to_non_nullable
+as int,currentColumns: null == currentColumns ? _self.currentColumns : currentColumns // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -153,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int minColumns,  int maxColumns)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int minColumns,  int maxColumns,  int currentColumns)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GridColumnSettings() when $default != null:
-return $default(_that.minColumns,_that.maxColumns);case _:
+return $default(_that.minColumns,_that.maxColumns,_that.currentColumns);case _:
   return orElse();
 
 }
@@ -174,10 +176,10 @@ return $default(_that.minColumns,_that.maxColumns);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int minColumns,  int maxColumns)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int minColumns,  int maxColumns,  int currentColumns)  $default,) {final _that = this;
 switch (_that) {
 case _GridColumnSettings():
-return $default(_that.minColumns,_that.maxColumns);case _:
+return $default(_that.minColumns,_that.maxColumns,_that.currentColumns);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +196,10 @@ return $default(_that.minColumns,_that.maxColumns);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int minColumns,  int maxColumns)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int minColumns,  int maxColumns,  int currentColumns)?  $default,) {final _that = this;
 switch (_that) {
 case _GridColumnSettings() when $default != null:
-return $default(_that.minColumns,_that.maxColumns);case _:
+return $default(_that.minColumns,_that.maxColumns,_that.currentColumns);case _:
   return null;
 
 }
@@ -209,13 +211,15 @@ return $default(_that.minColumns,_that.maxColumns);case _:
 
 
 class _GridColumnSettings implements GridColumnSettings {
-  const _GridColumnSettings({this.minColumns = 3, this.maxColumns = 12});
+  const _GridColumnSettings({this.minColumns = 3, this.maxColumns = 12, this.currentColumns = 5});
   
 
 /// 最小列数（デフォルト: 3）
 @override@JsonKey() final  int minColumns;
 /// 最大列数（デフォルト: 12）
 @override@JsonKey() final  int maxColumns;
+/// 現在の列数（デフォルト: 5）
+@override@JsonKey() final  int currentColumns;
 
 /// Create a copy of GridColumnSettings
 /// with the given fields replaced by the non-null parameter values.
@@ -227,16 +231,16 @@ _$GridColumnSettingsCopyWith<_GridColumnSettings> get copyWith => __$GridColumnS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GridColumnSettings&&(identical(other.minColumns, minColumns) || other.minColumns == minColumns)&&(identical(other.maxColumns, maxColumns) || other.maxColumns == maxColumns));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GridColumnSettings&&(identical(other.minColumns, minColumns) || other.minColumns == minColumns)&&(identical(other.maxColumns, maxColumns) || other.maxColumns == maxColumns)&&(identical(other.currentColumns, currentColumns) || other.currentColumns == currentColumns));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,minColumns,maxColumns);
+int get hashCode => Object.hash(runtimeType,minColumns,maxColumns,currentColumns);
 
 @override
 String toString() {
-  return 'GridColumnSettings(minColumns: $minColumns, maxColumns: $maxColumns)';
+  return 'GridColumnSettings(minColumns: $minColumns, maxColumns: $maxColumns, currentColumns: $currentColumns)';
 }
 
 
@@ -247,7 +251,7 @@ abstract mixin class _$GridColumnSettingsCopyWith<$Res> implements $GridColumnSe
   factory _$GridColumnSettingsCopyWith(_GridColumnSettings value, $Res Function(_GridColumnSettings) _then) = __$GridColumnSettingsCopyWithImpl;
 @override @useResult
 $Res call({
- int minColumns, int maxColumns
+ int minColumns, int maxColumns, int currentColumns
 });
 
 
@@ -264,10 +268,11 @@ class __$GridColumnSettingsCopyWithImpl<$Res>
 
 /// Create a copy of GridColumnSettings
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? minColumns = null,Object? maxColumns = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? minColumns = null,Object? maxColumns = null,Object? currentColumns = null,}) {
   return _then(_GridColumnSettings(
 minColumns: null == minColumns ? _self.minColumns : minColumns // ignore: cast_nullable_to_non_nullable
 as int,maxColumns: null == maxColumns ? _self.maxColumns : maxColumns // ignore: cast_nullable_to_non_nullable
+as int,currentColumns: null == currentColumns ? _self.currentColumns : currentColumns // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

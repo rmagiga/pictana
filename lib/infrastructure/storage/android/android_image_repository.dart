@@ -226,4 +226,41 @@ class AndroidImageRepository implements ImageRepository {
       height: data.height,
     );
   }
+
+  @override
+  Future<List<ImageEntry>> getRecentImages() async {
+    final rows = await _db.getRecentImages();
+    return rows.map((row) {
+      return ImageEntry(
+        id: EntryId.android(row.entryId),
+        name: row.name,
+        extension: row.extension,
+        uri: row.uri,
+        mimeType: ImageMimeType.values.byName(row.mimeType),
+        size: row.size,
+        modifiedAt: row.lastViewedAt,
+        width: row.width,
+        height: row.height,
+      );
+    }).toList();
+  }
+
+  @override
+  Future<void> recordRecentImage(ImageEntry image) async {
+    final dbImage = await _db.getImageByEntryId(image.id.rawValue);
+    final folderUri = dbImage?.folderUri ?? '';
+    await _db.upsertRecentImage(
+      entryId: image.id.rawValue,
+      uri: image.uri,
+      folderUri: folderUri,
+      name: image.name,
+      extension: image.extension,
+      size: image.size,
+      mimeType: image.mimeType.name,
+      width: image.width,
+      height: image.height,
+      platformType: 'android',
+    );
+  }
 }
+

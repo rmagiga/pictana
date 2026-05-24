@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../application/usecases/settings/swipe_direction_setting.dart';
 import '../../domain/entities/image_entry.dart';
+import '../providers/favorite_toggle_provider.dart';
 import '../providers/gallery_providers.dart';
 import '../providers/viewer_providers.dart';
 import '../widgets/image_info_sheet.dart';
@@ -49,7 +50,11 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: _currentIndex);
     _transformationController.addListener(_onTransformChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _recordCurrentImageViewed();
+    });
   }
+
 
   @override
   void dispose() {
@@ -69,6 +74,52 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
       });
     }
   }
+
+  /// 現在表示中の画像を閲覧履歴に記録する
+  void _recordCurrentImageViewed() {
+    final images = ref.read(galleryImagesProvider).value;
+    if (images != null && _currentIndex >= 0 && _currentIndex < images.length) {
+      final currentImage = images[_currentIndex];
+      ref.read(recentImagesListProvider.notifier).addRecent(currentImage);
+    }
+  }
+
+  /// 現在のフォルダのお気に入り状態をトグルする
+  void _toggleFolderFavorite() {
+    final folder = ref.read(currentFolderProvider);
+    if (folder != null) {
+      ref.read(favoriteToggleProvider.notifier).toggle(
+            uri: folder.uri,
+            name: folder.name,
+          );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${folder.name} のお気に入り状態を切り替えました'),
+          duration: const Duration(milliseconds: 800),
+        ),
+      );
+    }
+  }
+
+  /// キーボードショートカットでのズームイン
+  void _zoomIn() {
+    final currentScale = _transformationController.value.getMaxScaleOnAxis();
+    final newScale = (currentScale + 0.5).clamp(1.0, 5.0);
+    _onCtrlWheelScaleChanged(newScale);
+  }
+
+  /// キーボードショートカットでのズームアウト
+  void _zoomOut() {
+    final currentScale = _transformationController.value.getMaxScaleOnAxis();
+    final newScale = (currentScale - 0.5).clamp(1.0, 5.0);
+    _onCtrlWheelScaleChanged(newScale);
+  }
+
+  /// キーボードショートカットでのズームリセット
+  void _zoomReset() {
+    _transformationController.value = Matrix4.identity();
+  }
+
 
   /// 前の画像に遷移する (Req 1.3, 2.1)
   void _goToPreviousPage() {
@@ -178,7 +229,9 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
         index,
         isMovingForward: isMovingForward,
       );
+      _recordCurrentImageViewed();
     }
+
 
     // Windows: 標準の PageView を使用し、スワイプ方向制御は行わない (Req 4.1)
     if (Platform.isWindows) {
@@ -329,6 +382,10 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
               totalCount: images.length,
               isZoomed: _isZoomed,
               onNavigate: (index) => _navigateToIndex(index, images.length),
+              onToggleFavorite: _toggleFolderFavorite,
+              onZoomIn: _zoomIn,
+              onZoomOut: _zoomOut,
+              onZoomReset: _zoomReset,
               child: content,
             );
           }

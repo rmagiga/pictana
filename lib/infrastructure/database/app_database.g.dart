@@ -370,6 +370,690 @@ class RecentFoldersCompanion extends UpdateCompanion<RecentFolder> {
   }
 }
 
+class $RecentImagesTable extends RecentImages
+    with TableInfo<$RecentImagesTable, RecentImage> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RecentImagesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _entryIdMeta = const VerificationMeta(
+    'entryId',
+  );
+  @override
+  late final GeneratedColumn<String> entryId = GeneratedColumn<String>(
+    'entry_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _uriMeta = const VerificationMeta('uri');
+  @override
+  late final GeneratedColumn<String> uri = GeneratedColumn<String>(
+    'uri',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _folderUriMeta = const VerificationMeta(
+    'folderUri',
+  );
+  @override
+  late final GeneratedColumn<String> folderUri = GeneratedColumn<String>(
+    'folder_uri',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _extensionMeta = const VerificationMeta(
+    'extension',
+  );
+  @override
+  late final GeneratedColumn<String> extension = GeneratedColumn<String>(
+    'extension',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sizeMeta = const VerificationMeta('size');
+  @override
+  late final GeneratedColumn<int> size = GeneratedColumn<int>(
+    'size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mimeTypeMeta = const VerificationMeta(
+    'mimeType',
+  );
+  @override
+  late final GeneratedColumn<String> mimeType = GeneratedColumn<String>(
+    'mime_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _widthMeta = const VerificationMeta('width');
+  @override
+  late final GeneratedColumn<int> width = GeneratedColumn<int>(
+    'width',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _heightMeta = const VerificationMeta('height');
+  @override
+  late final GeneratedColumn<int> height = GeneratedColumn<int>(
+    'height',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _platformTypeMeta = const VerificationMeta(
+    'platformType',
+  );
+  @override
+  late final GeneratedColumn<String> platformType = GeneratedColumn<String>(
+    'platform_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastViewedAtMeta = const VerificationMeta(
+    'lastViewedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastViewedAt = GeneratedColumn<DateTime>(
+    'last_viewed_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    entryId,
+    uri,
+    folderUri,
+    name,
+    extension,
+    size,
+    mimeType,
+    width,
+    height,
+    platformType,
+    lastViewedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'recent_images';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RecentImage> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('entry_id')) {
+      context.handle(
+        _entryIdMeta,
+        entryId.isAcceptableOrUnknown(data['entry_id']!, _entryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entryIdMeta);
+    }
+    if (data.containsKey('uri')) {
+      context.handle(
+        _uriMeta,
+        uri.isAcceptableOrUnknown(data['uri']!, _uriMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_uriMeta);
+    }
+    if (data.containsKey('folder_uri')) {
+      context.handle(
+        _folderUriMeta,
+        folderUri.isAcceptableOrUnknown(data['folder_uri']!, _folderUriMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_folderUriMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('extension')) {
+      context.handle(
+        _extensionMeta,
+        extension.isAcceptableOrUnknown(data['extension']!, _extensionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_extensionMeta);
+    }
+    if (data.containsKey('size')) {
+      context.handle(
+        _sizeMeta,
+        size.isAcceptableOrUnknown(data['size']!, _sizeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sizeMeta);
+    }
+    if (data.containsKey('mime_type')) {
+      context.handle(
+        _mimeTypeMeta,
+        mimeType.isAcceptableOrUnknown(data['mime_type']!, _mimeTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_mimeTypeMeta);
+    }
+    if (data.containsKey('width')) {
+      context.handle(
+        _widthMeta,
+        width.isAcceptableOrUnknown(data['width']!, _widthMeta),
+      );
+    }
+    if (data.containsKey('height')) {
+      context.handle(
+        _heightMeta,
+        height.isAcceptableOrUnknown(data['height']!, _heightMeta),
+      );
+    }
+    if (data.containsKey('platform_type')) {
+      context.handle(
+        _platformTypeMeta,
+        platformType.isAcceptableOrUnknown(
+          data['platform_type']!,
+          _platformTypeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_platformTypeMeta);
+    }
+    if (data.containsKey('last_viewed_at')) {
+      context.handle(
+        _lastViewedAtMeta,
+        lastViewedAt.isAcceptableOrUnknown(
+          data['last_viewed_at']!,
+          _lastViewedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_lastViewedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {entryId};
+  @override
+  RecentImage map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RecentImage(
+      entryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entry_id'],
+      )!,
+      uri: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}uri'],
+      )!,
+      folderUri: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}folder_uri'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      extension: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}extension'],
+      )!,
+      size: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}size'],
+      )!,
+      mimeType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mime_type'],
+      )!,
+      width: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}width'],
+      ),
+      height: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}height'],
+      ),
+      platformType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}platform_type'],
+      )!,
+      lastViewedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_viewed_at'],
+      )!,
+    );
+  }
+
+  @override
+  $RecentImagesTable createAlias(String alias) {
+    return $RecentImagesTable(attachedDatabase, alias);
+  }
+}
+
+class RecentImage extends DataClass implements Insertable<RecentImage> {
+  /// 画像の識別子 (EntryId)
+  final String entryId;
+
+  /// アクセス用 URI 文字列
+  final String uri;
+
+  /// 所属フォルダの URI
+  final String folderUri;
+
+  /// ファイル名
+  final String name;
+
+  /// 拡張子 (小文字、ドットなし)
+  final String extension;
+
+  /// ファイルサイズ (バイト)
+  final int size;
+
+  /// MIMEタイプ
+  final String mimeType;
+
+  /// 画像の幅 (px, null許容)
+  final int? width;
+
+  /// 画像の高さ (px, null許容)
+  final int? height;
+
+  /// プラットフォーム種別 ("android" / "windows")
+  final String platformType;
+
+  /// 最終アクセス日時
+  final DateTime lastViewedAt;
+  const RecentImage({
+    required this.entryId,
+    required this.uri,
+    required this.folderUri,
+    required this.name,
+    required this.extension,
+    required this.size,
+    required this.mimeType,
+    this.width,
+    this.height,
+    required this.platformType,
+    required this.lastViewedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['entry_id'] = Variable<String>(entryId);
+    map['uri'] = Variable<String>(uri);
+    map['folder_uri'] = Variable<String>(folderUri);
+    map['name'] = Variable<String>(name);
+    map['extension'] = Variable<String>(extension);
+    map['size'] = Variable<int>(size);
+    map['mime_type'] = Variable<String>(mimeType);
+    if (!nullToAbsent || width != null) {
+      map['width'] = Variable<int>(width);
+    }
+    if (!nullToAbsent || height != null) {
+      map['height'] = Variable<int>(height);
+    }
+    map['platform_type'] = Variable<String>(platformType);
+    map['last_viewed_at'] = Variable<DateTime>(lastViewedAt);
+    return map;
+  }
+
+  RecentImagesCompanion toCompanion(bool nullToAbsent) {
+    return RecentImagesCompanion(
+      entryId: Value(entryId),
+      uri: Value(uri),
+      folderUri: Value(folderUri),
+      name: Value(name),
+      extension: Value(extension),
+      size: Value(size),
+      mimeType: Value(mimeType),
+      width: width == null && nullToAbsent
+          ? const Value.absent()
+          : Value(width),
+      height: height == null && nullToAbsent
+          ? const Value.absent()
+          : Value(height),
+      platformType: Value(platformType),
+      lastViewedAt: Value(lastViewedAt),
+    );
+  }
+
+  factory RecentImage.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RecentImage(
+      entryId: serializer.fromJson<String>(json['entryId']),
+      uri: serializer.fromJson<String>(json['uri']),
+      folderUri: serializer.fromJson<String>(json['folderUri']),
+      name: serializer.fromJson<String>(json['name']),
+      extension: serializer.fromJson<String>(json['extension']),
+      size: serializer.fromJson<int>(json['size']),
+      mimeType: serializer.fromJson<String>(json['mimeType']),
+      width: serializer.fromJson<int?>(json['width']),
+      height: serializer.fromJson<int?>(json['height']),
+      platformType: serializer.fromJson<String>(json['platformType']),
+      lastViewedAt: serializer.fromJson<DateTime>(json['lastViewedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'entryId': serializer.toJson<String>(entryId),
+      'uri': serializer.toJson<String>(uri),
+      'folderUri': serializer.toJson<String>(folderUri),
+      'name': serializer.toJson<String>(name),
+      'extension': serializer.toJson<String>(extension),
+      'size': serializer.toJson<int>(size),
+      'mimeType': serializer.toJson<String>(mimeType),
+      'width': serializer.toJson<int?>(width),
+      'height': serializer.toJson<int?>(height),
+      'platformType': serializer.toJson<String>(platformType),
+      'lastViewedAt': serializer.toJson<DateTime>(lastViewedAt),
+    };
+  }
+
+  RecentImage copyWith({
+    String? entryId,
+    String? uri,
+    String? folderUri,
+    String? name,
+    String? extension,
+    int? size,
+    String? mimeType,
+    Value<int?> width = const Value.absent(),
+    Value<int?> height = const Value.absent(),
+    String? platformType,
+    DateTime? lastViewedAt,
+  }) => RecentImage(
+    entryId: entryId ?? this.entryId,
+    uri: uri ?? this.uri,
+    folderUri: folderUri ?? this.folderUri,
+    name: name ?? this.name,
+    extension: extension ?? this.extension,
+    size: size ?? this.size,
+    mimeType: mimeType ?? this.mimeType,
+    width: width.present ? width.value : this.width,
+    height: height.present ? height.value : this.height,
+    platformType: platformType ?? this.platformType,
+    lastViewedAt: lastViewedAt ?? this.lastViewedAt,
+  );
+  RecentImage copyWithCompanion(RecentImagesCompanion data) {
+    return RecentImage(
+      entryId: data.entryId.present ? data.entryId.value : this.entryId,
+      uri: data.uri.present ? data.uri.value : this.uri,
+      folderUri: data.folderUri.present ? data.folderUri.value : this.folderUri,
+      name: data.name.present ? data.name.value : this.name,
+      extension: data.extension.present ? data.extension.value : this.extension,
+      size: data.size.present ? data.size.value : this.size,
+      mimeType: data.mimeType.present ? data.mimeType.value : this.mimeType,
+      width: data.width.present ? data.width.value : this.width,
+      height: data.height.present ? data.height.value : this.height,
+      platformType: data.platformType.present
+          ? data.platformType.value
+          : this.platformType,
+      lastViewedAt: data.lastViewedAt.present
+          ? data.lastViewedAt.value
+          : this.lastViewedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecentImage(')
+          ..write('entryId: $entryId, ')
+          ..write('uri: $uri, ')
+          ..write('folderUri: $folderUri, ')
+          ..write('name: $name, ')
+          ..write('extension: $extension, ')
+          ..write('size: $size, ')
+          ..write('mimeType: $mimeType, ')
+          ..write('width: $width, ')
+          ..write('height: $height, ')
+          ..write('platformType: $platformType, ')
+          ..write('lastViewedAt: $lastViewedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    entryId,
+    uri,
+    folderUri,
+    name,
+    extension,
+    size,
+    mimeType,
+    width,
+    height,
+    platformType,
+    lastViewedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RecentImage &&
+          other.entryId == this.entryId &&
+          other.uri == this.uri &&
+          other.folderUri == this.folderUri &&
+          other.name == this.name &&
+          other.extension == this.extension &&
+          other.size == this.size &&
+          other.mimeType == this.mimeType &&
+          other.width == this.width &&
+          other.height == this.height &&
+          other.platformType == this.platformType &&
+          other.lastViewedAt == this.lastViewedAt);
+}
+
+class RecentImagesCompanion extends UpdateCompanion<RecentImage> {
+  final Value<String> entryId;
+  final Value<String> uri;
+  final Value<String> folderUri;
+  final Value<String> name;
+  final Value<String> extension;
+  final Value<int> size;
+  final Value<String> mimeType;
+  final Value<int?> width;
+  final Value<int?> height;
+  final Value<String> platformType;
+  final Value<DateTime> lastViewedAt;
+  final Value<int> rowid;
+  const RecentImagesCompanion({
+    this.entryId = const Value.absent(),
+    this.uri = const Value.absent(),
+    this.folderUri = const Value.absent(),
+    this.name = const Value.absent(),
+    this.extension = const Value.absent(),
+    this.size = const Value.absent(),
+    this.mimeType = const Value.absent(),
+    this.width = const Value.absent(),
+    this.height = const Value.absent(),
+    this.platformType = const Value.absent(),
+    this.lastViewedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RecentImagesCompanion.insert({
+    required String entryId,
+    required String uri,
+    required String folderUri,
+    required String name,
+    required String extension,
+    required int size,
+    required String mimeType,
+    this.width = const Value.absent(),
+    this.height = const Value.absent(),
+    required String platformType,
+    required DateTime lastViewedAt,
+    this.rowid = const Value.absent(),
+  }) : entryId = Value(entryId),
+       uri = Value(uri),
+       folderUri = Value(folderUri),
+       name = Value(name),
+       extension = Value(extension),
+       size = Value(size),
+       mimeType = Value(mimeType),
+       platformType = Value(platformType),
+       lastViewedAt = Value(lastViewedAt);
+  static Insertable<RecentImage> custom({
+    Expression<String>? entryId,
+    Expression<String>? uri,
+    Expression<String>? folderUri,
+    Expression<String>? name,
+    Expression<String>? extension,
+    Expression<int>? size,
+    Expression<String>? mimeType,
+    Expression<int>? width,
+    Expression<int>? height,
+    Expression<String>? platformType,
+    Expression<DateTime>? lastViewedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (entryId != null) 'entry_id': entryId,
+      if (uri != null) 'uri': uri,
+      if (folderUri != null) 'folder_uri': folderUri,
+      if (name != null) 'name': name,
+      if (extension != null) 'extension': extension,
+      if (size != null) 'size': size,
+      if (mimeType != null) 'mime_type': mimeType,
+      if (width != null) 'width': width,
+      if (height != null) 'height': height,
+      if (platformType != null) 'platform_type': platformType,
+      if (lastViewedAt != null) 'last_viewed_at': lastViewedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RecentImagesCompanion copyWith({
+    Value<String>? entryId,
+    Value<String>? uri,
+    Value<String>? folderUri,
+    Value<String>? name,
+    Value<String>? extension,
+    Value<int>? size,
+    Value<String>? mimeType,
+    Value<int?>? width,
+    Value<int?>? height,
+    Value<String>? platformType,
+    Value<DateTime>? lastViewedAt,
+    Value<int>? rowid,
+  }) {
+    return RecentImagesCompanion(
+      entryId: entryId ?? this.entryId,
+      uri: uri ?? this.uri,
+      folderUri: folderUri ?? this.folderUri,
+      name: name ?? this.name,
+      extension: extension ?? this.extension,
+      size: size ?? this.size,
+      mimeType: mimeType ?? this.mimeType,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      platformType: platformType ?? this.platformType,
+      lastViewedAt: lastViewedAt ?? this.lastViewedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (entryId.present) {
+      map['entry_id'] = Variable<String>(entryId.value);
+    }
+    if (uri.present) {
+      map['uri'] = Variable<String>(uri.value);
+    }
+    if (folderUri.present) {
+      map['folder_uri'] = Variable<String>(folderUri.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (extension.present) {
+      map['extension'] = Variable<String>(extension.value);
+    }
+    if (size.present) {
+      map['size'] = Variable<int>(size.value);
+    }
+    if (mimeType.present) {
+      map['mime_type'] = Variable<String>(mimeType.value);
+    }
+    if (width.present) {
+      map['width'] = Variable<int>(width.value);
+    }
+    if (height.present) {
+      map['height'] = Variable<int>(height.value);
+    }
+    if (platformType.present) {
+      map['platform_type'] = Variable<String>(platformType.value);
+    }
+    if (lastViewedAt.present) {
+      map['last_viewed_at'] = Variable<DateTime>(lastViewedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecentImagesCompanion(')
+          ..write('entryId: $entryId, ')
+          ..write('uri: $uri, ')
+          ..write('folderUri: $folderUri, ')
+          ..write('name: $name, ')
+          ..write('extension: $extension, ')
+          ..write('size: $size, ')
+          ..write('mimeType: $mimeType, ')
+          ..write('width: $width, ')
+          ..write('height: $height, ')
+          ..write('platformType: $platformType, ')
+          ..write('lastViewedAt: $lastViewedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $ThumbnailCachesTable extends ThumbnailCaches
     with TableInfo<$ThumbnailCachesTable, ThumbnailCache> {
   @override
@@ -1975,6 +2659,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $RecentFoldersTable recentFolders = $RecentFoldersTable(this);
+  late final $RecentImagesTable recentImages = $RecentImagesTable(this);
   late final $ThumbnailCachesTable thumbnailCaches = $ThumbnailCachesTable(
     this,
   );
@@ -1989,6 +2674,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     recentFolders,
+    recentImages,
     thumbnailCaches,
     appSettings,
     favoriteFolders,
@@ -2192,6 +2878,324 @@ typedef $$RecentFoldersTableProcessedTableManager =
         BaseReferences<_$AppDatabase, $RecentFoldersTable, RecentFolder>,
       ),
       RecentFolder,
+      PrefetchHooks Function()
+    >;
+typedef $$RecentImagesTableCreateCompanionBuilder =
+    RecentImagesCompanion Function({
+      required String entryId,
+      required String uri,
+      required String folderUri,
+      required String name,
+      required String extension,
+      required int size,
+      required String mimeType,
+      Value<int?> width,
+      Value<int?> height,
+      required String platformType,
+      required DateTime lastViewedAt,
+      Value<int> rowid,
+    });
+typedef $$RecentImagesTableUpdateCompanionBuilder =
+    RecentImagesCompanion Function({
+      Value<String> entryId,
+      Value<String> uri,
+      Value<String> folderUri,
+      Value<String> name,
+      Value<String> extension,
+      Value<int> size,
+      Value<String> mimeType,
+      Value<int?> width,
+      Value<int?> height,
+      Value<String> platformType,
+      Value<DateTime> lastViewedAt,
+      Value<int> rowid,
+    });
+
+class $$RecentImagesTableFilterComposer
+    extends Composer<_$AppDatabase, $RecentImagesTable> {
+  $$RecentImagesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get entryId => $composableBuilder(
+    column: $table.entryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get uri => $composableBuilder(
+    column: $table.uri,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get folderUri => $composableBuilder(
+    column: $table.folderUri,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get extension => $composableBuilder(
+    column: $table.extension,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get size => $composableBuilder(
+    column: $table.size,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mimeType => $composableBuilder(
+    column: $table.mimeType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get width => $composableBuilder(
+    column: $table.width,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get height => $composableBuilder(
+    column: $table.height,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get platformType => $composableBuilder(
+    column: $table.platformType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastViewedAt => $composableBuilder(
+    column: $table.lastViewedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$RecentImagesTableOrderingComposer
+    extends Composer<_$AppDatabase, $RecentImagesTable> {
+  $$RecentImagesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get entryId => $composableBuilder(
+    column: $table.entryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get uri => $composableBuilder(
+    column: $table.uri,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get folderUri => $composableBuilder(
+    column: $table.folderUri,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get extension => $composableBuilder(
+    column: $table.extension,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get size => $composableBuilder(
+    column: $table.size,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mimeType => $composableBuilder(
+    column: $table.mimeType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get width => $composableBuilder(
+    column: $table.width,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get height => $composableBuilder(
+    column: $table.height,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get platformType => $composableBuilder(
+    column: $table.platformType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastViewedAt => $composableBuilder(
+    column: $table.lastViewedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$RecentImagesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RecentImagesTable> {
+  $$RecentImagesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get entryId =>
+      $composableBuilder(column: $table.entryId, builder: (column) => column);
+
+  GeneratedColumn<String> get uri =>
+      $composableBuilder(column: $table.uri, builder: (column) => column);
+
+  GeneratedColumn<String> get folderUri =>
+      $composableBuilder(column: $table.folderUri, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get extension =>
+      $composableBuilder(column: $table.extension, builder: (column) => column);
+
+  GeneratedColumn<int> get size =>
+      $composableBuilder(column: $table.size, builder: (column) => column);
+
+  GeneratedColumn<String> get mimeType =>
+      $composableBuilder(column: $table.mimeType, builder: (column) => column);
+
+  GeneratedColumn<int> get width =>
+      $composableBuilder(column: $table.width, builder: (column) => column);
+
+  GeneratedColumn<int> get height =>
+      $composableBuilder(column: $table.height, builder: (column) => column);
+
+  GeneratedColumn<String> get platformType => $composableBuilder(
+    column: $table.platformType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastViewedAt => $composableBuilder(
+    column: $table.lastViewedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$RecentImagesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RecentImagesTable,
+          RecentImage,
+          $$RecentImagesTableFilterComposer,
+          $$RecentImagesTableOrderingComposer,
+          $$RecentImagesTableAnnotationComposer,
+          $$RecentImagesTableCreateCompanionBuilder,
+          $$RecentImagesTableUpdateCompanionBuilder,
+          (
+            RecentImage,
+            BaseReferences<_$AppDatabase, $RecentImagesTable, RecentImage>,
+          ),
+          RecentImage,
+          PrefetchHooks Function()
+        > {
+  $$RecentImagesTableTableManager(_$AppDatabase db, $RecentImagesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RecentImagesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RecentImagesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RecentImagesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> entryId = const Value.absent(),
+                Value<String> uri = const Value.absent(),
+                Value<String> folderUri = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> extension = const Value.absent(),
+                Value<int> size = const Value.absent(),
+                Value<String> mimeType = const Value.absent(),
+                Value<int?> width = const Value.absent(),
+                Value<int?> height = const Value.absent(),
+                Value<String> platformType = const Value.absent(),
+                Value<DateTime> lastViewedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RecentImagesCompanion(
+                entryId: entryId,
+                uri: uri,
+                folderUri: folderUri,
+                name: name,
+                extension: extension,
+                size: size,
+                mimeType: mimeType,
+                width: width,
+                height: height,
+                platformType: platformType,
+                lastViewedAt: lastViewedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String entryId,
+                required String uri,
+                required String folderUri,
+                required String name,
+                required String extension,
+                required int size,
+                required String mimeType,
+                Value<int?> width = const Value.absent(),
+                Value<int?> height = const Value.absent(),
+                required String platformType,
+                required DateTime lastViewedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => RecentImagesCompanion.insert(
+                entryId: entryId,
+                uri: uri,
+                folderUri: folderUri,
+                name: name,
+                extension: extension,
+                size: size,
+                mimeType: mimeType,
+                width: width,
+                height: height,
+                platformType: platformType,
+                lastViewedAt: lastViewedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$RecentImagesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RecentImagesTable,
+      RecentImage,
+      $$RecentImagesTableFilterComposer,
+      $$RecentImagesTableOrderingComposer,
+      $$RecentImagesTableAnnotationComposer,
+      $$RecentImagesTableCreateCompanionBuilder,
+      $$RecentImagesTableUpdateCompanionBuilder,
+      (
+        RecentImage,
+        BaseReferences<_$AppDatabase, $RecentImagesTable, RecentImage>,
+      ),
+      RecentImage,
       PrefetchHooks Function()
     >;
 typedef $$ThumbnailCachesTableCreateCompanionBuilder =
@@ -3055,6 +4059,8 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$RecentFoldersTableTableManager get recentFolders =>
       $$RecentFoldersTableTableManager(_db, _db.recentFolders);
+  $$RecentImagesTableTableManager get recentImages =>
+      $$RecentImagesTableTableManager(_db, _db.recentImages);
   $$ThumbnailCachesTableTableManager get thumbnailCaches =>
       $$ThumbnailCachesTableTableManager(_db, _db.thumbnailCaches);
   $$AppSettingsTableTableManager get appSettings =>

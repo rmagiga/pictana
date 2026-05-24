@@ -17,5 +17,8 @@ abstract class GridColumnSettings with _$GridColumnSettings {
 
     /// 最大列数（デフォルト: 12）
     @Default(12) int maxColumns,
+
+    /// 現在の列数（デフォルト: 5）
+    @Default(5) int currentColumns,
   }) = _GridColumnSettings;
 }

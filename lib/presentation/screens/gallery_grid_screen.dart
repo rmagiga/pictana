@@ -74,6 +74,9 @@ class GalleryGridScreen extends HookConsumerWidget {
     // 再接続後の再読み込み中フラグ
     final isReloading = useState(false);
 
+    // 表示密度スライダー表示フラグ
+    final showDensitySlider = useState(false);
+
     // ストレージ再接続検知時にフォルダ内容を自動再読み込み (Req 15.2, 15.3, 15.4)
     ref.listen<StorageMonitorState>(storageMonitorProvider, (previous, next) {
       // バナーが表示中 → 非表示に変化 = 再接続検知
@@ -162,6 +165,14 @@ class GalleryGridScreen extends HookConsumerWidget {
                   ref.read(searchControllerProvider.notifier).toggleSearchBar();
                 },
               ),
+            // 表示密度変更ボタン
+            IconButton(
+              icon: const Icon(Icons.grid_view),
+              tooltip: '表示密度（列数）を変更',
+              onPressed: () {
+                showDensitySlider.value = !showDensitySlider.value;
+              },
+            ),
             // ソートメニュー
             const SortMenu(),
             // 設定ボタン
@@ -180,6 +191,9 @@ class GalleryGridScreen extends HookConsumerWidget {
               const LinearProgressIndicator(
                 minHeight: 2,
               ),
+            // 表示密度調整スライダー
+            if (showDensitySlider.value)
+              _buildDensitySliderPanel(context, ref),
             // 検索バーウィジェット (Req 11.1, 11.5)
             // 展開時のみ表示
             if (searchFilterState.isSearchBarExpanded)
@@ -226,17 +240,14 @@ class GalleryGridScreen extends HookConsumerWidget {
 
                   return LayoutBuilder(
                     builder: (context, constraints) {
-                      // 画面幅と設定値に応じて列数を動的に変更
+                      // ユーザー設定の現在の列数を使用
                       final settings = ref.watch(gridColumnSettingsProvider);
-                      final crossAxisCount = (constraints.maxWidth / 150)
-                          .floor()
-                          .clamp(settings.minColumns, settings.maxColumns)
-                          .toInt();
+                      final crossAxisCount = settings.currentColumns;
 
                       final gridView = GridView.builder(
                         controller: scrollController,
                         // Windows: FastScrollHandler がスクロールを制御するため
-                        // ポインターシグナルによるスクロールを無効化 (Req 13.1)
+                        // ポインターシグナルによるスクロールを無有効化 (Req 13.1)
                         physics: Platform.isWindows
                             ? const FastScrollPhysics()
                             : null,
@@ -267,15 +278,44 @@ class GalleryGridScreen extends HookConsumerWidget {
                         },
                       );
 
+                      // スケールジェスチャー（ピンチイン・アウト）による列数の無段階増減
+                      double startScale = 1.0;
+                      int startColumns = settings.currentColumns;
+
+                      final gestureWrapper = GestureDetector(
+                        onScaleStart: (details) {
+                          startScale = 1.0;
+                          startColumns = settings.currentColumns;
+                        },
+                        onScaleUpdate: (details) {
+                          if (details.pointerCount < 2) return; // 2本指のピンチのみ
+                          final scaleFactor = details.scale;
+                          if (scaleFactor == 1.0) return;
+
+                          // ピンチアウト (拡大) = 列数減少 (画像を大きく)
+                          // ピンチイン (縮小) = 列数増加 (画像を小さく)
+                          final targetColumns = (startColumns / scaleFactor)
+                              .round()
+                              .clamp(settings.minColumns, settings.maxColumns);
+
+                          if (targetColumns != settings.currentColumns) {
+                            ref
+                                .read(gridColumnSettingsProvider.notifier)
+                                .setCurrentColumns(targetColumns);
+                          }
+                        },
+                        child: gridView,
+                      );
+
                       // Windows: FastScrollHandler でマウスホイール高速スクロール (Req 13.1)
                       if (Platform.isWindows) {
                         return FastScrollHandler(
                           scrollController: scrollController,
-                          child: gridView,
+                          child: gestureWrapper,
                         );
                       }
 
-                      return gridView;
+                      return gestureWrapper;
                     },
                   );
                 },
@@ -396,6 +436,53 @@ class GalleryGridScreen extends HookConsumerWidget {
           ),
         );
       },
+    );
+  }
+
+  /// 表示密度調整用のスライダーパネルを構築する
+  Widget _buildDensitySliderPanel(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(gridColumnSettingsProvider);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.zoom_in, size: 20),
+          Expanded(
+            child: Slider(
+              value: settings.currentColumns.toDouble(),
+              min: settings.minColumns.toDouble(),
+              max: settings.maxColumns.toDouble(),
+              divisions: settings.maxColumns - settings.minColumns,
+              label: '${settings.currentColumns} 列',
+              activeColor: Theme.of(context).colorScheme.primary,
+              onChanged: (val) {
+                ref
+                    .read(gridColumnSettingsProvider.notifier)
+                    .setCurrentColumns(val.toInt());
+              },
+            ),
+          ),
+          const Icon(Icons.zoom_out, size: 20),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 45,
+            child: Text(
+              '${settings.currentColumns} 列',
+              textAlign: TextAlign.end,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -8,6 +8,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../application/providers/repository_providers.dart';
 import '../../application/usecases/viewer/load_image_usecase.dart';
 import '../../application/usecases/viewer/preload_adjacent_images_usecase.dart';
+import '../../application/usecases/viewer/record_recent_image_usecase.dart';
+import '../../application/usecases/viewer/get_recent_images_usecase.dart';
 import '../../domain/entities/image_entry.dart';
 
 part 'viewer_providers.g.dart';
@@ -27,6 +29,21 @@ PreloadAdjacentImagesUseCase preloadAdjacentImagesUseCase(Ref ref) {
     imageRepository: ref.watch(imageRepositoryProvider),
   );
 }
+
+@riverpod
+RecordRecentImageUseCase recordRecentImageUseCase(Ref ref) {
+  return RecordRecentImageUseCase(
+    imageRepository: ref.watch(imageRepositoryProvider),
+  );
+}
+
+@riverpod
+GetRecentImagesUseCase getRecentImagesUseCase(Ref ref) {
+  return GetRecentImagesUseCase(
+    imageRepository: ref.watch(imageRepositoryProvider),
+  );
+}
+
 
 // ---------------------------------------------------------------------------
 // State Providers
@@ -66,3 +83,22 @@ Future<int> imageExifRotation(Ref ref, ImageEntry entry) async {
   final exifProcessor = ref.watch(exifProcessorProvider);
   return exifProcessor.extractRotation(bytes);
 }
+
+/// 最近見た画像リストの状態管理プロバイダ
+@riverpod
+class RecentImagesList extends _$RecentImagesList {
+  @override
+  FutureOr<List<ImageEntry>> build() async {
+    final useCase = ref.watch(getRecentImagesUseCaseProvider);
+    return useCase.execute();
+  }
+
+  /// 最近見た画像履歴に記録し、一覧状態を更新する
+  Future<void> addRecent(ImageEntry image) async {
+    final recordUseCase = ref.read(recordRecentImageUseCaseProvider);
+    await recordUseCase.execute(image);
+    // 状態をリフレッシュする
+    ref.invalidateSelf();
+  }
+}
+

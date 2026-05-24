@@ -67,4 +67,10 @@ abstract interface class ImageRepository {
   ///
   /// 同期IOは禁止。必ず非同期で返す。
   Future<List<int>> getImageBytes(ImageEntry entry);
+
+  /// 最近見た画像の一覧を返す。
+  Future<List<ImageEntry>> getRecentImages();
+
+  /// 最近見た画像を記録する。
+  Future<void> recordRecentImage(ImageEntry image);
 }
