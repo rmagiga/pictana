@@ -17,25 +17,42 @@ class PreloadAdjacentImagesUseCase {
 
   /// 前後の画像をメモリにプリロードする
   ///
-  /// （MVPフェーズでは ImageProvider のキャッシュ任せにするか、
-  ///   ここで明示的にバイト列を読んで捨てることで OS キャッシュに乗せる）
-  Future<void> execute(List<ImageEntry> entries, int currentIndex) async {
+  /// 進行方向（isMovingForward）側の画像を優先的に、前後最大4枚ずつ（計8枚）を
+  /// 非同期で読み込みます。
+  Future<void> execute(
+    List<ImageEntry> entries,
+    int currentIndex, {
+    bool isMovingForward = true,
+  }) async {
     if (entries.isEmpty) return;
 
-    final nextIndex = currentIndex + 1;
-    final prevIndex = currentIndex - 1;
+    const preloadCount = 4;
+    final targetIndices = <int>[];
 
-    try {
-      if (nextIndex < entries.length) {
-        // 次の画像を非同期で読み込む
-        _repo.getImageBytes(entries[nextIndex]).ignore();
+    // 1. 進行方向のプリロード対象を追加
+    for (int i = 1; i <= preloadCount; i++) {
+      final index = isMovingForward ? currentIndex + i : currentIndex - i;
+      if (index >= 0 && index < entries.length) {
+        targetIndices.add(index);
       }
-      if (prevIndex >= 0) {
-        // 前の画像を非同期で読み込む
-        _repo.getImageBytes(entries[prevIndex]).ignore();
+    }
+
+    // 2. 逆方向のプリロード対象を追加
+    for (int i = 1; i <= preloadCount; i++) {
+      final index = isMovingForward ? currentIndex - i : currentIndex + i;
+      if (index >= 0 && index < entries.length) {
+        targetIndices.add(index);
       }
-    } catch (e) {
-      appLogger.w('プリロード中にエラーが発生しました（無視）', error: e);
+    }
+
+    // 進行方向側から順に非同期でロードを開始する
+    for (final index in targetIndices) {
+      try {
+        _repo.getImageBytes(entries[index]).ignore();
+      } catch (e) {
+        // 個別の画像ロードにおける同期的なエラーはログ出力して無視し、他のプリロードを継続する
+        appLogger.w('プリロード処理でエラーが発生しました（無視）: index=$index', error: e);
+      }
     }
   }
 }

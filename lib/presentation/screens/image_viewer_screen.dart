@@ -170,9 +170,14 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
     }
 
     void onPageChanged(int index) {
+      final isMovingForward = index > _currentIndex;
       setState(() => _currentIndex = index);
       // 前後の画像をプリロードする
-      ref.read(preloadAdjacentImagesUseCaseProvider).execute(images, index);
+      ref.read(preloadAdjacentImagesUseCaseProvider).execute(
+        images,
+        index,
+        isMovingForward: isMovingForward,
+      );
     }
 
     // Windows: 標準の PageView を使用し、スワイプ方向制御は行わない (Req 4.1)

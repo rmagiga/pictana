@@ -97,7 +97,11 @@ class _FakePreloadAdjacentImagesUseCase extends PreloadAdjacentImagesUseCase {
     : super(imageRepository: _FakeImageRepository());
 
   @override
-  Future<void> execute(List<ImageEntry> entries, int currentIndex) async {
+  Future<void> execute(
+    List<ImageEntry> entries,
+    int currentIndex, {
+    bool isMovingForward = true,
+  }) async {
     // テスト用: 何もしない
   }
 }
