@@ -128,6 +128,16 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
     }
   }
 
+  /// 最近開いたフォルダを履歴から削除する
+  Future<void> _deleteRecentFolder(FolderEntry folder) async {
+    await ref.read(recentFoldersListProvider.notifier).removeRecent(folder.uri);
+  }
+
+  /// 最近見た画像を履歴から削除する
+  Future<void> _deleteRecentImage(ImageEntry image) async {
+    await ref.read(recentImagesListProvider.notifier).removeRecent(image.id.rawValue);
+  }
+
   @override
   Widget build(BuildContext context) {
     final favoritesAsync = ref.watch(favoriteListProvider);
@@ -240,30 +250,53 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: InkWell(
-                    onTap: () => _handleRecentFolderNavigation(context, folder),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      width: 140,
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.folder,
-                            size: 36,
-                            color: Theme.of(context).colorScheme.primary,
+                  child: Stack(
+                    children: [
+                      InkWell(
+                        onTap: () => _handleRecentFolderNavigation(context, folder),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          width: 140,
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.folder,
+                                size: 36,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                folder.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            folder.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall,
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                      Positioned(
+                        top: 2,
+                        right: 2,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () => _deleteRecentFolder(folder),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Icon(
+                                Icons.close,
+                                size: 16,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -307,41 +340,66 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
                   child: Column(
                     children: [
                       Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: ImageGridTile(
-                            image: image,
-                            onTap: () async {
-                              final database = ref.read(appDatabaseProvider);
-                              final dbImage = await database.getImageByEntryId(
-                                image.id.rawValue,
-                              );
-                              final folderUri = dbImage?.folderUri ?? '';
-                              if (folderUri.isNotEmpty && context.mounted) {
-                                final storageRepo = ref.read(storageRepositoryProvider);
-                                final restoredFolder = storageRepo.restoreFolderFromUri(
-                                  uri: folderUri,
-                                  name: folderUri.split(Platform.pathSeparator).last,
-                                );
-                                // ビューア自動遷移用 ID をセット
-                                ref
-                                    .read(pendingViewerEntryIdProvider.notifier)
-                                    .set(image.id.rawValue);
-                                ref
-                                    .read(currentFolderProvider.notifier)
-                                    .setFolder(restoredFolder);
-                                context.go(AppRoutes.galleryGrid);
-                              } else {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('画像のフォルダ情報が見つかりません。'),
-                                    ),
-                                  );
-                                }
-                              }
-                            },
-                          ),
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: ImageGridTile(
+                                  image: image,
+                                  onTap: () async {
+                                    final database = ref.read(appDatabaseProvider);
+                                    final dbImage = await database.getImageByEntryId(
+                                      image.id.rawValue,
+                                    );
+                                    final folderUri = dbImage?.folderUri ?? '';
+                                    if (folderUri.isNotEmpty && context.mounted) {
+                                      final storageRepo = ref.read(storageRepositoryProvider);
+                                      final restoredFolder = storageRepo.restoreFolderFromUri(
+                                        uri: folderUri,
+                                        name: folderUri.split(Platform.pathSeparator).last,
+                                      );
+                                      // ビューア自動遷移用 ID をセット
+                                      ref
+                                          .read(pendingViewerEntryIdProvider.notifier)
+                                          .set(image.id.rawValue);
+                                      ref
+                                          .read(currentFolderProvider.notifier)
+                                          .setFolder(restoredFolder);
+                                      context.go(AppRoutes.galleryGrid);
+                                    } else {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('画像のフォルダ情報が見つかりません。'),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 4,
+                              right: 4,
+                              child: GestureDetector(
+                                onTap: () => _deleteRecentImage(image),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withAlpha(128),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: const Icon(
+                                    Icons.close,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 4),

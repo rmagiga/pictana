@@ -110,6 +110,15 @@ class RecentImagesList extends _$RecentImagesList {
       ref.invalidateSelf();
     }
   }
+
+  /// 最近見た画像履歴から削除し、一覧状態を更新する
+  Future<void> removeRecent(String entryId) async {
+    final database = ref.read(appDatabaseProvider);
+    await database.deleteRecentImageByEntryId(entryId);
+    if (ref.mounted) {
+      ref.invalidateSelf();
+    }
+  }
 }
 
 /// フォルダごとの続き位置（最後に見た画像EntryId）を取得する Provider

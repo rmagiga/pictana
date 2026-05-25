@@ -550,7 +550,7 @@ final class RecentImagesListProvider
   RecentImagesList create() => RecentImagesList();
 }
 
-String _$recentImagesListHash() => r'cc4e9543a8c5f5060f56d35741ab2523bfc85c58';
+String _$recentImagesListHash() => r'928d073c096bb5842572bd96923a239d772e6829';
 
 /// 最近見た画像リストの状態管理プロバイダ
 
