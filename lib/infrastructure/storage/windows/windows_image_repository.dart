@@ -176,6 +176,10 @@ class WindowsImageRepository implements ImageRepository {
       modifiedAt: DateTime.fromMillisecondsSinceEpoch(data.modified),
       width: data.width,
       height: data.height,
+      exifDateTime: data.exifDateTime,
+      exifCamera: data.exifCamera,
+      exifGpsLatitude: data.exifGpsLatitude,
+      exifGpsLongitude: data.exifGpsLongitude,
     );
   }
 
@@ -213,6 +217,16 @@ class WindowsImageRepository implements ImageRepository {
       height: image.height,
       platformType: 'windows',
     );
+  }
+
+  @override
+  Future<void> saveLastViewedEntryId(String folderUri, String entryId) async {
+    await _db.setSetting('resume_entry_id_$folderUri', entryId);
+  }
+
+  @override
+  Future<String?> getLastViewedEntryId(String folderUri) async {
+    return _db.getSetting('resume_entry_id_$folderUri');
   }
 }
 

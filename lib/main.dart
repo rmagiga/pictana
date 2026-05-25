@@ -1,6 +1,7 @@
 /// アプリエントリーポイント
 library;
 
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +14,16 @@ import 'presentation/providers/grid_column_settings_provider.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'presentation/themes/app_theme.dart';
 import 'router/app_router.dart';
+
+/// デスクトップ環境等でもマウスによるドラッグスクロールを可能にする ScrollBehavior
+class AppScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+      };
+}
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,6 +74,7 @@ class OptrigApp extends ConsumerWidget {
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
       routerConfig: appRouter,
+      scrollBehavior: AppScrollBehavior(),
     );
   }
 }

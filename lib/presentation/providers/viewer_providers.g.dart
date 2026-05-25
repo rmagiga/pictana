@@ -200,6 +200,54 @@ final class GetRecentImagesUseCaseProvider
 String _$getRecentImagesUseCaseHash() =>
     r'877da260b77a9fa605a120ee0d038e617bcf147c';
 
+@ProviderFor(resumePositionUseCase)
+final resumePositionUseCaseProvider = ResumePositionUseCaseProvider._();
+
+final class ResumePositionUseCaseProvider
+    extends
+        $FunctionalProvider<
+          ResumePositionUseCase,
+          ResumePositionUseCase,
+          ResumePositionUseCase
+        >
+    with $Provider<ResumePositionUseCase> {
+  ResumePositionUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'resumePositionUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$resumePositionUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<ResumePositionUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ResumePositionUseCase create(Ref ref) {
+    return resumePositionUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ResumePositionUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ResumePositionUseCase>(value),
+    );
+  }
+}
+
+String _$resumePositionUseCaseHash() =>
+    r'0834042efa2460a51bd05da0e0f87e3b6f709799';
+
 /// 指定された画像のメタデータを取得する Provider
 
 @ProviderFor(imageMetadata)
@@ -489,7 +537,7 @@ final class RecentImagesListProvider
         argument: null,
         retry: null,
         name: r'recentImagesListProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -502,7 +550,7 @@ final class RecentImagesListProvider
   RecentImagesList create() => RecentImagesList();
 }
 
-String _$recentImagesListHash() => r'97b494d3e33d297e3d1665cd654718ca77167e91';
+String _$recentImagesListHash() => r'cc4e9543a8c5f5060f56d35741ab2523bfc85c58';
 
 /// 最近見た画像リストの状態管理プロバイダ
 
@@ -523,4 +571,83 @@ abstract class _$RecentImagesList extends $AsyncNotifier<List<ImageEntry>> {
             >;
     element.handleCreate(ref, build);
   }
+}
+
+/// フォルダごとの続き位置（最後に見た画像EntryId）を取得する Provider
+
+@ProviderFor(folderResumePosition)
+final folderResumePositionProvider = FolderResumePositionFamily._();
+
+/// フォルダごとの続き位置（最後に見た画像EntryId）を取得する Provider
+
+final class FolderResumePositionProvider
+    extends $FunctionalProvider<AsyncValue<String?>, String?, FutureOr<String?>>
+    with $FutureModifier<String?>, $FutureProvider<String?> {
+  /// フォルダごとの続き位置（最後に見た画像EntryId）を取得する Provider
+  FolderResumePositionProvider._({
+    required FolderResumePositionFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'folderResumePositionProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$folderResumePositionHash();
+
+  @override
+  String toString() {
+    return r'folderResumePositionProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<String?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<String?> create(Ref ref) {
+    final argument = this.argument as String;
+    return folderResumePosition(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is FolderResumePositionProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$folderResumePositionHash() =>
+    r'e7ad1d35a40350941ca4e36bedb45ce93c671035';
+
+/// フォルダごとの続き位置（最後に見た画像EntryId）を取得する Provider
+
+final class FolderResumePositionFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<String?>, String> {
+  FolderResumePositionFamily._()
+    : super(
+        retry: null,
+        name: r'folderResumePositionProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// フォルダごとの続き位置（最後に見た画像EntryId）を取得する Provider
+
+  FolderResumePositionProvider call(String folderUri) =>
+      FolderResumePositionProvider._(argument: folderUri, from: this);
+
+  @override
+  String toString() => r'folderResumePositionProvider';
 }

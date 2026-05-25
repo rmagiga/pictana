@@ -13,7 +13,6 @@ import 'package:pictana/domain/entities/image_entry.dart';
 import 'package:pictana/domain/repositories/image_repository.dart';
 import 'package:pictana/domain/value_objects/sort_option.dart';
 import 'package:pictana/infrastructure/database/app_database.dart';
-import 'package:pictana/presentation/providers/app_lifecycle_provider.dart';
 import 'package:pictana/presentation/providers/gallery_providers.dart';
 
 // フェイク用 ImageRepository
@@ -45,6 +44,18 @@ class FakeImageRepository implements ImageRepository {
 
   @override
   Future<List<int>> getImageBytes(ImageEntry entry) => throw UnimplementedError();
+
+  @override
+  Future<List<ImageEntry>> getRecentImages() => throw UnimplementedError();
+
+  @override
+  Future<void> recordRecentImage(ImageEntry image) => throw UnimplementedError();
+
+  @override
+  Future<void> saveLastViewedEntryId(String folderUri, String entryId) => throw UnimplementedError();
+
+  @override
+  Future<String?> getLastViewedEntryId(String folderUri) => throw UnimplementedError();
 }
 
 // フェイク用 LoadFolderImagesUseCase
@@ -52,9 +63,6 @@ class FakeLoadFolderImagesUseCase implements LoadFolderImagesUseCase {
   StreamController<List<ImageEntry>>? controller;
   int countCallCount = 0;
   int executeCallCount = 0;
-
-  @override
-  ImageRepository get _repo => FakeImageRepository();
 
   @override
   Stream<List<ImageEntry>> execute({

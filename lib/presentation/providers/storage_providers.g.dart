@@ -208,6 +208,153 @@ final class PersistUriPermissionUseCaseProvider
 String _$persistUriPermissionUseCaseHash() =>
     r'1e3efae90f73aa1d0fd3a2d6e61feb12cc5a6baf';
 
+@ProviderFor(getRecentFoldersUseCase)
+final getRecentFoldersUseCaseProvider = GetRecentFoldersUseCaseProvider._();
+
+final class GetRecentFoldersUseCaseProvider
+    extends
+        $FunctionalProvider<
+          GetRecentFoldersUseCase,
+          GetRecentFoldersUseCase,
+          GetRecentFoldersUseCase
+        >
+    with $Provider<GetRecentFoldersUseCase> {
+  GetRecentFoldersUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'getRecentFoldersUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$getRecentFoldersUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<GetRecentFoldersUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  GetRecentFoldersUseCase create(Ref ref) {
+    return getRecentFoldersUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(GetRecentFoldersUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<GetRecentFoldersUseCase>(value),
+    );
+  }
+}
+
+String _$getRecentFoldersUseCaseHash() =>
+    r'f776fd74c38c38f7d92cae592b626e57e11c7635';
+
+@ProviderFor(recordRecentFolderUseCase)
+final recordRecentFolderUseCaseProvider = RecordRecentFolderUseCaseProvider._();
+
+final class RecordRecentFolderUseCaseProvider
+    extends
+        $FunctionalProvider<
+          RecordRecentFolderUseCase,
+          RecordRecentFolderUseCase,
+          RecordRecentFolderUseCase
+        >
+    with $Provider<RecordRecentFolderUseCase> {
+  RecordRecentFolderUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'recordRecentFolderUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$recordRecentFolderUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<RecordRecentFolderUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  RecordRecentFolderUseCase create(Ref ref) {
+    return recordRecentFolderUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(RecordRecentFolderUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<RecordRecentFolderUseCase>(value),
+    );
+  }
+}
+
+String _$recordRecentFolderUseCaseHash() =>
+    r'99bb4451295b64615143ab267434b222edb68015';
+
+@ProviderFor(navigateToRecentFolderUseCase)
+final navigateToRecentFolderUseCaseProvider =
+    NavigateToRecentFolderUseCaseProvider._();
+
+final class NavigateToRecentFolderUseCaseProvider
+    extends
+        $FunctionalProvider<
+          NavigateToRecentFolderUseCase,
+          NavigateToRecentFolderUseCase,
+          NavigateToRecentFolderUseCase
+        >
+    with $Provider<NavigateToRecentFolderUseCase> {
+  NavigateToRecentFolderUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'navigateToRecentFolderUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$navigateToRecentFolderUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<NavigateToRecentFolderUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  NavigateToRecentFolderUseCase create(Ref ref) {
+    return navigateToRecentFolderUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NavigateToRecentFolderUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NavigateToRecentFolderUseCase>(
+        value,
+      ),
+    );
+  }
+}
+
+String _$navigateToRecentFolderUseCaseHash() =>
+    r'6dcfb30b9ed8f8d6c5065cdbf78ac7d37753b1ca';
+
 /// ストレージ接続状態（切断などを検知するため）
 
 @ProviderFor(storageRoots)
@@ -253,3 +400,54 @@ final class StorageRootsProvider
 }
 
 String _$storageRootsHash() => r'f69a07e0eea3dea939356bd28b6116c57c827753';
+
+/// 最近開いたフォルダ履歴の状態を管理する Provider
+
+@ProviderFor(RecentFoldersList)
+final recentFoldersListProvider = RecentFoldersListProvider._();
+
+/// 最近開いたフォルダ履歴の状態を管理する Provider
+final class RecentFoldersListProvider
+    extends $AsyncNotifierProvider<RecentFoldersList, List<FolderEntry>> {
+  /// 最近開いたフォルダ履歴の状態を管理する Provider
+  RecentFoldersListProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'recentFoldersListProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$recentFoldersListHash();
+
+  @$internal
+  @override
+  RecentFoldersList create() => RecentFoldersList();
+}
+
+String _$recentFoldersListHash() => r'25f9d4d8635ea553fcc1f897a87359612d26489a';
+
+/// 最近開いたフォルダ履歴の状態を管理する Provider
+
+abstract class _$RecentFoldersList extends $AsyncNotifier<List<FolderEntry>> {
+  FutureOr<List<FolderEntry>> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref =
+        this.ref as $Ref<AsyncValue<List<FolderEntry>>, List<FolderEntry>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<FolderEntry>>, List<FolderEntry>>,
+              AsyncValue<List<FolderEntry>>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

@@ -36,6 +36,18 @@ class Images extends Table {
   /// 画像の高さ (px, null許容)
   IntColumn get height => integer().nullable()();
 
+  /// 撮影日時 (EXIF)
+  DateTimeColumn get exifDateTime => dateTime().nullable()();
+
+  /// カメラ機種名 (EXIF)
+  TextColumn get exifCamera => text().nullable()();
+
+  /// GPS 緯度 (EXIF)
+  RealColumn get exifGpsLatitude => real().nullable()();
+
+  /// GPS 経度 (EXIF)
+  RealColumn get exifGpsLongitude => real().nullable()();
+
   /// インデックス作成/更新日時
   DateTimeColumn get indexedAt => dateTime()();
 

@@ -10,6 +10,7 @@ import '../../application/usecases/viewer/load_image_usecase.dart';
 import '../../application/usecases/viewer/preload_adjacent_images_usecase.dart';
 import '../../application/usecases/viewer/record_recent_image_usecase.dart';
 import '../../application/usecases/viewer/get_recent_images_usecase.dart';
+import '../../application/usecases/viewer/resume_position_usecase.dart';
 import '../../domain/entities/image_entry.dart';
 
 part 'viewer_providers.g.dart';
@@ -40,6 +41,13 @@ RecordRecentImageUseCase recordRecentImageUseCase(Ref ref) {
 @riverpod
 GetRecentImagesUseCase getRecentImagesUseCase(Ref ref) {
   return GetRecentImagesUseCase(
+    imageRepository: ref.watch(imageRepositoryProvider),
+  );
+}
+
+@riverpod
+ResumePositionUseCase resumePositionUseCase(Ref ref) {
+  return ResumePositionUseCase(
     imageRepository: ref.watch(imageRepositoryProvider),
   );
 }
@@ -85,7 +93,7 @@ Future<int> imageExifRotation(Ref ref, ImageEntry entry) async {
 }
 
 /// 最近見た画像リストの状態管理プロバイダ
-@riverpod
+@Riverpod(keepAlive: true)
 class RecentImagesList extends _$RecentImagesList {
   @override
   FutureOr<List<ImageEntry>> build() async {
@@ -98,7 +106,16 @@ class RecentImagesList extends _$RecentImagesList {
     final recordUseCase = ref.read(recordRecentImageUseCaseProvider);
     await recordUseCase.execute(image);
     // 状態をリフレッシュする
-    ref.invalidateSelf();
+    if (ref.mounted) {
+      ref.invalidateSelf();
+    }
   }
+}
+
+/// フォルダごとの続き位置（最後に見た画像EntryId）を取得する Provider
+@riverpod
+Future<String?> folderResumePosition(Ref ref, String folderUri) async {
+  final useCase = ref.watch(resumePositionUseCaseProvider);
+  return useCase.getPosition(folderUri);
 }
 

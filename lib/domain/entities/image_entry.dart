@@ -75,6 +75,18 @@ abstract class ImageEntry with _$ImageEntry {
 
     /// EXIF 回転角度 (0, 90, 180, 270)
     @Default(0) int exifRotation,
+
+    /// 撮影日時 (EXIF)
+    DateTime? exifDateTime,
+
+    /// カメラ機種名 (EXIF)
+    String? exifCamera,
+
+    /// GPS 緯度 (EXIF)
+    double? exifGpsLatitude,
+
+    /// GPS 経度 (EXIF)
+    double? exifGpsLongitude,
   }) = _ImageEntry;
 
   factory ImageEntry.fromJson(Map<String, dynamic> json) =>

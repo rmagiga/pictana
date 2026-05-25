@@ -3,13 +3,14 @@ library;
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../application/providers/repository_providers.dart';
 import '../../application/usecases/gallery/load_folder_images_usecase.dart';
 import '../../application/usecases/gallery/load_thumbnail_usecase.dart';
 import '../../application/usecases/gallery/sort_images_usecase.dart';
+import '../../application/usecases/gallery/index_exif_usecase.dart';
+import 'storage_providers.dart';
 import '../../domain/entities/folder_entry.dart';
 import '../../domain/entities/image_entry.dart';
 import '../../domain/value_objects/sort_option.dart';
@@ -23,6 +24,15 @@ part 'gallery_providers.g.dart';
 // ---------------------------------------------------------------------------
 // UseCase Providers
 // ---------------------------------------------------------------------------
+
+@riverpod
+IndexExifUseCase indexExifUseCase(Ref ref) {
+  return IndexExifUseCase(
+    database: ref.watch(appDatabaseProvider),
+    imageRepository: ref.watch(imageRepositoryProvider),
+    exifProcessor: ref.watch(exifProcessorProvider),
+  );
+}
 
 @riverpod
 LoadFolderImagesUseCase loadFolderImagesUseCase(Ref ref) {
@@ -66,6 +76,8 @@ class CurrentFolder extends _$CurrentFolder {
 
   void setFolder(FolderEntry folder) {
     state = folder;
+    // フォルダ履歴に追加
+    ref.read(recentFoldersListProvider.notifier).addRecent(folder);
   }
 }
 
@@ -203,6 +215,10 @@ class GalleryImages extends _$GalleryImages {
     state = AsyncData(_buffer);
     Future.microtask(() {
       ref.read(gallerySyncStateProvider.notifier).setSyncing(false);
+      // EXIF インデックス処理をバックグラウンドで開始
+      if (_currentFolder != null) {
+        ref.read(indexExifUseCaseProvider).execute(_currentFolder!);
+      }
     });
   }
 
@@ -266,4 +282,19 @@ Future<int> galleryImageCount(Ref ref) async {
 
   final useCase = ref.watch(loadFolderImagesUseCaseProvider);
   return useCase.count(folder: folder);
+}
+
+/// 最近見た画像から直接ビューアを開くための保留中 EntryId
+@Riverpod(keepAlive: true)
+class PendingViewerEntryId extends _$PendingViewerEntryId {
+  @override
+  String? build() => null;
+
+  void set(String? entryId) {
+    state = entryId;
+  }
+
+  void clear() {
+    state = null;
+  }
 }

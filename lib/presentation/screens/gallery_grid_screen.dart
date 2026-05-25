@@ -22,6 +22,7 @@ import '../../router/app_router.dart';
 import '../providers/gallery_providers.dart';
 import '../providers/grid_column_settings_provider.dart';
 import '../providers/storage_providers.dart';
+import '../providers/viewer_providers.dart';
 import '../widgets/favorite_indicator.dart';
 import '../widgets/gallery/fast_scroll_handler.dart';
 import '../widgets/gallery/filter_chips_widget.dart';
@@ -71,11 +72,57 @@ class GalleryGridScreen extends HookConsumerWidget {
     // 高速スクロール用 ScrollController
     final scrollController = useScrollController();
 
+    // 自動スクロール済みフラグ
+    final hasAutoScrolled = useRef(false);
+
+    // フォルダ変更時に自動スクロールフラグをリセット
+    useEffect(() {
+      hasAutoScrolled.value = false;
+      return null;
+    }, [folder?.uri]);
+
+    // 続き位置の取得
+    final resumePositionAsync = folder != null
+        ? ref.watch(folderResumePositionProvider(folder.uri))
+        : const AsyncValue<String?>.data(null);
+    final resumeEntryId = resumePositionAsync.value;
+
+    // 画像ロード完了時、1回だけ続き位置までスクロールする
+    useEffect(() {
+      if (resumeEntryId == null || hasAutoScrolled.value) return null;
+      final images = imagesAsync.value;
+      if (images == null || images.isEmpty) return null;
+
+      final index = images.indexWhere((img) => img.id.rawValue == resumeEntryId);
+      if (index >= 0) {
+        hasAutoScrolled.value = true;
+        Future.microtask(() {
+          if (scrollController.hasClients) {
+            final settings = ref.read(gridColumnSettingsProvider);
+            final crossAxisCount = settings.currentColumns;
+            final row = index ~/ crossAxisCount;
+            final tileHeight = (scrollController.position.viewportDimension / crossAxisCount) + 4.0;
+            final offset = row * tileHeight;
+            scrollController.jumpTo(
+              offset.clamp(0.0, scrollController.position.maxScrollExtent),
+            );
+          }
+        });
+      }
+      return null;
+    }, [resumeEntryId, imagesAsync.value]);
+
     // 再接続後の再読み込み中フラグ
     final isReloading = useState(false);
 
     // 表示密度スライダー表示フラグ
     final showDensitySlider = useState(false);
+
+    // ピンチジェスチャースケール保持用 useRef
+    final lastScaleRef = useRef<double>(1.0);
+
+    // ピンチ操作の連続変更防止用（クールダウン時間）useRef
+    final lastChangeTimeRef = useRef<int>(0);
 
     // ストレージ再接続検知時にフォルダ内容を自動再読み込み (Req 15.2, 15.3, 15.4)
     ref.listen<StorageMonitorState>(storageMonitorProvider, (previous, next) {
@@ -115,6 +162,41 @@ class GalleryGridScreen extends HookConsumerWidget {
       }
     });
 
+    // 最近見た画像から遷移した際の自動スクロール＆自動ビューア遷移
+    final pendingEntryId = ref.watch(pendingViewerEntryIdProvider);
+    useEffect(() {
+      if (pendingEntryId == null) return null;
+      final images = imagesAsync.value;
+      if (images == null || images.isEmpty) return null;
+
+      // 遷移処理を開始するため、持ち越しや二重動作を防ぐため即座にクリアする
+      ref.read(pendingViewerEntryIdProvider.notifier).clear();
+
+      final index = images.indexWhere((img) => img.id.rawValue == pendingEntryId);
+      if (index >= 0) {
+        Future.microtask(() {
+          // 自動スクロール
+          if (scrollController.hasClients) {
+            final settings = ref.read(gridColumnSettingsProvider);
+            final crossAxisCount = settings.currentColumns;
+            final row = index ~/ crossAxisCount;
+            // タイルの高さと余白（4.0）を考慮
+            final tileHeight = (scrollController.position.viewportDimension / crossAxisCount) + 4.0;
+            final offset = row * tileHeight;
+            scrollController.jumpTo(
+              offset.clamp(0.0, scrollController.position.maxScrollExtent),
+            );
+          }
+          
+          // ビューアを起動
+          if (context.mounted) {
+            context.push('${AppRoutes.imageViewer}/$index');
+          }
+        });
+      }
+      return null;
+    }, [pendingEntryId, imagesAsync.value]);
+
     // Scaffold より外側の context でシステムナビゲーションバーの高さを取得する
     // （Scaffold の body 内では viewPadding.bottom が 0 になるため）
     final navBarHeight = MediaQuery.of(context).viewPadding.bottom;
@@ -127,6 +209,22 @@ class GalleryGridScreen extends HookConsumerWidget {
         }
       },
       child: Scaffold(
+        floatingActionButton: (() {
+          if (resumeEntryId == null) return null;
+          final images = imagesAsync.value;
+          if (images == null || images.isEmpty) return null;
+          final index = images.indexWhere((img) => img.id.rawValue == resumeEntryId);
+          if (index < 0) return null;
+
+          final targetImage = images[index];
+          return FloatingActionButton.extended(
+            onPressed: () {
+              context.push('${AppRoutes.imageViewer}/$index');
+            },
+            icon: const Icon(Icons.play_arrow),
+            label: Text('続きから読む (${targetImage.name})'),
+          );
+        })(),
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -278,27 +376,45 @@ class GalleryGridScreen extends HookConsumerWidget {
                         },
                       );
 
-                      // スケールジェスチャー（ピンチイン・アウト）による列数の無段階増減
-                      double startScale = 1.0;
-                      int startColumns = settings.currentColumns;
-
+                      // スケールジェスチャー（ピンチイン・アウト）による列数の段階的増減
                       final gestureWrapper = GestureDetector(
                         onScaleStart: (details) {
-                          startScale = 1.0;
-                          startColumns = settings.currentColumns;
+                          lastScaleRef.value = 1.0;
                         },
                         onScaleUpdate: (details) {
                           if (details.pointerCount < 2) return; // 2本指のピンチのみ
-                          final scaleFactor = details.scale;
-                          if (scaleFactor == 1.0) return;
+                          final currentScale = details.scale;
+                          if (currentScale == 1.0) return;
 
-                          // ピンチアウト (拡大) = 列数減少 (画像を大きく)
-                          // ピンチイン (縮小) = 列数増加 (画像を小さく)
-                          final targetColumns = (startColumns / scaleFactor)
-                              .round()
-                              .clamp(settings.minColumns, settings.maxColumns);
+                          // 連続変化を防ぐクールダウン制御（250ms間隔）
+                          final now = DateTime.now().millisecondsSinceEpoch;
+                          if (now - lastChangeTimeRef.value < 250) return;
 
-                          if (targetColumns != settings.currentColumns) {
+                          // しきい値（例: 1.35倍で1列減少、0.74倍で1列増加）
+                          // 意図的にしっかり広げる/すぼめる操作をしたときのみ切り替わる値に調整
+                          const double thresholdRatio = 1.35;
+                          int targetColumns = settings.currentColumns;
+                          final lastScale = lastScaleRef.value;
+
+                          bool isChanged = false;
+                          if (currentScale / lastScale >= thresholdRatio) {
+                            // ピンチアウト (拡大) = 列数減少 (画像を大きく)
+                            if (targetColumns > settings.minColumns) {
+                              targetColumns--;
+                              lastScaleRef.value = currentScale;
+                              isChanged = true;
+                            }
+                          } else if (currentScale / lastScale <= 1.0 / thresholdRatio) {
+                            // ピンチイン (縮小) = 列数増加 (画像を小さく)
+                            if (targetColumns < settings.maxColumns) {
+                              targetColumns++;
+                              lastScaleRef.value = currentScale;
+                              isChanged = true;
+                            }
+                          }
+
+                          if (isChanged && targetColumns != settings.currentColumns) {
+                            lastChangeTimeRef.value = now;
                             ref
                                 .read(gridColumnSettingsProvider.notifier)
                                 .setCurrentColumns(targetColumns);
@@ -445,7 +561,7 @@ class GalleryGridScreen extends HookConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         border: Border(
           bottom: BorderSide(
             color: Theme.of(context).colorScheme.outlineVariant,

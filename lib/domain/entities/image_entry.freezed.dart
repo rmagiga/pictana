@@ -26,7 +26,11 @@ mixin _$ImageEntry {
  DateTime get modifiedAt;/// アクセス用 URI 文字列
  String get uri;/// MIME type
  ImageMimeType get mimeType;/// EXIF 回転角度 (0, 90, 180, 270)
- int get exifRotation;
+ int get exifRotation;/// 撮影日時 (EXIF)
+ DateTime? get exifDateTime;/// カメラ機種名 (EXIF)
+ String? get exifCamera;/// GPS 緯度 (EXIF)
+ double? get exifGpsLatitude;/// GPS 経度 (EXIF)
+ double? get exifGpsLongitude;
 /// Create a copy of ImageEntry
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -39,16 +43,16 @@ $ImageEntryCopyWith<ImageEntry> get copyWith => _$ImageEntryCopyWithImpl<ImageEn
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ImageEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.extension, extension) || other.extension == extension)&&(identical(other.width, width) || other.width == width)&&(identical(other.height, height) || other.height == height)&&(identical(other.size, size) || other.size == size)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.modifiedAt, modifiedAt) || other.modifiedAt == modifiedAt)&&(identical(other.uri, uri) || other.uri == uri)&&(identical(other.mimeType, mimeType) || other.mimeType == mimeType)&&(identical(other.exifRotation, exifRotation) || other.exifRotation == exifRotation));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ImageEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.extension, extension) || other.extension == extension)&&(identical(other.width, width) || other.width == width)&&(identical(other.height, height) || other.height == height)&&(identical(other.size, size) || other.size == size)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.modifiedAt, modifiedAt) || other.modifiedAt == modifiedAt)&&(identical(other.uri, uri) || other.uri == uri)&&(identical(other.mimeType, mimeType) || other.mimeType == mimeType)&&(identical(other.exifRotation, exifRotation) || other.exifRotation == exifRotation)&&(identical(other.exifDateTime, exifDateTime) || other.exifDateTime == exifDateTime)&&(identical(other.exifCamera, exifCamera) || other.exifCamera == exifCamera)&&(identical(other.exifGpsLatitude, exifGpsLatitude) || other.exifGpsLatitude == exifGpsLatitude)&&(identical(other.exifGpsLongitude, exifGpsLongitude) || other.exifGpsLongitude == exifGpsLongitude));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,extension,width,height,size,createdAt,modifiedAt,uri,mimeType,exifRotation);
+int get hashCode => Object.hash(runtimeType,id,name,extension,width,height,size,createdAt,modifiedAt,uri,mimeType,exifRotation,exifDateTime,exifCamera,exifGpsLatitude,exifGpsLongitude);
 
 @override
 String toString() {
-  return 'ImageEntry(id: $id, name: $name, extension: $extension, width: $width, height: $height, size: $size, createdAt: $createdAt, modifiedAt: $modifiedAt, uri: $uri, mimeType: $mimeType, exifRotation: $exifRotation)';
+  return 'ImageEntry(id: $id, name: $name, extension: $extension, width: $width, height: $height, size: $size, createdAt: $createdAt, modifiedAt: $modifiedAt, uri: $uri, mimeType: $mimeType, exifRotation: $exifRotation, exifDateTime: $exifDateTime, exifCamera: $exifCamera, exifGpsLatitude: $exifGpsLatitude, exifGpsLongitude: $exifGpsLongitude)';
 }
 
 
@@ -59,7 +63,7 @@ abstract mixin class $ImageEntryCopyWith<$Res>  {
   factory $ImageEntryCopyWith(ImageEntry value, $Res Function(ImageEntry) _then) = _$ImageEntryCopyWithImpl;
 @useResult
 $Res call({
- EntryId id, String name, String extension, int? width, int? height, int size, DateTime? createdAt, DateTime modifiedAt, String uri, ImageMimeType mimeType, int exifRotation
+ EntryId id, String name, String extension, int? width, int? height, int size, DateTime? createdAt, DateTime modifiedAt, String uri, ImageMimeType mimeType, int exifRotation, DateTime? exifDateTime, String? exifCamera, double? exifGpsLatitude, double? exifGpsLongitude
 });
 
 
@@ -76,7 +80,7 @@ class _$ImageEntryCopyWithImpl<$Res>
 
 /// Create a copy of ImageEntry
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? extension = null,Object? width = freezed,Object? height = freezed,Object? size = null,Object? createdAt = freezed,Object? modifiedAt = null,Object? uri = null,Object? mimeType = null,Object? exifRotation = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? extension = null,Object? width = freezed,Object? height = freezed,Object? size = null,Object? createdAt = freezed,Object? modifiedAt = null,Object? uri = null,Object? mimeType = null,Object? exifRotation = null,Object? exifDateTime = freezed,Object? exifCamera = freezed,Object? exifGpsLatitude = freezed,Object? exifGpsLongitude = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as EntryId,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -89,7 +93,11 @@ as DateTime?,modifiedAt: null == modifiedAt ? _self.modifiedAt : modifiedAt // i
 as DateTime,uri: null == uri ? _self.uri : uri // ignore: cast_nullable_to_non_nullable
 as String,mimeType: null == mimeType ? _self.mimeType : mimeType // ignore: cast_nullable_to_non_nullable
 as ImageMimeType,exifRotation: null == exifRotation ? _self.exifRotation : exifRotation // ignore: cast_nullable_to_non_nullable
-as int,
+as int,exifDateTime: freezed == exifDateTime ? _self.exifDateTime : exifDateTime // ignore: cast_nullable_to_non_nullable
+as DateTime?,exifCamera: freezed == exifCamera ? _self.exifCamera : exifCamera // ignore: cast_nullable_to_non_nullable
+as String?,exifGpsLatitude: freezed == exifGpsLatitude ? _self.exifGpsLatitude : exifGpsLatitude // ignore: cast_nullable_to_non_nullable
+as double?,exifGpsLongitude: freezed == exifGpsLongitude ? _self.exifGpsLongitude : exifGpsLongitude // ignore: cast_nullable_to_non_nullable
+as double?,
   ));
 }
 /// Create a copy of ImageEntry
@@ -183,10 +191,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( EntryId id,  String name,  String extension,  int? width,  int? height,  int size,  DateTime? createdAt,  DateTime modifiedAt,  String uri,  ImageMimeType mimeType,  int exifRotation)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( EntryId id,  String name,  String extension,  int? width,  int? height,  int size,  DateTime? createdAt,  DateTime modifiedAt,  String uri,  ImageMimeType mimeType,  int exifRotation,  DateTime? exifDateTime,  String? exifCamera,  double? exifGpsLatitude,  double? exifGpsLongitude)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ImageEntry() when $default != null:
-return $default(_that.id,_that.name,_that.extension,_that.width,_that.height,_that.size,_that.createdAt,_that.modifiedAt,_that.uri,_that.mimeType,_that.exifRotation);case _:
+return $default(_that.id,_that.name,_that.extension,_that.width,_that.height,_that.size,_that.createdAt,_that.modifiedAt,_that.uri,_that.mimeType,_that.exifRotation,_that.exifDateTime,_that.exifCamera,_that.exifGpsLatitude,_that.exifGpsLongitude);case _:
   return orElse();
 
 }
@@ -204,10 +212,10 @@ return $default(_that.id,_that.name,_that.extension,_that.width,_that.height,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( EntryId id,  String name,  String extension,  int? width,  int? height,  int size,  DateTime? createdAt,  DateTime modifiedAt,  String uri,  ImageMimeType mimeType,  int exifRotation)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( EntryId id,  String name,  String extension,  int? width,  int? height,  int size,  DateTime? createdAt,  DateTime modifiedAt,  String uri,  ImageMimeType mimeType,  int exifRotation,  DateTime? exifDateTime,  String? exifCamera,  double? exifGpsLatitude,  double? exifGpsLongitude)  $default,) {final _that = this;
 switch (_that) {
 case _ImageEntry():
-return $default(_that.id,_that.name,_that.extension,_that.width,_that.height,_that.size,_that.createdAt,_that.modifiedAt,_that.uri,_that.mimeType,_that.exifRotation);case _:
+return $default(_that.id,_that.name,_that.extension,_that.width,_that.height,_that.size,_that.createdAt,_that.modifiedAt,_that.uri,_that.mimeType,_that.exifRotation,_that.exifDateTime,_that.exifCamera,_that.exifGpsLatitude,_that.exifGpsLongitude);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -224,10 +232,10 @@ return $default(_that.id,_that.name,_that.extension,_that.width,_that.height,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( EntryId id,  String name,  String extension,  int? width,  int? height,  int size,  DateTime? createdAt,  DateTime modifiedAt,  String uri,  ImageMimeType mimeType,  int exifRotation)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( EntryId id,  String name,  String extension,  int? width,  int? height,  int size,  DateTime? createdAt,  DateTime modifiedAt,  String uri,  ImageMimeType mimeType,  int exifRotation,  DateTime? exifDateTime,  String? exifCamera,  double? exifGpsLatitude,  double? exifGpsLongitude)?  $default,) {final _that = this;
 switch (_that) {
 case _ImageEntry() when $default != null:
-return $default(_that.id,_that.name,_that.extension,_that.width,_that.height,_that.size,_that.createdAt,_that.modifiedAt,_that.uri,_that.mimeType,_that.exifRotation);case _:
+return $default(_that.id,_that.name,_that.extension,_that.width,_that.height,_that.size,_that.createdAt,_that.modifiedAt,_that.uri,_that.mimeType,_that.exifRotation,_that.exifDateTime,_that.exifCamera,_that.exifGpsLatitude,_that.exifGpsLongitude);case _:
   return null;
 
 }
@@ -239,7 +247,7 @@ return $default(_that.id,_that.name,_that.extension,_that.width,_that.height,_th
 @JsonSerializable()
 
 class _ImageEntry extends ImageEntry {
-  const _ImageEntry({required this.id, required this.name, required this.extension, this.width, this.height, required this.size, this.createdAt, required this.modifiedAt, required this.uri, required this.mimeType, this.exifRotation = 0}): super._();
+  const _ImageEntry({required this.id, required this.name, required this.extension, this.width, this.height, required this.size, this.createdAt, required this.modifiedAt, required this.uri, required this.mimeType, this.exifRotation = 0, this.exifDateTime, this.exifCamera, this.exifGpsLatitude, this.exifGpsLongitude}): super._();
   factory _ImageEntry.fromJson(Map<String, dynamic> json) => _$ImageEntryFromJson(json);
 
 /// プラットフォーム固有識別子
@@ -264,6 +272,14 @@ class _ImageEntry extends ImageEntry {
 @override final  ImageMimeType mimeType;
 /// EXIF 回転角度 (0, 90, 180, 270)
 @override@JsonKey() final  int exifRotation;
+/// 撮影日時 (EXIF)
+@override final  DateTime? exifDateTime;
+/// カメラ機種名 (EXIF)
+@override final  String? exifCamera;
+/// GPS 緯度 (EXIF)
+@override final  double? exifGpsLatitude;
+/// GPS 経度 (EXIF)
+@override final  double? exifGpsLongitude;
 
 /// Create a copy of ImageEntry
 /// with the given fields replaced by the non-null parameter values.
@@ -278,16 +294,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ImageEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.extension, extension) || other.extension == extension)&&(identical(other.width, width) || other.width == width)&&(identical(other.height, height) || other.height == height)&&(identical(other.size, size) || other.size == size)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.modifiedAt, modifiedAt) || other.modifiedAt == modifiedAt)&&(identical(other.uri, uri) || other.uri == uri)&&(identical(other.mimeType, mimeType) || other.mimeType == mimeType)&&(identical(other.exifRotation, exifRotation) || other.exifRotation == exifRotation));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ImageEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.extension, extension) || other.extension == extension)&&(identical(other.width, width) || other.width == width)&&(identical(other.height, height) || other.height == height)&&(identical(other.size, size) || other.size == size)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.modifiedAt, modifiedAt) || other.modifiedAt == modifiedAt)&&(identical(other.uri, uri) || other.uri == uri)&&(identical(other.mimeType, mimeType) || other.mimeType == mimeType)&&(identical(other.exifRotation, exifRotation) || other.exifRotation == exifRotation)&&(identical(other.exifDateTime, exifDateTime) || other.exifDateTime == exifDateTime)&&(identical(other.exifCamera, exifCamera) || other.exifCamera == exifCamera)&&(identical(other.exifGpsLatitude, exifGpsLatitude) || other.exifGpsLatitude == exifGpsLatitude)&&(identical(other.exifGpsLongitude, exifGpsLongitude) || other.exifGpsLongitude == exifGpsLongitude));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,extension,width,height,size,createdAt,modifiedAt,uri,mimeType,exifRotation);
+int get hashCode => Object.hash(runtimeType,id,name,extension,width,height,size,createdAt,modifiedAt,uri,mimeType,exifRotation,exifDateTime,exifCamera,exifGpsLatitude,exifGpsLongitude);
 
 @override
 String toString() {
-  return 'ImageEntry(id: $id, name: $name, extension: $extension, width: $width, height: $height, size: $size, createdAt: $createdAt, modifiedAt: $modifiedAt, uri: $uri, mimeType: $mimeType, exifRotation: $exifRotation)';
+  return 'ImageEntry(id: $id, name: $name, extension: $extension, width: $width, height: $height, size: $size, createdAt: $createdAt, modifiedAt: $modifiedAt, uri: $uri, mimeType: $mimeType, exifRotation: $exifRotation, exifDateTime: $exifDateTime, exifCamera: $exifCamera, exifGpsLatitude: $exifGpsLatitude, exifGpsLongitude: $exifGpsLongitude)';
 }
 
 
@@ -298,7 +314,7 @@ abstract mixin class _$ImageEntryCopyWith<$Res> implements $ImageEntryCopyWith<$
   factory _$ImageEntryCopyWith(_ImageEntry value, $Res Function(_ImageEntry) _then) = __$ImageEntryCopyWithImpl;
 @override @useResult
 $Res call({
- EntryId id, String name, String extension, int? width, int? height, int size, DateTime? createdAt, DateTime modifiedAt, String uri, ImageMimeType mimeType, int exifRotation
+ EntryId id, String name, String extension, int? width, int? height, int size, DateTime? createdAt, DateTime modifiedAt, String uri, ImageMimeType mimeType, int exifRotation, DateTime? exifDateTime, String? exifCamera, double? exifGpsLatitude, double? exifGpsLongitude
 });
 
 
@@ -315,7 +331,7 @@ class __$ImageEntryCopyWithImpl<$Res>
 
 /// Create a copy of ImageEntry
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? extension = null,Object? width = freezed,Object? height = freezed,Object? size = null,Object? createdAt = freezed,Object? modifiedAt = null,Object? uri = null,Object? mimeType = null,Object? exifRotation = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? extension = null,Object? width = freezed,Object? height = freezed,Object? size = null,Object? createdAt = freezed,Object? modifiedAt = null,Object? uri = null,Object? mimeType = null,Object? exifRotation = null,Object? exifDateTime = freezed,Object? exifCamera = freezed,Object? exifGpsLatitude = freezed,Object? exifGpsLongitude = freezed,}) {
   return _then(_ImageEntry(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as EntryId,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -328,7 +344,11 @@ as DateTime?,modifiedAt: null == modifiedAt ? _self.modifiedAt : modifiedAt // i
 as DateTime,uri: null == uri ? _self.uri : uri // ignore: cast_nullable_to_non_nullable
 as String,mimeType: null == mimeType ? _self.mimeType : mimeType // ignore: cast_nullable_to_non_nullable
 as ImageMimeType,exifRotation: null == exifRotation ? _self.exifRotation : exifRotation // ignore: cast_nullable_to_non_nullable
-as int,
+as int,exifDateTime: freezed == exifDateTime ? _self.exifDateTime : exifDateTime // ignore: cast_nullable_to_non_nullable
+as DateTime?,exifCamera: freezed == exifCamera ? _self.exifCamera : exifCamera // ignore: cast_nullable_to_non_nullable
+as String?,exifGpsLatitude: freezed == exifGpsLatitude ? _self.exifGpsLatitude : exifGpsLatitude // ignore: cast_nullable_to_non_nullable
+as double?,exifGpsLongitude: freezed == exifGpsLongitude ? _self.exifGpsLongitude : exifGpsLongitude // ignore: cast_nullable_to_non_nullable
+as double?,
   ));
 }
 

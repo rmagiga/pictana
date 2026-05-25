@@ -56,6 +56,7 @@ dependencies:
   path_provider: ^2.1.5
   collection: ^1.19.1
   logger: ^2.7.0
+  exif: ^3.0.0
 
   # ストレージ選択 (§10.2)
   file_picker: ^11.0.2

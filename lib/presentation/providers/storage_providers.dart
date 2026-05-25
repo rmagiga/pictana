@@ -8,6 +8,10 @@ import '../../application/usecases/storage/get_default_image_folders_usecase.dar
 import '../../application/usecases/storage/persist_uri_permission_usecase.dart';
 import '../../application/usecases/storage/select_storage_usecase.dart';
 import '../../application/usecases/storage/watch_storage_connection_usecase.dart';
+import '../../application/usecases/storage/get_recent_folders_usecase.dart';
+import '../../application/usecases/storage/record_recent_folder_usecase.dart';
+import '../../application/usecases/storage/navigate_to_recent_folder_usecase.dart';
+import '../../domain/entities/folder_entry.dart';
 import '../../domain/entities/storage_root.dart';
 
 part 'storage_providers.g.dart';
@@ -44,6 +48,27 @@ PersistUriPermissionUseCase persistUriPermissionUseCase(Ref ref) {
   );
 }
 
+@riverpod
+GetRecentFoldersUseCase getRecentFoldersUseCase(Ref ref) {
+  return GetRecentFoldersUseCase(
+    storageRepository: ref.watch(storageRepositoryProvider),
+  );
+}
+
+@riverpod
+RecordRecentFolderUseCase recordRecentFolderUseCase(Ref ref) {
+  return RecordRecentFolderUseCase(
+    storageRepository: ref.watch(storageRepositoryProvider),
+  );
+}
+
+@riverpod
+NavigateToRecentFolderUseCase navigateToRecentFolderUseCase(Ref ref) {
+  return NavigateToRecentFolderUseCase(
+    storageRepository: ref.watch(storageRepositoryProvider),
+  );
+}
+
 // ---------------------------------------------------------------------------
 // State Providers
 // ---------------------------------------------------------------------------
@@ -53,4 +78,32 @@ PersistUriPermissionUseCase persistUriPermissionUseCase(Ref ref) {
 Stream<List<StorageRoot>> storageRoots(Ref ref) {
   final useCase = ref.watch(watchStorageConnectionUseCaseProvider);
   return useCase.execute();
+}
+
+/// 最近開いたフォルダ履歴の状態を管理する Provider
+@Riverpod(keepAlive: true)
+class RecentFoldersList extends _$RecentFoldersList {
+  @override
+  FutureOr<List<FolderEntry>> build() async {
+    final useCase = ref.watch(getRecentFoldersUseCaseProvider);
+    return useCase.execute();
+  }
+
+  /// 履歴に追加する
+  Future<void> addRecent(FolderEntry folder) async {
+    final recordUseCase = ref.read(recordRecentFolderUseCaseProvider);
+    await recordUseCase.execute(folder);
+    if (ref.mounted) {
+      ref.invalidateSelf();
+    }
+  }
+
+  /// 履歴から削除する
+  Future<void> removeRecent(String uri) async {
+    final database = ref.read(appDatabaseProvider);
+    await database.deleteRecentFolderByUri(uri);
+    if (ref.mounted) {
+      ref.invalidateSelf();
+    }
+  }
 }

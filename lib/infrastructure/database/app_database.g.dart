@@ -2087,6 +2087,50 @@ class $ImagesTable extends Images with TableInfo<$ImagesTable, ImageTableData> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _exifDateTimeMeta = const VerificationMeta(
+    'exifDateTime',
+  );
+  @override
+  late final GeneratedColumn<DateTime> exifDateTime = GeneratedColumn<DateTime>(
+    'exif_date_time',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _exifCameraMeta = const VerificationMeta(
+    'exifCamera',
+  );
+  @override
+  late final GeneratedColumn<String> exifCamera = GeneratedColumn<String>(
+    'exif_camera',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _exifGpsLatitudeMeta = const VerificationMeta(
+    'exifGpsLatitude',
+  );
+  @override
+  late final GeneratedColumn<double> exifGpsLatitude = GeneratedColumn<double>(
+    'exif_gps_latitude',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _exifGpsLongitudeMeta = const VerificationMeta(
+    'exifGpsLongitude',
+  );
+  @override
+  late final GeneratedColumn<double> exifGpsLongitude = GeneratedColumn<double>(
+    'exif_gps_longitude',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _indexedAtMeta = const VerificationMeta(
     'indexedAt',
   );
@@ -2110,6 +2154,10 @@ class $ImagesTable extends Images with TableInfo<$ImagesTable, ImageTableData> {
     mimeType,
     width,
     height,
+    exifDateTime,
+    exifCamera,
+    exifGpsLatitude,
+    exifGpsLongitude,
     indexedAt,
   ];
   @override
@@ -2200,6 +2248,39 @@ class $ImagesTable extends Images with TableInfo<$ImagesTable, ImageTableData> {
         height.isAcceptableOrUnknown(data['height']!, _heightMeta),
       );
     }
+    if (data.containsKey('exif_date_time')) {
+      context.handle(
+        _exifDateTimeMeta,
+        exifDateTime.isAcceptableOrUnknown(
+          data['exif_date_time']!,
+          _exifDateTimeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('exif_camera')) {
+      context.handle(
+        _exifCameraMeta,
+        exifCamera.isAcceptableOrUnknown(data['exif_camera']!, _exifCameraMeta),
+      );
+    }
+    if (data.containsKey('exif_gps_latitude')) {
+      context.handle(
+        _exifGpsLatitudeMeta,
+        exifGpsLatitude.isAcceptableOrUnknown(
+          data['exif_gps_latitude']!,
+          _exifGpsLatitudeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('exif_gps_longitude')) {
+      context.handle(
+        _exifGpsLongitudeMeta,
+        exifGpsLongitude.isAcceptableOrUnknown(
+          data['exif_gps_longitude']!,
+          _exifGpsLongitudeMeta,
+        ),
+      );
+    }
     if (data.containsKey('indexed_at')) {
       context.handle(
         _indexedAtMeta,
@@ -2257,6 +2338,22 @@ class $ImagesTable extends Images with TableInfo<$ImagesTable, ImageTableData> {
         DriftSqlType.int,
         data['${effectivePrefix}height'],
       ),
+      exifDateTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}exif_date_time'],
+      ),
+      exifCamera: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}exif_camera'],
+      ),
+      exifGpsLatitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}exif_gps_latitude'],
+      ),
+      exifGpsLongitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}exif_gps_longitude'],
+      ),
       indexedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}indexed_at'],
@@ -2301,6 +2398,18 @@ class ImageTableData extends DataClass implements Insertable<ImageTableData> {
   /// 画像の高さ (px, null許容)
   final int? height;
 
+  /// 撮影日時 (EXIF)
+  final DateTime? exifDateTime;
+
+  /// カメラ機種名 (EXIF)
+  final String? exifCamera;
+
+  /// GPS 緯度 (EXIF)
+  final double? exifGpsLatitude;
+
+  /// GPS 経度 (EXIF)
+  final double? exifGpsLongitude;
+
   /// インデックス作成/更新日時
   final DateTime indexedAt;
   const ImageTableData({
@@ -2314,6 +2423,10 @@ class ImageTableData extends DataClass implements Insertable<ImageTableData> {
     required this.mimeType,
     this.width,
     this.height,
+    this.exifDateTime,
+    this.exifCamera,
+    this.exifGpsLatitude,
+    this.exifGpsLongitude,
     required this.indexedAt,
   });
   @override
@@ -2332,6 +2445,18 @@ class ImageTableData extends DataClass implements Insertable<ImageTableData> {
     }
     if (!nullToAbsent || height != null) {
       map['height'] = Variable<int>(height);
+    }
+    if (!nullToAbsent || exifDateTime != null) {
+      map['exif_date_time'] = Variable<DateTime>(exifDateTime);
+    }
+    if (!nullToAbsent || exifCamera != null) {
+      map['exif_camera'] = Variable<String>(exifCamera);
+    }
+    if (!nullToAbsent || exifGpsLatitude != null) {
+      map['exif_gps_latitude'] = Variable<double>(exifGpsLatitude);
+    }
+    if (!nullToAbsent || exifGpsLongitude != null) {
+      map['exif_gps_longitude'] = Variable<double>(exifGpsLongitude);
     }
     map['indexed_at'] = Variable<DateTime>(indexedAt);
     return map;
@@ -2353,6 +2478,18 @@ class ImageTableData extends DataClass implements Insertable<ImageTableData> {
       height: height == null && nullToAbsent
           ? const Value.absent()
           : Value(height),
+      exifDateTime: exifDateTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(exifDateTime),
+      exifCamera: exifCamera == null && nullToAbsent
+          ? const Value.absent()
+          : Value(exifCamera),
+      exifGpsLatitude: exifGpsLatitude == null && nullToAbsent
+          ? const Value.absent()
+          : Value(exifGpsLatitude),
+      exifGpsLongitude: exifGpsLongitude == null && nullToAbsent
+          ? const Value.absent()
+          : Value(exifGpsLongitude),
       indexedAt: Value(indexedAt),
     );
   }
@@ -2373,6 +2510,10 @@ class ImageTableData extends DataClass implements Insertable<ImageTableData> {
       mimeType: serializer.fromJson<String>(json['mimeType']),
       width: serializer.fromJson<int?>(json['width']),
       height: serializer.fromJson<int?>(json['height']),
+      exifDateTime: serializer.fromJson<DateTime?>(json['exifDateTime']),
+      exifCamera: serializer.fromJson<String?>(json['exifCamera']),
+      exifGpsLatitude: serializer.fromJson<double?>(json['exifGpsLatitude']),
+      exifGpsLongitude: serializer.fromJson<double?>(json['exifGpsLongitude']),
       indexedAt: serializer.fromJson<DateTime>(json['indexedAt']),
     );
   }
@@ -2390,6 +2531,10 @@ class ImageTableData extends DataClass implements Insertable<ImageTableData> {
       'mimeType': serializer.toJson<String>(mimeType),
       'width': serializer.toJson<int?>(width),
       'height': serializer.toJson<int?>(height),
+      'exifDateTime': serializer.toJson<DateTime?>(exifDateTime),
+      'exifCamera': serializer.toJson<String?>(exifCamera),
+      'exifGpsLatitude': serializer.toJson<double?>(exifGpsLatitude),
+      'exifGpsLongitude': serializer.toJson<double?>(exifGpsLongitude),
       'indexedAt': serializer.toJson<DateTime>(indexedAt),
     };
   }
@@ -2405,6 +2550,10 @@ class ImageTableData extends DataClass implements Insertable<ImageTableData> {
     String? mimeType,
     Value<int?> width = const Value.absent(),
     Value<int?> height = const Value.absent(),
+    Value<DateTime?> exifDateTime = const Value.absent(),
+    Value<String?> exifCamera = const Value.absent(),
+    Value<double?> exifGpsLatitude = const Value.absent(),
+    Value<double?> exifGpsLongitude = const Value.absent(),
     DateTime? indexedAt,
   }) => ImageTableData(
     entryId: entryId ?? this.entryId,
@@ -2417,6 +2566,14 @@ class ImageTableData extends DataClass implements Insertable<ImageTableData> {
     mimeType: mimeType ?? this.mimeType,
     width: width.present ? width.value : this.width,
     height: height.present ? height.value : this.height,
+    exifDateTime: exifDateTime.present ? exifDateTime.value : this.exifDateTime,
+    exifCamera: exifCamera.present ? exifCamera.value : this.exifCamera,
+    exifGpsLatitude: exifGpsLatitude.present
+        ? exifGpsLatitude.value
+        : this.exifGpsLatitude,
+    exifGpsLongitude: exifGpsLongitude.present
+        ? exifGpsLongitude.value
+        : this.exifGpsLongitude,
     indexedAt: indexedAt ?? this.indexedAt,
   );
   ImageTableData copyWithCompanion(ImagesCompanion data) {
@@ -2431,6 +2588,18 @@ class ImageTableData extends DataClass implements Insertable<ImageTableData> {
       mimeType: data.mimeType.present ? data.mimeType.value : this.mimeType,
       width: data.width.present ? data.width.value : this.width,
       height: data.height.present ? data.height.value : this.height,
+      exifDateTime: data.exifDateTime.present
+          ? data.exifDateTime.value
+          : this.exifDateTime,
+      exifCamera: data.exifCamera.present
+          ? data.exifCamera.value
+          : this.exifCamera,
+      exifGpsLatitude: data.exifGpsLatitude.present
+          ? data.exifGpsLatitude.value
+          : this.exifGpsLatitude,
+      exifGpsLongitude: data.exifGpsLongitude.present
+          ? data.exifGpsLongitude.value
+          : this.exifGpsLongitude,
       indexedAt: data.indexedAt.present ? data.indexedAt.value : this.indexedAt,
     );
   }
@@ -2448,6 +2617,10 @@ class ImageTableData extends DataClass implements Insertable<ImageTableData> {
           ..write('mimeType: $mimeType, ')
           ..write('width: $width, ')
           ..write('height: $height, ')
+          ..write('exifDateTime: $exifDateTime, ')
+          ..write('exifCamera: $exifCamera, ')
+          ..write('exifGpsLatitude: $exifGpsLatitude, ')
+          ..write('exifGpsLongitude: $exifGpsLongitude, ')
           ..write('indexedAt: $indexedAt')
           ..write(')'))
         .toString();
@@ -2465,6 +2638,10 @@ class ImageTableData extends DataClass implements Insertable<ImageTableData> {
     mimeType,
     width,
     height,
+    exifDateTime,
+    exifCamera,
+    exifGpsLatitude,
+    exifGpsLongitude,
     indexedAt,
   );
   @override
@@ -2481,6 +2658,10 @@ class ImageTableData extends DataClass implements Insertable<ImageTableData> {
           other.mimeType == this.mimeType &&
           other.width == this.width &&
           other.height == this.height &&
+          other.exifDateTime == this.exifDateTime &&
+          other.exifCamera == this.exifCamera &&
+          other.exifGpsLatitude == this.exifGpsLatitude &&
+          other.exifGpsLongitude == this.exifGpsLongitude &&
           other.indexedAt == this.indexedAt);
 }
 
@@ -2495,6 +2676,10 @@ class ImagesCompanion extends UpdateCompanion<ImageTableData> {
   final Value<String> mimeType;
   final Value<int?> width;
   final Value<int?> height;
+  final Value<DateTime?> exifDateTime;
+  final Value<String?> exifCamera;
+  final Value<double?> exifGpsLatitude;
+  final Value<double?> exifGpsLongitude;
   final Value<DateTime> indexedAt;
   final Value<int> rowid;
   const ImagesCompanion({
@@ -2508,6 +2693,10 @@ class ImagesCompanion extends UpdateCompanion<ImageTableData> {
     this.mimeType = const Value.absent(),
     this.width = const Value.absent(),
     this.height = const Value.absent(),
+    this.exifDateTime = const Value.absent(),
+    this.exifCamera = const Value.absent(),
+    this.exifGpsLatitude = const Value.absent(),
+    this.exifGpsLongitude = const Value.absent(),
     this.indexedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -2522,6 +2711,10 @@ class ImagesCompanion extends UpdateCompanion<ImageTableData> {
     required String mimeType,
     this.width = const Value.absent(),
     this.height = const Value.absent(),
+    this.exifDateTime = const Value.absent(),
+    this.exifCamera = const Value.absent(),
+    this.exifGpsLatitude = const Value.absent(),
+    this.exifGpsLongitude = const Value.absent(),
     required DateTime indexedAt,
     this.rowid = const Value.absent(),
   }) : entryId = Value(entryId),
@@ -2544,6 +2737,10 @@ class ImagesCompanion extends UpdateCompanion<ImageTableData> {
     Expression<String>? mimeType,
     Expression<int>? width,
     Expression<int>? height,
+    Expression<DateTime>? exifDateTime,
+    Expression<String>? exifCamera,
+    Expression<double>? exifGpsLatitude,
+    Expression<double>? exifGpsLongitude,
     Expression<DateTime>? indexedAt,
     Expression<int>? rowid,
   }) {
@@ -2558,6 +2755,10 @@ class ImagesCompanion extends UpdateCompanion<ImageTableData> {
       if (mimeType != null) 'mime_type': mimeType,
       if (width != null) 'width': width,
       if (height != null) 'height': height,
+      if (exifDateTime != null) 'exif_date_time': exifDateTime,
+      if (exifCamera != null) 'exif_camera': exifCamera,
+      if (exifGpsLatitude != null) 'exif_gps_latitude': exifGpsLatitude,
+      if (exifGpsLongitude != null) 'exif_gps_longitude': exifGpsLongitude,
       if (indexedAt != null) 'indexed_at': indexedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -2574,6 +2775,10 @@ class ImagesCompanion extends UpdateCompanion<ImageTableData> {
     Value<String>? mimeType,
     Value<int?>? width,
     Value<int?>? height,
+    Value<DateTime?>? exifDateTime,
+    Value<String?>? exifCamera,
+    Value<double?>? exifGpsLatitude,
+    Value<double?>? exifGpsLongitude,
     Value<DateTime>? indexedAt,
     Value<int>? rowid,
   }) {
@@ -2588,6 +2793,10 @@ class ImagesCompanion extends UpdateCompanion<ImageTableData> {
       mimeType: mimeType ?? this.mimeType,
       width: width ?? this.width,
       height: height ?? this.height,
+      exifDateTime: exifDateTime ?? this.exifDateTime,
+      exifCamera: exifCamera ?? this.exifCamera,
+      exifGpsLatitude: exifGpsLatitude ?? this.exifGpsLatitude,
+      exifGpsLongitude: exifGpsLongitude ?? this.exifGpsLongitude,
       indexedAt: indexedAt ?? this.indexedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -2626,6 +2835,18 @@ class ImagesCompanion extends UpdateCompanion<ImageTableData> {
     if (height.present) {
       map['height'] = Variable<int>(height.value);
     }
+    if (exifDateTime.present) {
+      map['exif_date_time'] = Variable<DateTime>(exifDateTime.value);
+    }
+    if (exifCamera.present) {
+      map['exif_camera'] = Variable<String>(exifCamera.value);
+    }
+    if (exifGpsLatitude.present) {
+      map['exif_gps_latitude'] = Variable<double>(exifGpsLatitude.value);
+    }
+    if (exifGpsLongitude.present) {
+      map['exif_gps_longitude'] = Variable<double>(exifGpsLongitude.value);
+    }
     if (indexedAt.present) {
       map['indexed_at'] = Variable<DateTime>(indexedAt.value);
     }
@@ -2648,6 +2869,10 @@ class ImagesCompanion extends UpdateCompanion<ImageTableData> {
           ..write('mimeType: $mimeType, ')
           ..write('width: $width, ')
           ..write('height: $height, ')
+          ..write('exifDateTime: $exifDateTime, ')
+          ..write('exifCamera: $exifCamera, ')
+          ..write('exifGpsLatitude: $exifGpsLatitude, ')
+          ..write('exifGpsLongitude: $exifGpsLongitude, ')
           ..write('indexedAt: $indexedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -3751,6 +3976,10 @@ typedef $$ImagesTableCreateCompanionBuilder =
       required String mimeType,
       Value<int?> width,
       Value<int?> height,
+      Value<DateTime?> exifDateTime,
+      Value<String?> exifCamera,
+      Value<double?> exifGpsLatitude,
+      Value<double?> exifGpsLongitude,
       required DateTime indexedAt,
       Value<int> rowid,
     });
@@ -3766,6 +3995,10 @@ typedef $$ImagesTableUpdateCompanionBuilder =
       Value<String> mimeType,
       Value<int?> width,
       Value<int?> height,
+      Value<DateTime?> exifDateTime,
+      Value<String?> exifCamera,
+      Value<double?> exifGpsLatitude,
+      Value<double?> exifGpsLongitude,
       Value<DateTime> indexedAt,
       Value<int> rowid,
     });
@@ -3826,6 +4059,26 @@ class $$ImagesTableFilterComposer
 
   ColumnFilters<int> get height => $composableBuilder(
     column: $table.height,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get exifDateTime => $composableBuilder(
+    column: $table.exifDateTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get exifCamera => $composableBuilder(
+    column: $table.exifCamera,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get exifGpsLatitude => $composableBuilder(
+    column: $table.exifGpsLatitude,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get exifGpsLongitude => $composableBuilder(
+    column: $table.exifGpsLongitude,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3894,6 +4147,26 @@ class $$ImagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get exifDateTime => $composableBuilder(
+    column: $table.exifDateTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get exifCamera => $composableBuilder(
+    column: $table.exifCamera,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get exifGpsLatitude => $composableBuilder(
+    column: $table.exifGpsLatitude,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get exifGpsLongitude => $composableBuilder(
+    column: $table.exifGpsLongitude,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get indexedAt => $composableBuilder(
     column: $table.indexedAt,
     builder: (column) => ColumnOrderings(column),
@@ -3938,6 +4211,26 @@ class $$ImagesTableAnnotationComposer
 
   GeneratedColumn<int> get height =>
       $composableBuilder(column: $table.height, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get exifDateTime => $composableBuilder(
+    column: $table.exifDateTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get exifCamera => $composableBuilder(
+    column: $table.exifCamera,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get exifGpsLatitude => $composableBuilder(
+    column: $table.exifGpsLatitude,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get exifGpsLongitude => $composableBuilder(
+    column: $table.exifGpsLongitude,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get indexedAt =>
       $composableBuilder(column: $table.indexedAt, builder: (column) => column);
@@ -3984,6 +4277,10 @@ class $$ImagesTableTableManager
                 Value<String> mimeType = const Value.absent(),
                 Value<int?> width = const Value.absent(),
                 Value<int?> height = const Value.absent(),
+                Value<DateTime?> exifDateTime = const Value.absent(),
+                Value<String?> exifCamera = const Value.absent(),
+                Value<double?> exifGpsLatitude = const Value.absent(),
+                Value<double?> exifGpsLongitude = const Value.absent(),
                 Value<DateTime> indexedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ImagesCompanion(
@@ -3997,6 +4294,10 @@ class $$ImagesTableTableManager
                 mimeType: mimeType,
                 width: width,
                 height: height,
+                exifDateTime: exifDateTime,
+                exifCamera: exifCamera,
+                exifGpsLatitude: exifGpsLatitude,
+                exifGpsLongitude: exifGpsLongitude,
                 indexedAt: indexedAt,
                 rowid: rowid,
               ),
@@ -4012,6 +4313,10 @@ class $$ImagesTableTableManager
                 required String mimeType,
                 Value<int?> width = const Value.absent(),
                 Value<int?> height = const Value.absent(),
+                Value<DateTime?> exifDateTime = const Value.absent(),
+                Value<String?> exifCamera = const Value.absent(),
+                Value<double?> exifGpsLatitude = const Value.absent(),
+                Value<double?> exifGpsLongitude = const Value.absent(),
                 required DateTime indexedAt,
                 Value<int> rowid = const Value.absent(),
               }) => ImagesCompanion.insert(
@@ -4025,6 +4330,10 @@ class $$ImagesTableTableManager
                 mimeType: mimeType,
                 width: width,
                 height: height,
+                exifDateTime: exifDateTime,
+                exifCamera: exifCamera,
+                exifGpsLatitude: exifGpsLatitude,
+                exifGpsLongitude: exifGpsLongitude,
                 indexedAt: indexedAt,
                 rowid: rowid,
               ),

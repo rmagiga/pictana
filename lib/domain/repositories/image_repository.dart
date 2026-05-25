@@ -73,4 +73,10 @@ abstract interface class ImageRepository {
 
   /// 最近見た画像を記録する。
   Future<void> recordRecentImage(ImageEntry image);
+
+  /// フォルダごとの最終閲覧画像IDを保存する。
+  Future<void> saveLastViewedEntryId(String folderUri, String entryId);
+
+  /// フォルダごとの最終閲覧画像IDを取得する。
+  Future<String?> getLastViewedEntryId(String folderUri);
 }

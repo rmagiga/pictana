@@ -20,6 +20,12 @@ _ImageEntry _$ImageEntryFromJson(Map<String, dynamic> json) => _ImageEntry(
   uri: json['uri'] as String,
   mimeType: $enumDecode(_$ImageMimeTypeEnumMap, json['mimeType']),
   exifRotation: (json['exifRotation'] as num?)?.toInt() ?? 0,
+  exifDateTime: json['exifDateTime'] == null
+      ? null
+      : DateTime.parse(json['exifDateTime'] as String),
+  exifCamera: json['exifCamera'] as String?,
+  exifGpsLatitude: (json['exifGpsLatitude'] as num?)?.toDouble(),
+  exifGpsLongitude: (json['exifGpsLongitude'] as num?)?.toDouble(),
 );
 
 Map<String, dynamic> _$ImageEntryToJson(_ImageEntry instance) =>
@@ -35,6 +41,10 @@ Map<String, dynamic> _$ImageEntryToJson(_ImageEntry instance) =>
       'uri': instance.uri,
       'mimeType': _$ImageMimeTypeEnumMap[instance.mimeType]!,
       'exifRotation': instance.exifRotation,
+      'exifDateTime': instance.exifDateTime?.toIso8601String(),
+      'exifCamera': instance.exifCamera,
+      'exifGpsLatitude': instance.exifGpsLatitude,
+      'exifGpsLongitude': instance.exifGpsLongitude,
     };
 
 const _$ImageMimeTypeEnumMap = {

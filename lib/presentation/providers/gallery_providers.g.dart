@@ -9,6 +9,52 @@ part of 'gallery_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(indexExifUseCase)
+final indexExifUseCaseProvider = IndexExifUseCaseProvider._();
+
+final class IndexExifUseCaseProvider
+    extends
+        $FunctionalProvider<
+          IndexExifUseCase,
+          IndexExifUseCase,
+          IndexExifUseCase
+        >
+    with $Provider<IndexExifUseCase> {
+  IndexExifUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'indexExifUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$indexExifUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<IndexExifUseCase> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  IndexExifUseCase create(Ref ref) {
+    return indexExifUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(IndexExifUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<IndexExifUseCase>(value),
+    );
+  }
+}
+
+String _$indexExifUseCaseHash() => r'f7ec6c54a25bfff8e22d1c02ec1a7cbb14ba69f4';
+
 @ProviderFor(loadFolderImagesUseCase)
 final loadFolderImagesUseCaseProvider = LoadFolderImagesUseCaseProvider._();
 
@@ -246,7 +292,7 @@ final class CurrentFolderProvider
   }
 }
 
-String _$currentFolderHash() => r'27c4075bb80b7056df73f680cf076192af218d8e';
+String _$currentFolderHash() => r'cba0187af0d6447c08b1d7cc56fed1c863c0bc78';
 
 /// 現在選択されているフォルダ
 
@@ -363,7 +409,7 @@ final class GalleryImagesProvider
   GalleryImages create() => GalleryImages();
 }
 
-String _$galleryImagesHash() => r'7c25dd69ef1f6154dd88ec61738d01c2daa75518';
+String _$galleryImagesHash() => r'd1b4ac7da54adbc5cd08154f637fd5b6fd7e6fb5';
 
 /// ギャラリー画像リストを管理する AsyncNotifier
 ///
@@ -426,3 +472,62 @@ final class GalleryImageCountProvider
 }
 
 String _$galleryImageCountHash() => r'd5a2463f1a5b0127497780755ab34a1c34f3ea93';
+
+/// 最近見た画像から直接ビューアを開くための保留中 EntryId
+
+@ProviderFor(PendingViewerEntryId)
+final pendingViewerEntryIdProvider = PendingViewerEntryIdProvider._();
+
+/// 最近見た画像から直接ビューアを開くための保留中 EntryId
+final class PendingViewerEntryIdProvider
+    extends $NotifierProvider<PendingViewerEntryId, String?> {
+  /// 最近見た画像から直接ビューアを開くための保留中 EntryId
+  PendingViewerEntryIdProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'pendingViewerEntryIdProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$pendingViewerEntryIdHash();
+
+  @$internal
+  @override
+  PendingViewerEntryId create() => PendingViewerEntryId();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
+String _$pendingViewerEntryIdHash() =>
+    r'482a09050c6b6d1c9a5d2df64d8c5572bd976981';
+
+/// 最近見た画像から直接ビューアを開くための保留中 EntryId
+
+abstract class _$PendingViewerEntryId extends $Notifier<String?> {
+  String? build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<String?, String?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String?, String?>,
+              String?,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

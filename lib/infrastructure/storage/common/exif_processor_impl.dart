@@ -1,9 +1,8 @@
-/// ExifProcessorImpl
-///
-/// バイトデータから EXIF Orientation タグを解析し、
-/// 回転角度を返す実装クラス。
-library;
-
+// ExifProcessorImpl
+//
+// バイトデータから EXIF Orientation タグを解析し、
+// 回転角度を返す実装クラス。
+import 'package:exif/exif.dart';
 import 'package:pictana/domain/repositories/exif_processor.dart';
 import 'package:pictana/domain/value_objects/exif_rotation.dart';
 
@@ -300,5 +299,109 @@ class ExifProcessorImpl implements ExifProcessor {
     }
 
     return null;
+  }
+
+  @override
+  Future<ExifMetadata> extractMetadata(List<int> bytes) async {
+    try {
+      final tags = await readExifFromBytes(bytes);
+      if (tags.isEmpty) return ExifMetadata.empty;
+
+      // 1. 撮影日時
+      DateTime? dateTime;
+      final dateTimeTag = tags['Image DateTime'] ??
+          tags['EXIF DateTimeOriginal'] ??
+          tags['EXIF DateTimeDigitized'];
+      if (dateTimeTag != null) {
+        final str = dateTimeTag.toString().trim();
+        // フォーマット "YYYY:MM:DD HH:MM:SS" をパースする
+        if (str.length >= 19) {
+          try {
+            final datePart = str.substring(0, 10).replaceAll(':', '-');
+            final timePart = str.substring(11, 19);
+            dateTime = DateTime.parse('$datePart $timePart');
+          } catch (_) {
+            // パース失敗
+          }
+        }
+      }
+
+      // 2. カメラ機種名
+      String? camera;
+      final make = tags['Image Make']?.toString().trim();
+      final model = tags['Image Model']?.toString().trim();
+      if (make != null && model != null) {
+        if (model.toLowerCase().contains(make.toLowerCase())) {
+          camera = model;
+        } else {
+          camera = '$make $model';
+        }
+      } else {
+        camera = make ?? model;
+      }
+
+      // 3. GPS座標
+      final latitude = _parseGpsCoordinate(
+        tags['GPS GPSLatitude'],
+        tags['GPS GPSLatitudeRef'],
+      );
+      final longitude = _parseGpsCoordinate(
+        tags['GPS GPSLongitude'],
+        tags['GPS GPSLongitudeRef'],
+      );
+
+      return ExifMetadata(
+        dateTime: dateTime,
+        camera: camera,
+        latitude: latitude,
+        longitude: longitude,
+      );
+    } catch (_) {
+      return ExifMetadata.empty;
+    }
+  }
+
+  double? _parseGpsCoordinate(IfdTag? tag, IfdTag? refTag) {
+    if (tag == null) return null;
+    final values = tag.values.toList();
+    if (values.length < 3) return null;
+
+    double convert(dynamic value) {
+      if (value is num) return value.toDouble();
+      if (value is Ratio) {
+        if (value.denominator == 0) return 0.0;
+        return value.numerator / value.denominator;
+      }
+      final str = value.toString().trim();
+      if (str.contains('/')) {
+        final parts = str.split('/');
+        if (parts.length == 2) {
+          final numVal = double.tryParse(parts[0]);
+          final denVal = double.tryParse(parts[1]);
+          if (numVal != null && denVal != null && denVal != 0) {
+            return numVal / denVal;
+          }
+        }
+      }
+      return double.tryParse(str) ?? 0.0;
+    }
+
+    try {
+      final degrees = convert(values[0]);
+      final minutes = convert(values[1]);
+      final seconds = convert(values[2]);
+
+      var decimal = degrees + (minutes / 60.0) + (seconds / 3600.0);
+
+      if (refTag != null) {
+        final ref = refTag.toString().toUpperCase().trim();
+        if (ref.startsWith('S') || ref.startsWith('W')) {
+          decimal = -decimal;
+        }
+      }
+      return decimal;
+    } catch (_) {
+      return null;
+    }
   }
 }

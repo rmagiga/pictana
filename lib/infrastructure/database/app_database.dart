@@ -29,7 +29,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -55,6 +55,13 @@ class AppDatabase extends _$AppDatabase {
       if (from < 4) {
         await m.createTable(recentImages);
       }
+      // v4 → v5: EXIF列の追加
+      if (from < 5) {
+        await m.addColumn(images, images.exifDateTime);
+        await m.addColumn(images, images.exifCamera);
+        await m.addColumn(images, images.exifGpsLatitude);
+        await m.addColumn(images, images.exifGpsLongitude);
+      }
     },
   );
 
@@ -72,14 +79,30 @@ class AppDatabase extends _$AppDatabase {
     required String uri,
     required String name,
     required String platformType,
-  }) => into(recentFolders).insertOnConflictUpdate(
-    RecentFoldersCompanion.insert(
-      uri: uri,
-      name: name,
-      platformType: platformType,
-      lastOpenedAt: DateTime.now(),
-    ),
-  );
+  }) async {
+    final existing = await (select(recentFolders)
+          ..where((t) => t.uri.equals(uri))
+          ..limit(1))
+        .getSingleOrNull();
+
+    if (existing != null) {
+      await (update(recentFolders)..where((t) => t.id.equals(existing.id))).write(
+        RecentFoldersCompanion(
+          name: Value(name),
+          lastOpenedAt: Value(DateTime.now()),
+        ),
+      );
+    } else {
+      await into(recentFolders).insert(
+        RecentFoldersCompanion.insert(
+          uri: uri,
+          name: name,
+          platformType: platformType,
+          lastOpenedAt: DateTime.now(),
+        ),
+      );
+    }
+  }
 
   // --- RecentImages クエリ ---
 
@@ -329,12 +352,45 @@ class AppDatabase extends _$AppDatabase {
           mimeType: item.mimeType,
           width: Value(item.width),
           height: Value(item.height),
+          exifDateTime: Value(item.exifDateTime),
+          exifCamera: Value(item.exifCamera),
+          exifGpsLatitude: Value(item.exifGpsLatitude),
+          exifGpsLongitude: Value(item.exifGpsLongitude),
           indexedAt: DateTime.now(),
         )),
         mode: InsertMode.insertOrReplace,
       );
     });
   }
+
+  /// 指定した画像の EXIF 情報を更新する
+  Future<void> updateExif({
+    required String entryId,
+    DateTime? exifDateTime,
+    String? exifCamera,
+    double? exifGpsLatitude,
+    double? exifGpsLongitude,
+  }) async {
+    await (update(images)..where((t) => t.entryId.equals(entryId))).write(
+      ImagesCompanion(
+        exifDateTime: Value(exifDateTime),
+        exifCamera: Value(exifCamera),
+        exifGpsLatitude: Value(exifGpsLatitude),
+        exifGpsLongitude: Value(exifGpsLongitude),
+      ),
+    );
+  }
+
+  /// EXIF 情報が未解析（かつ特定のフォルダ内）の画像を取得する
+  Future<List<ImageTableData>> getImagesMissingExif(String folderUri) =>
+      (select(images)
+            ..where((t) =>
+                t.folderUri.equals(folderUri) &
+                t.exifDateTime.isNull() &
+                t.exifCamera.isNull() &
+                t.exifGpsLatitude.isNull() &
+                t.exifGpsLongitude.isNull()))
+          .get();
 
   /// 同期時に指定したフォルダ内のアクティブでない（削除された）画像を消す
   Future<void> deleteImagesNotIn(String folderUri, List<String> activeEntryIds) async {
