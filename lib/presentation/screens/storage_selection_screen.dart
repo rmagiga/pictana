@@ -26,6 +26,10 @@ import '../widgets/favorite_list_section.dart';
 import '../widgets/favorite_navigation_handler.dart';
 import '../widgets/image_grid_tile.dart';
 import '../widgets/thumbnail_overlay.dart';
+import '../../application/usecases/favorites/toggle_favorite_usecase.dart';
+import '../providers/favorite_helper_providers.dart';
+import '../providers/favorite_toggle_provider.dart';
+import '../providers/favorite_toggle_state.dart';
 
 /// ホーム画面
 ///
@@ -143,6 +147,22 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<FavoriteToggleState>(favoriteToggleProvider, (previous, next) {
+      if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
+        final isLimit = next.errorMessage!.contains('FavoriteLimitExceededException');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isLimit
+                  ? 'お気に入り登録上限（${ToggleFavoriteUseCase.maxFavorites}件）に達しました。'
+                  : 'お気に入り登録に失敗しました。',
+            ),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    });
+
     final favoritesAsync = ref.watch(favoriteListProvider);
     final recentFoldersAsync = ref.watch(recentFoldersListProvider);
     final recentImagesAsync = ref.watch(recentImagesListProvider);
@@ -391,6 +411,48 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
                               ),
                             ],
                           ),
+                        ),
+                      ),
+                      // お気に入り登録/解除ボタン（閉じるボタンの左）
+                      Positioned(
+                        top: 6,
+                        right: 36,
+                        child: Consumer(
+                          builder: (context, ref, child) {
+                            final toggleState = ref.watch(favoriteToggleProvider);
+                            final actualFavoriteAsync = ref.watch(isFolderFavoriteProvider(folder.uri));
+
+                            final optimistic = toggleState.targetUri == folder.uri
+                                ? toggleState.optimisticIsFavorite
+                                : null;
+                            final isFavorite = optimistic ??
+                                actualFavoriteAsync.whenOrNull(data: (value) => value) ??
+                                false;
+
+                            final label = isFavorite ? 'お気に入り解除' : 'お気に入り登録';
+
+                            return Tooltip(
+                              message: label,
+                              child: Material(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(14),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(14),
+                                  onTap: () => ref
+                                      .read(favoriteToggleProvider.notifier)
+                                      .toggle(uri: folder.uri, name: folder.name),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Icon(
+                                      isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
+                                      size: 16,
+                                      color: isFavorite ? Colors.amber : Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                       // 右上の閉じるボタン（画像の上で見えやすいよう半透明背景）
