@@ -14,6 +14,9 @@ _FolderEntry _$FolderEntryFromJson(Map<String, dynamic> json) => _FolderEntry(
   parentId: json['parentId'] == null
       ? null
       : EntryId.fromJson(json['parentId'] as Map<String, dynamic>),
+  lastOpenedAt: json['lastOpenedAt'] == null
+      ? null
+      : DateTime.parse(json['lastOpenedAt'] as String),
 );
 
 Map<String, dynamic> _$FolderEntryToJson(_FolderEntry instance) =>
@@ -23,4 +26,5 @@ Map<String, dynamic> _$FolderEntryToJson(_FolderEntry instance) =>
       'uri': instance.uri,
       'imageCount': instance.imageCount,
       'parentId': instance.parentId,
+      'lastOpenedAt': instance.lastOpenedAt?.toIso8601String(),
     };

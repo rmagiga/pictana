@@ -429,7 +429,7 @@ final class RecentFoldersListProvider
   RecentFoldersList create() => RecentFoldersList();
 }
 
-String _$recentFoldersListHash() => r'25f9d4d8635ea553fcc1f897a87359612d26489a';
+String _$recentFoldersListHash() => r'faded7468634d5a4215a72965b5fb41ff1ac0136';
 
 /// 最近開いたフォルダ履歴の状態を管理する Provider
 

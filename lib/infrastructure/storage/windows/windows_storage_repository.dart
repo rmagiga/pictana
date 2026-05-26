@@ -223,7 +223,8 @@ class WindowsStorageRepository implements StorageRepository {
   }
 
   FolderEntry _rowToFolderEntry(RecentFolderRow row) {
-    return restoreFolderFromUri(uri: row.uri, name: row.name);
+    return restoreFolderFromUri(uri: row.uri, name: row.name)
+        .copyWith(lastOpenedAt: row.lastOpenedAt);
   }
 
   /// リソース解放

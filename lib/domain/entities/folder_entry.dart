@@ -28,6 +28,9 @@ abstract class FolderEntry with _$FolderEntry {
 
     /// 親フォルダの EntryId。ルートの場合は null。
     EntryId? parentId,
+
+    /// 最終アクセス日時。履歴用。
+    DateTime? lastOpenedAt,
   }) = _FolderEntry;
 
   factory FolderEntry.fromJson(Map<String, dynamic> json) =>

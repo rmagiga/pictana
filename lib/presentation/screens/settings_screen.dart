@@ -14,6 +14,7 @@ import '../../core/utils/format_bytes.dart';
 import '../../domain/value_objects/cache_size_limit.dart';
 import '../../domain/value_objects/swipe_direction.dart';
 import '../../domain/value_objects/thumbnail_size_option.dart';
+import '../../application/usecases/settings/show_recent_images_setting.dart';
 import '../providers/settings_providers.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/grid_column_setting_tile.dart';
@@ -29,6 +30,7 @@ class SettingsScreen extends ConsumerWidget {
     final currentCacheLimit = ref.watch(cacheSizeLimitSettingProvider);
     final currentThumbnailSize = ref.watch(thumbnailSizeSettingProvider);
     final currentSwipeDirection = ref.watch(swipeDirectionSettingProvider);
+    final showRecentImages = ref.watch(showRecentImagesSettingProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('設定')),
@@ -57,6 +59,14 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const GridColumnSettingTile(),
+          SwitchListTile(
+            title: const Text('最近見た画像を表示'),
+            subtitle: const Text('ホーム画面に最近見た画像の一覧を表示します'),
+            value: showRecentImages,
+            onChanged: (value) {
+              ref.read(showRecentImagesSettingProvider.notifier).update(value);
+            },
+          ),
 
           // サムネイルサイズ設定 (Req 8.1, 8.2, 8.3, 8.4)
           ListTile(

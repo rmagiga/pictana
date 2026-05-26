@@ -11,16 +11,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/logging/app_logger.dart';
+import '../../core/utils/datetime_utils.dart';
 import '../../domain/entities/folder_entry.dart';
 import '../../domain/entities/image_entry.dart';
 import '../../router/app_router.dart';
 import '../../application/providers/repository_providers.dart';
+import '../../application/usecases/settings/show_recent_images_setting.dart';
 import '../providers/favorite_list_provider.dart';
 import '../providers/favorite_navigation_provider.dart';
 import '../providers/gallery_providers.dart';
 import '../providers/storage_providers.dart';
 import '../providers/viewer_providers.dart';
-import '../widgets/favorite_grid_section.dart';
+import '../widgets/favorite_list_section.dart';
 import '../widgets/favorite_navigation_handler.dart';
 import '../widgets/image_grid_tile.dart';
 
@@ -143,6 +145,7 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
     final favoritesAsync = ref.watch(favoriteListProvider);
     final recentFoldersAsync = ref.watch(recentFoldersListProvider);
     final recentImagesAsync = ref.watch(recentImagesListProvider);
+    final showRecentImages = ref.watch(showRecentImagesSettingProvider);
 
     final favorites = favoritesAsync.value ?? [];
     final recentFolders = recentFoldersAsync.value ?? [];
@@ -152,19 +155,13 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
     final hasRecentFolders = recentFolders.isNotEmpty;
     final hasRecentImages = recentImages.isNotEmpty;
 
-    final hasContent = hasFavorites || hasRecentFolders || hasRecentImages;
+    final hasContent = hasFavorites || hasRecentFolders || (showRecentImages && hasRecentImages);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pictana'),
         centerTitle: true,
         actions: [
-          // フォルダ選択ボタン
-          IconButton(
-            icon: const Icon(Icons.folder_open),
-            tooltip: 'フォルダを選択',
-            onPressed: () => _selectFolder(context),
-          ),
           IconButton(
             icon: const Icon(Icons.settings),
             tooltip: '設定',
@@ -172,50 +169,120 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
           ),
         ],
       ),
-      body: hasContent
-          ? FavoriteNavigationHandler(
-              child: Scrollbar(
-                controller: _mainScrollController,
-                child: SingleChildScrollView(
-                  controller: _mainScrollController,
-                  padding: EdgeInsets.only(
-                    top: 8.0,
-                    bottom: 24.0 + MediaQuery.of(context).viewPadding.bottom,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 最近開いたフォルダセクション
-                      if (hasRecentFolders)
-                        _buildRecentFolders(context, recentFolders),
+      body: FavoriteNavigationHandler(
+        child: Scrollbar(
+          controller: _mainScrollController,
+          child: SingleChildScrollView(
+            controller: _mainScrollController,
+            padding: EdgeInsets.only(
+              top: 8.0,
+              bottom: 24.0 + MediaQuery.of(context).viewPadding.bottom,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 主CTA（フォルダを開く）
+                _buildPrimaryCTA(context),
 
-                      // 最近見た画像セクション
-                      if (hasRecentImages)
-                        _buildRecentImages(context, recentImages),
+                if (!hasContent)
+                  _buildEmptyState(context)
+                else ...[
+                  // 最近開いたフォルダセクション
+                  if (hasRecentFolders)
+                    _buildRecentFolders(context, recentFolders),
 
-                      // お気に入りフォルダセクション
-                      if (hasFavorites) ...[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 8.0,
-                          ),
-                          child: Text(
-                            'お気に入りフォルダ',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                        ),
-                        FavoriteGridSection(
-                          onFolderTap: (folder) =>
-                              handleFavoriteNavigation(context, ref, folder),
-                        ),
-                      ],
-                    ],
+                  // お気に入りフォルダセクション
+                  if (hasFavorites)
+                    FavoriteListSection(
+                      onFolderTap: (folder) =>
+                          handleFavoriteNavigation(context, ref, folder),
+                    ),
+
+                  // 最近見た画像セクション
+                  if (showRecentImages && hasRecentImages)
+                    _buildRecentImages(context, recentImages),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 主CTA「フォルダを開く」エリアの構築
+  Widget _buildPrimaryCTA(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDesktop = Platform.isWindows;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Material(
+        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: () => _selectFolder(context),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                width: 1.5,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.folder_open_rounded,
+                  size: 40,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'フォルダを開く',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
                   ),
                 ),
-              ),
-            )
-          : _buildOnboarding(context),
+                const SizedBox(height: 6),
+                Text(
+                  isDesktop
+                      ? '画像が含まれるフォルダを選択してギャラリーを表示します\n(ドラッグ＆ドロップ対応予定)'
+                      : '画像が含まれるフォルダを選択してギャラリーを表示します',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 空状態のメッセージ表示
+  Widget _buildEmptyState(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48.0, horizontal: 32.0),
+      child: Center(
+        child: Text(
+          '履歴やお気に入りはありません。\n上の「フォルダを開く」から画像フォルダを選択してください。',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: onSurfaceVariant,
+            height: 1.5,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
     );
   }
 
@@ -225,15 +292,22 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
     List<FolderEntry> folders,
   ) {
     final theme = Theme.of(context);
+    final displayFolders = folders.take(8).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Text('最近開いたフォルダ', style: theme.textTheme.titleMedium),
+          child: Text(
+            '最近開いたフォルダ',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
         SizedBox(
-          height: 112, // スクロールバーの分少し高さを確保
+          height: 140, // スクロールバーの分少し高さを確保
           child: Scrollbar(
             controller: _foldersScrollController,
             thumbVisibility: true,
@@ -242,44 +316,71 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
               controller: _foldersScrollController,
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
-              itemCount: folders.length,
+              itemCount: displayFolders.length,
               itemBuilder: (context, index) {
-                final folder = folders[index];
+                final folder = displayFolders[index];
+                final relativeTime = folder.lastOpenedAt != null
+                    ? formatRelativeTime(folder.lastOpenedAt!)
+                    : '';
+                final imageCountText = folder.imageCountLabel;
+
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 4.0),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Stack(
                     children: [
                       InkWell(
                         onTap: () => _handleRecentFolderNavigation(context, folder),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                         child: Container(
-                          width: 140,
-                          padding: const EdgeInsets.all(8.0),
+                          width: 180,
+                          padding: const EdgeInsets.all(12.0),
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.folder,
-                                size: 36,
-                                color: Theme.of(context).colorScheme.primary,
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.folder_rounded,
+                                    size: 32,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                  const Spacer(),
+                                  if (relativeTime.isNotEmpty)
+                                    Text(
+                                      relativeTime,
+                                      style: theme.textTheme.labelSmall?.copyWith(
+                                        color: theme.colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                ],
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 12),
                               Text(
                                 folder.name,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodySmall,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                imageCountText.isNotEmpty ? imageCountText : '— 枚',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
                       Positioned(
-                        top: 2,
-                        right: 2,
+                        top: 4,
+                        right: 4,
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
@@ -288,7 +389,7 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
                             child: Padding(
                               padding: const EdgeInsets.all(4.0),
                               child: Icon(
-                                Icons.close,
+                                Icons.close_rounded,
                                 size: 16,
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
@@ -314,15 +415,22 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
     List<ImageEntry> images,
   ) {
     final theme = Theme.of(context);
+    final displayImages = images.take(5).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Text('最近見た画像', style: theme.textTheme.titleMedium),
+          child: Text(
+            '最近見た画像',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
         SizedBox(
-          height: 144, // スクロールバーの分少し高さを確保 (130dp -> 144dp)
+          height: 110, // スクロールバーの分少し高さを確保
           child: Scrollbar(
             controller: _imagesScrollController,
             thumbVisibility: true,
@@ -331,11 +439,11 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
               controller: _imagesScrollController,
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
-              itemCount: images.length,
+              itemCount: displayImages.length,
               itemBuilder: (context, index) {
-                final image = images[index];
+                final image = displayImages[index];
                 return Container(
-                  width: 100,
+                  width: 80,
                   margin: const EdgeInsets.symmetric(horizontal: 4.0),
                   child: Column(
                     children: [
@@ -359,7 +467,6 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
                                         uri: folderUri,
                                         name: folderUri.split(Platform.pathSeparator).last,
                                       );
-                                      // ビューア自動遷移用 ID をセット
                                       ref
                                           .read(pendingViewerEntryIdProvider.notifier)
                                           .set(image.id.rawValue);
@@ -381,19 +488,19 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
                               ),
                             ),
                             Positioned(
-                              top: 4,
-                              right: 4,
+                              top: 2,
+                              right: 2,
                               child: GestureDetector(
                                 onTap: () => _deleteRecentImage(image),
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.black.withAlpha(128),
+                                    color: Colors.black.withValues(alpha: 0.5),
                                     shape: BoxShape.circle,
                                   ),
-                                  padding: const EdgeInsets.all(4.0),
+                                  padding: const EdgeInsets.all(2.0),
                                   child: const Icon(
-                                    Icons.close,
-                                    size: 14,
+                                    Icons.close_rounded,
+                                    size: 12,
                                     color: Colors.white,
                                   ),
                                 ),
@@ -419,38 +526,6 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
         ),
         const SizedBox(height: 12),
       ],
-    );
-  }
-
-  /// お気に入りが0件の場合のオンボーディング画面
-  Widget _buildOnboarding(BuildContext context) {
-    final theme = Theme.of(context);
-    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.folder_open, size: 80, color: onSurfaceVariant),
-            const SizedBox(height: 24),
-            Text(
-              'フォルダを選択して画像を閲覧しましょう',
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: () => _selectFolder(context),
-              icon: const Icon(Icons.folder_open),
-              label: const Text('フォルダを選択'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

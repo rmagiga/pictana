@@ -6,6 +6,7 @@
 /// **Validates: Requirements 7.3, 8.3, 9.2**
 library;
 
+import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,7 @@ import 'package:pictana/application/providers/repository_providers.dart';
 import 'package:pictana/application/usecases/settings/cache_size_limit_setting.dart';
 import 'package:pictana/application/usecases/settings/swipe_direction_setting.dart';
 import 'package:pictana/application/usecases/settings/thumbnail_size_setting.dart';
+import 'package:pictana/application/usecases/settings/show_recent_images_setting.dart';
 import 'package:pictana/domain/repositories/thumbnail_repository.dart';
 import 'package:pictana/domain/value_objects/cache_size_limit.dart';
 import 'package:pictana/domain/value_objects/swipe_direction.dart';
@@ -298,6 +300,76 @@ void main() {
 
       final state = container.read(cacheSizeLimitSettingProvider);
       expect(state, equals(CacheSizeLimit.gb1));
+
+      container.dispose();
+    });
+  });
+
+  // =========================================================================
+  // ShowRecentImagesSetting テスト
+  // =========================================================================
+  group('ShowRecentImagesSetting', () {
+    test('初期値はプラットフォームによって設定される（テスト環境では Platform.isWindows に基づく）', () {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      final container = ProviderContainer(
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
+      );
+
+      final state = container.read(showRecentImagesSettingProvider);
+
+      expect(state, equals(Platform.isWindows));
+
+      container.dispose();
+      db.close();
+    });
+
+    test('update で状態が変更される', () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      final container = ProviderContainer(
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
+      );
+
+      final notifier = container.read(showRecentImagesSettingProvider.notifier);
+      final newValue = !Platform.isWindows;
+      await notifier.update(newValue);
+
+      final state = container.read(showRecentImagesSettingProvider);
+      expect(state, equals(newValue));
+
+      container.dispose();
+      await db.close();
+    });
+
+    test('update で DB に永続化される', () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      final container = ProviderContainer(
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
+      );
+
+      final notifier = container.read(showRecentImagesSettingProvider.notifier);
+      await notifier.update(true);
+
+      final savedValue = await db.getSetting('show_recent_images');
+      expect(savedValue, equals('true'));
+
+      container.dispose();
+      await db.close();
+    });
+
+    test('DB に保存済みの値がある場合、起動時に復元される', () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      final savedValue = (!Platform.isWindows).toString();
+      await db.setSetting('show_recent_images', savedValue);
+
+      final container = ProviderContainer(
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
+      );
+
+      container.read(showRecentImagesSettingProvider);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      final state = container.read(showRecentImagesSettingProvider);
+      expect(state, equals(!Platform.isWindows));
 
       container.dispose();
       await db.close();

@@ -165,7 +165,8 @@ class AndroidStorageRepository implements StorageRepository {
   /// DB には tree URI または document URI が保存されている可能性がある。
   /// どちらの場合でも正しい tree URI と document ID を抽出する。
   FolderEntry _rowToFolderEntry(RecentFolder row) {
-    return restoreFolderFromUri(uri: row.uri, name: row.name);
+    return restoreFolderFromUri(uri: row.uri, name: row.name)
+        .copyWith(lastOpenedAt: row.lastOpenedAt);
   }
 
   /// URI から tree URI 部分を抽出する。

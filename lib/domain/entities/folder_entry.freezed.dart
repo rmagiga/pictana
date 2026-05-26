@@ -20,7 +20,8 @@ mixin _$FolderEntry {
  String get name;/// アクセス用 URI 文字列
  String get uri;/// フォルダ内画像枚数。未スキャン時は null。
  int? get imageCount;/// 親フォルダの EntryId。ルートの場合は null。
- EntryId? get parentId;
+ EntryId? get parentId;/// 最終アクセス日時。履歴用。
+ DateTime? get lastOpenedAt;
 /// Create a copy of FolderEntry
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -33,16 +34,16 @@ $FolderEntryCopyWith<FolderEntry> get copyWith => _$FolderEntryCopyWithImpl<Fold
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FolderEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.uri, uri) || other.uri == uri)&&(identical(other.imageCount, imageCount) || other.imageCount == imageCount)&&(identical(other.parentId, parentId) || other.parentId == parentId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FolderEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.uri, uri) || other.uri == uri)&&(identical(other.imageCount, imageCount) || other.imageCount == imageCount)&&(identical(other.parentId, parentId) || other.parentId == parentId)&&(identical(other.lastOpenedAt, lastOpenedAt) || other.lastOpenedAt == lastOpenedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,uri,imageCount,parentId);
+int get hashCode => Object.hash(runtimeType,id,name,uri,imageCount,parentId,lastOpenedAt);
 
 @override
 String toString() {
-  return 'FolderEntry(id: $id, name: $name, uri: $uri, imageCount: $imageCount, parentId: $parentId)';
+  return 'FolderEntry(id: $id, name: $name, uri: $uri, imageCount: $imageCount, parentId: $parentId, lastOpenedAt: $lastOpenedAt)';
 }
 
 
@@ -53,7 +54,7 @@ abstract mixin class $FolderEntryCopyWith<$Res>  {
   factory $FolderEntryCopyWith(FolderEntry value, $Res Function(FolderEntry) _then) = _$FolderEntryCopyWithImpl;
 @useResult
 $Res call({
- EntryId id, String name, String uri, int? imageCount, EntryId? parentId
+ EntryId id, String name, String uri, int? imageCount, EntryId? parentId, DateTime? lastOpenedAt
 });
 
 
@@ -70,14 +71,15 @@ class _$FolderEntryCopyWithImpl<$Res>
 
 /// Create a copy of FolderEntry
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? uri = null,Object? imageCount = freezed,Object? parentId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? uri = null,Object? imageCount = freezed,Object? parentId = freezed,Object? lastOpenedAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as EntryId,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,uri: null == uri ? _self.uri : uri // ignore: cast_nullable_to_non_nullable
 as String,imageCount: freezed == imageCount ? _self.imageCount : imageCount // ignore: cast_nullable_to_non_nullable
 as int?,parentId: freezed == parentId ? _self.parentId : parentId // ignore: cast_nullable_to_non_nullable
-as EntryId?,
+as EntryId?,lastOpenedAt: freezed == lastOpenedAt ? _self.lastOpenedAt : lastOpenedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 /// Create a copy of FolderEntry
@@ -183,10 +185,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( EntryId id,  String name,  String uri,  int? imageCount,  EntryId? parentId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( EntryId id,  String name,  String uri,  int? imageCount,  EntryId? parentId,  DateTime? lastOpenedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FolderEntry() when $default != null:
-return $default(_that.id,_that.name,_that.uri,_that.imageCount,_that.parentId);case _:
+return $default(_that.id,_that.name,_that.uri,_that.imageCount,_that.parentId,_that.lastOpenedAt);case _:
   return orElse();
 
 }
@@ -204,10 +206,10 @@ return $default(_that.id,_that.name,_that.uri,_that.imageCount,_that.parentId);c
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( EntryId id,  String name,  String uri,  int? imageCount,  EntryId? parentId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( EntryId id,  String name,  String uri,  int? imageCount,  EntryId? parentId,  DateTime? lastOpenedAt)  $default,) {final _that = this;
 switch (_that) {
 case _FolderEntry():
-return $default(_that.id,_that.name,_that.uri,_that.imageCount,_that.parentId);case _:
+return $default(_that.id,_that.name,_that.uri,_that.imageCount,_that.parentId,_that.lastOpenedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -224,10 +226,10 @@ return $default(_that.id,_that.name,_that.uri,_that.imageCount,_that.parentId);c
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( EntryId id,  String name,  String uri,  int? imageCount,  EntryId? parentId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( EntryId id,  String name,  String uri,  int? imageCount,  EntryId? parentId,  DateTime? lastOpenedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _FolderEntry() when $default != null:
-return $default(_that.id,_that.name,_that.uri,_that.imageCount,_that.parentId);case _:
+return $default(_that.id,_that.name,_that.uri,_that.imageCount,_that.parentId,_that.lastOpenedAt);case _:
   return null;
 
 }
@@ -239,7 +241,7 @@ return $default(_that.id,_that.name,_that.uri,_that.imageCount,_that.parentId);c
 @JsonSerializable()
 
 class _FolderEntry extends FolderEntry {
-  const _FolderEntry({required this.id, required this.name, required this.uri, this.imageCount, this.parentId}): super._();
+  const _FolderEntry({required this.id, required this.name, required this.uri, this.imageCount, this.parentId, this.lastOpenedAt}): super._();
   factory _FolderEntry.fromJson(Map<String, dynamic> json) => _$FolderEntryFromJson(json);
 
 /// プラットフォーム固有識別子
@@ -252,6 +254,8 @@ class _FolderEntry extends FolderEntry {
 @override final  int? imageCount;
 /// 親フォルダの EntryId。ルートの場合は null。
 @override final  EntryId? parentId;
+/// 最終アクセス日時。履歴用。
+@override final  DateTime? lastOpenedAt;
 
 /// Create a copy of FolderEntry
 /// with the given fields replaced by the non-null parameter values.
@@ -266,16 +270,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FolderEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.uri, uri) || other.uri == uri)&&(identical(other.imageCount, imageCount) || other.imageCount == imageCount)&&(identical(other.parentId, parentId) || other.parentId == parentId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FolderEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.uri, uri) || other.uri == uri)&&(identical(other.imageCount, imageCount) || other.imageCount == imageCount)&&(identical(other.parentId, parentId) || other.parentId == parentId)&&(identical(other.lastOpenedAt, lastOpenedAt) || other.lastOpenedAt == lastOpenedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,uri,imageCount,parentId);
+int get hashCode => Object.hash(runtimeType,id,name,uri,imageCount,parentId,lastOpenedAt);
 
 @override
 String toString() {
-  return 'FolderEntry(id: $id, name: $name, uri: $uri, imageCount: $imageCount, parentId: $parentId)';
+  return 'FolderEntry(id: $id, name: $name, uri: $uri, imageCount: $imageCount, parentId: $parentId, lastOpenedAt: $lastOpenedAt)';
 }
 
 
@@ -286,7 +290,7 @@ abstract mixin class _$FolderEntryCopyWith<$Res> implements $FolderEntryCopyWith
   factory _$FolderEntryCopyWith(_FolderEntry value, $Res Function(_FolderEntry) _then) = __$FolderEntryCopyWithImpl;
 @override @useResult
 $Res call({
- EntryId id, String name, String uri, int? imageCount, EntryId? parentId
+ EntryId id, String name, String uri, int? imageCount, EntryId? parentId, DateTime? lastOpenedAt
 });
 
 
@@ -303,14 +307,15 @@ class __$FolderEntryCopyWithImpl<$Res>
 
 /// Create a copy of FolderEntry
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? uri = null,Object? imageCount = freezed,Object? parentId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? uri = null,Object? imageCount = freezed,Object? parentId = freezed,Object? lastOpenedAt = freezed,}) {
   return _then(_FolderEntry(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as EntryId,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,uri: null == uri ? _self.uri : uri // ignore: cast_nullable_to_non_nullable
 as String,imageCount: freezed == imageCount ? _self.imageCount : imageCount // ignore: cast_nullable_to_non_nullable
 as int?,parentId: freezed == parentId ? _self.parentId : parentId // ignore: cast_nullable_to_non_nullable
-as EntryId?,
+as EntryId?,lastOpenedAt: freezed == lastOpenedAt ? _self.lastOpenedAt : lastOpenedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 

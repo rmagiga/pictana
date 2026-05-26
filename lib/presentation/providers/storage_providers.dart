@@ -13,6 +13,8 @@ import '../../application/usecases/storage/record_recent_folder_usecase.dart';
 import '../../application/usecases/storage/navigate_to_recent_folder_usecase.dart';
 import '../../domain/entities/folder_entry.dart';
 import '../../domain/entities/storage_root.dart';
+import '../../domain/repositories/image_repository.dart';
+import '../../domain/value_objects/sort_option.dart';
 
 part 'storage_providers.g.dart';
 
@@ -86,7 +88,39 @@ class RecentFoldersList extends _$RecentFoldersList {
   @override
   FutureOr<List<FolderEntry>> build() async {
     final useCase = ref.watch(getRecentFoldersUseCaseProvider);
-    return useCase.execute();
+    final folders = await useCase.execute();
+
+    final database = ref.watch(appDatabaseProvider);
+    final list = <FolderEntry>[];
+    for (final folder in folders) {
+      final count = await _getFolderImageCount(database, folder.uri);
+      list.add(folder.copyWith(imageCount: count));
+    }
+    return list;
+  }
+
+  Future<int?> _getFolderImageCount(dynamic database, String folderUri) async {
+    try {
+      final count = await database.countImages(
+        folderUri: folderUri,
+        filter: const ImageFilter(nameQuery: null, mimeTypes: null),
+      );
+      if (count == 0) {
+        final hasRecords = await database.getImagePage(
+          folderUri: folderUri,
+          page: 0,
+          pageSize: 1,
+          sort: SortOption.defaultOption,
+          filter: const ImageFilter(nameQuery: null, mimeTypes: null),
+        );
+        if (hasRecords.isEmpty) {
+          return null; // 未スキャン
+        }
+      }
+      return count;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// 履歴に追加する
