@@ -2,12 +2,15 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SearchBarWidget extends StatelessWidget {
+import '../../application/usecases/gallery/search_controller.dart';
+
+class SearchBarWidget extends ConsumerWidget {
   const SearchBarWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // MVP実装: UIのプレースホルダーとして配置
     // (実際の名前フィルタリングなどは Phase 5 拡張で実装する想定)
     return Padding(
@@ -27,7 +30,7 @@ class SearchBarWidget extends StatelessWidget {
           ),
         ],
         onChanged: (value) {
-          // TODO: GalleryGrid の Provider に検索クエリを渡す
+          ref.read(searchControllerProvider.notifier).updateQuery(value);
         },
       ),
     );
