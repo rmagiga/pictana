@@ -10,6 +10,7 @@ import '../../domain/entities/favorite_folder.dart';
 import '../../domain/repositories/favorite_repository.dart';
 import '../providers/favorite_helper_providers.dart';
 import '../providers/favorite_list_provider.dart';
+import 'thumbnail_overlay.dart';
 
 /// お気に入りフォルダリストセクション
 ///
@@ -105,69 +106,104 @@ class FavoriteListSection extends ConsumerWidget {
 
     final theme = Theme.of(context);
 
-    return ListView.separated(
+    return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 200,
+        mainAxisExtent: 200,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
       itemCount: favorites.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 4.0),
       itemBuilder: (context, index) {
         final folder = favorites[index];
         return GestureDetector(
           onSecondaryTapUp: (details) => _showContextMenu(context, ref, details.globalPosition, folder),
           onLongPressStart: (details) => _showContextMenu(context, ref, details.globalPosition, folder),
-          child: Material(
-            color: theme.colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(12),
+          child: Card(
+            margin: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: () => onFolderTap(folder),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.folder_rounded,
-                      color: theme.colorScheme.primary,
-                      size: 28,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            folder.name,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+            child: Stack(
+              children: [
+                InkWell(
+                  onTap: () => onFolderTap(folder),
+                  borderRadius: BorderRadius.circular(12),
+                  child: SizedBox.expand(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 上半分: サムネイル画像
+                        SizedBox(
+                          height: 110,
+                          width: double.infinity,
+                          child: ThumbnailOverlay(
+                            uri: folder.uri,
+                            name: folder.name,
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            folder.uri,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        // 下半分: フォルダ情報
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  folder.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  folder.uri,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: Icon(
-                        Icons.star_rounded,
-                        color: theme.colorScheme.primary,
-                      ),
-                      tooltip: 'お気に入り解除',
-                      onPressed: () => _deleteFavorite(context, ref, folder),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                // 右上のお気に入り解除ボタン（星アイコン）
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: Tooltip(
+                    message: 'お気に入り解除',
+                    child: Material(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(14),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: () => _deleteFavorite(context, ref, folder),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4.0),
+                          child: Icon(
+                            Icons.star_rounded,
+                            size: 16,
+                            color: Colors.amber,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         );

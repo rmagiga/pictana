@@ -153,7 +153,8 @@ void main() {
         storageRepository: _FakeStorageRepository(),
       );
 
-      final result = await useCase.execute(folder: _createTestFolder());
+      final folder = _createTestFolder();
+      final result = await useCase.execute(uri: folder.uri, name: folder.name);
 
       expect(result, isEmpty);
     });
@@ -165,7 +166,8 @@ void main() {
         storageRepository: _FakeStorageRepository(),
       );
 
-      final result = await useCase.execute(folder: _createTestFolder());
+      final folder = _createTestFolder();
+      final result = await useCase.execute(uri: folder.uri, name: folder.name);
 
       expect(result, isEmpty);
     });
@@ -179,7 +181,8 @@ void main() {
         storageRepository: _FakeStorageRepository(),
       );
 
-      final result = await useCase.execute(folder: _createTestFolder());
+      final folder = _createTestFolder();
+      final result = await useCase.execute(uri: folder.uri, name: folder.name);
 
       expect(result.length, equals(1));
       expect(result[0], isNotNull);
@@ -192,7 +195,8 @@ void main() {
         storageRepository: _FakeStorageRepository(),
       );
 
-      final result = await useCase.execute(folder: _createTestFolder());
+      final folder = _createTestFolder();
+      final result = await useCase.execute(uri: folder.uri, name: folder.name);
 
       expect(result.length, equals(2));
       expect(result[0], isNotNull);
@@ -206,7 +210,8 @@ void main() {
         storageRepository: _FakeStorageRepository(),
       );
 
-      final result = await useCase.execute(folder: _createTestFolder());
+      final folder = _createTestFolder();
+      final result = await useCase.execute(uri: folder.uri, name: folder.name);
 
       expect(result.length, equals(3));
     });
@@ -220,7 +225,8 @@ void main() {
         storageRepository: _FakeStorageRepository(),
       );
 
-      final result = await useCase.execute(folder: _createTestFolder());
+      final folder = _createTestFolder();
+      final result = await useCase.execute(uri: folder.uri, name: folder.name);
 
       expect(result.length, equals(4));
     });
@@ -232,7 +238,8 @@ void main() {
         storageRepository: _FakeStorageRepository(),
       );
 
-      final result = await useCase.execute(folder: _createTestFolder());
+      final folder = _createTestFolder();
+      final result = await useCase.execute(uri: folder.uri, name: folder.name);
 
       expect(result.length, equals(4));
     });
@@ -246,7 +253,8 @@ void main() {
         storageRepository: _FakeStorageRepository(),
       );
 
-      final result = await useCase.execute(folder: _createTestFolder());
+      final folder = _createTestFolder();
+      final result = await useCase.execute(uri: folder.uri, name: folder.name);
 
       expect(result.length, equals(3));
       expect(result[0], isNull);
@@ -263,7 +271,8 @@ void main() {
         storageRepository: _FakeStorageRepository(),
       );
 
-      final result = await useCase.execute(folder: _createTestFolder());
+      final folder = _createTestFolder();
+      final result = await useCase.execute(uri: folder.uri, name: folder.name);
 
       // 各スロットのバイト列の先頭バイトがインデックスと一致
       for (var i = 0; i < 4; i++) {

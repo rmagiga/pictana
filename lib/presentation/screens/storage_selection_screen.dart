@@ -25,6 +25,7 @@ import '../providers/viewer_providers.dart';
 import '../widgets/favorite_list_section.dart';
 import '../widgets/favorite_navigation_handler.dart';
 import '../widgets/image_grid_tile.dart';
+import '../widgets/thumbnail_overlay.dart';
 
 /// ホーム画面
 ///
@@ -307,7 +308,7 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
           ),
         ),
         SizedBox(
-          height: 140, // スクロールバーの分少し高さを確保
+          height: 215, // 高さを拡張してサムネイルとスクロールバーを綺麗に収める
           child: Scrollbar(
             controller: _foldersScrollController,
             thumbVisibility: true,
@@ -329,69 +330,85 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  clipBehavior: Clip.antiAlias, // サムネイルが角丸にクリップされるように指定
                   child: Stack(
                     children: [
                       InkWell(
                         onTap: () => _handleRecentFolderNavigation(context, folder),
                         borderRadius: BorderRadius.circular(12),
-                        child: Container(
+                        child: SizedBox(
                           width: 180,
-                          padding: const EdgeInsets.all(12.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.folder_rounded,
-                                    size: 32,
-                                    color: Theme.of(context).colorScheme.primary,
-                                  ),
-                                  const Spacer(),
-                                  if (relativeTime.isNotEmpty)
-                                    Text(
-                                      relativeTime,
-                                      style: theme.textTheme.labelSmall?.copyWith(
-                                        color: theme.colorScheme.onSurfaceVariant,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                folder.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
+                              // 上半分: サムネイル画像
+                              SizedBox(
+                                height: 110,
+                                width: double.infinity,
+                                child: ThumbnailOverlay(
+                                  uri: folder.uri,
+                                  name: folder.name,
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                imageCountText.isNotEmpty ? imageCountText : '— 枚',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
+                              // 下半分: フォルダ情報
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        folder.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            imageCountText.isNotEmpty ? imageCountText : '— 枚',
+                                            style: theme.textTheme.bodySmall?.copyWith(
+                                              color: theme.colorScheme.onSurfaceVariant,
+                                            ),
+                                          ),
+                                          if (relativeTime.isNotEmpty)
+                                            Text(
+                                              relativeTime,
+                                              style: theme.textTheme.labelSmall?.copyWith(
+                                                color: theme.colorScheme.onSurfaceVariant,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
+                      // 右上の閉じるボタン（画像の上で見えやすいよう半透明背景）
                       Positioned(
-                        top: 4,
-                        right: 4,
+                        top: 6,
+                        right: 6,
                         child: Material(
-                          color: Colors.transparent,
+                          color: Colors.black.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(14),
                           child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
                             onTap: () => _deleteRecentFolder(folder),
-                            child: Padding(
-                              padding: const EdgeInsets.all(4.0),
+                            child: const Padding(
+                              padding: EdgeInsets.all(4.0),
                               child: Icon(
                                 Icons.close_rounded,
                                 size: 16,
-                                color: theme.colorScheme.onSurfaceVariant,
+                                color: Colors.white,
                               ),
                             ),
                           ),

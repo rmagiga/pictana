@@ -10,7 +10,6 @@ library;
 
 import 'dart:typed_data';
 
-import '../../../domain/entities/favorite_folder.dart';
 import '../../../domain/repositories/image_repository.dart';
 import '../../../domain/repositories/storage_repository.dart';
 import '../../../domain/repositories/thumbnail_repository.dart';
@@ -40,14 +39,15 @@ class GetFolderThumbnailsUseCase {
   /// 戻り値のリスト長は min(4, フォルダ内画像数) となる。
   /// スロット割り当て順序: [top-left, top-right, bottom-left, bottom-right]
   Future<List<Uint8List?>> execute({
-    required FavoriteFolder folder,
+    required String uri,
+    required String name,
     ThumbnailSizeOption size = ThumbnailSizeOption.medium,
   }) async {
     try {
-      // FavoriteFolder.uri から FolderEntry を構築（プラットフォーム依存のパースは Repository に委譲）
+      // uri から FolderEntry を構築（プラットフォーム依存のパースは Repository に委譲）
       final folderEntry = _storageRepository.restoreFolderFromUri(
-        uri: folder.uri,
-        name: folder.name,
+        uri: uri,
+        name: name,
       );
 
       // 先頭4枚の画像をファイル名昇順で取得

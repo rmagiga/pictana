@@ -96,7 +96,7 @@ void main() {
       expect(find.text('フォルダ2'), findsOneWidget);
       expect(find.text('file:///test/folder1'), findsOneWidget);
       expect(find.text('file:///test/folder2'), findsOneWidget);
-      expect(find.byIcon(Icons.folder_rounded), findsNWidgets(2));
+      expect(find.byType(Card), findsNWidgets(2));
     });
 
     testWidgets('リスト項目をタップした時、onFolderTap が呼ばれること', (tester) async {

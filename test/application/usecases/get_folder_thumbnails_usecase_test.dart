@@ -170,7 +170,8 @@ void main() {
             storageRepository: FakeStorageRepository(),
           );
 
-          final result = await useCase.execute(folder: createTestFolder());
+          final folder = createTestFolder();
+          final result = await useCase.execute(uri: folder.uri, name: folder.name);
 
           // 結果リストの長さは min(4, imageCount)
           final expectedLength = imageCount < 4 ? imageCount : 4;
@@ -198,7 +199,8 @@ void main() {
             storageRepository: FakeStorageRepository(),
           );
 
-          final result = await useCase.execute(folder: createTestFolder());
+          final folder = createTestFolder();
+          final result = await useCase.execute(uri: folder.uri, name: folder.name);
 
           // 各スロットのバイト列がインデックス順に割り当てられていることを検証
           for (var i = 0; i < result.length; i++) {
@@ -240,7 +242,8 @@ void main() {
           storageRepository: FakeStorageRepository(),
         );
 
-        final result = await useCase.execute(folder: createTestFolder());
+        final folder = createTestFolder();
+        final result = await useCase.execute(uri: folder.uri, name: folder.name);
 
         // 結果リストの長さは min(4, imageCount)
         expect(result.length, equals(slotCount));
@@ -267,7 +270,8 @@ void main() {
           storageRepository: FakeStorageRepository(),
         );
 
-        final result = await useCase.execute(folder: createTestFolder());
+        final folder = createTestFolder();
+        final result = await useCase.execute(uri: folder.uri, name: folder.name);
 
         // 空リスト = 全4スロットがプレースホルダー状態
         expect(result, isEmpty);
@@ -286,7 +290,8 @@ void main() {
           storageRepository: FakeStorageRepository(),
         );
 
-        final result = await useCase.execute(folder: createTestFolder());
+        final folder = createTestFolder();
+        final result = await useCase.execute(uri: folder.uri, name: folder.name);
 
         expect(
           result.length,

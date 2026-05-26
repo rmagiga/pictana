@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../domain/entities/favorite_folder.dart';
+
 import '../providers/folder_thumbnail_provider.dart';
 
 /// サムネイルオーバーレイ（2×2 グリッド版）
@@ -25,10 +25,17 @@ import '../providers/folder_thumbnail_provider.dart';
 /// - 失敗: 全スロットをプレースホルダー色で表示
 class ThumbnailOverlay extends ConsumerStatefulWidget {
   /// サムネイルオーバーレイを作成する
-  const ThumbnailOverlay({super.key, required this.folder});
+  const ThumbnailOverlay({
+    super.key,
+    required this.uri,
+    required this.name,
+  });
 
-  /// サムネイルを取得する対象フォルダ
-  final FavoriteFolder folder;
+  /// サムネイルを取得する対象フォルダの URI
+  final String uri;
+
+  /// サムネイルを取得する対象フォルダの名前
+  final String name;
 
   @override
   ConsumerState<ThumbnailOverlay> createState() => _ThumbnailOverlayState();
@@ -79,7 +86,7 @@ class _ThumbnailOverlayState extends ConsumerState<ThumbnailOverlay> {
   @override
   Widget build(BuildContext context) {
     final thumbnailsAsync = ref.watch(
-      getFolderThumbnailsProvider(widget.folder),
+      getFolderThumbnailsProvider(uri: widget.uri, name: widget.name),
     );
 
     return ClipRRect(

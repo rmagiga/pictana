@@ -44,7 +44,7 @@ final class GetFolderThumbnailsProvider
   /// 4. 結果を返す（空リストの場合もそのまま返す）
   GetFolderThumbnailsProvider._({
     required GetFolderThumbnailsFamily super.from,
-    required FavoriteFolder super.argument,
+    required ({String uri, String name}) super.argument,
   }) : super(
          retry: null,
          name: r'getFolderThumbnailsProvider',
@@ -60,7 +60,7 @@ final class GetFolderThumbnailsProvider
   String toString() {
     return r'getFolderThumbnailsProvider'
         ''
-        '($argument)';
+        '$argument';
   }
 
   @$internal
@@ -71,8 +71,8 @@ final class GetFolderThumbnailsProvider
 
   @override
   FutureOr<List<Uint8List?>> create(Ref ref) {
-    final argument = this.argument as FavoriteFolder;
-    return getFolderThumbnails(ref, argument);
+    final argument = this.argument as ({String uri, String name});
+    return getFolderThumbnails(ref, uri: argument.uri, name: argument.name);
   }
 
   @override
@@ -87,7 +87,7 @@ final class GetFolderThumbnailsProvider
 }
 
 String _$getFolderThumbnailsHash() =>
-    r'72a8f9628aad19b72b09b5a8e74662e80a898833';
+    r'89c42c76402040fcfc5ad180408c296f4091679f';
 
 /// 個別フォルダのサムネイルを最大4枚取得する Family Provider
 ///
@@ -98,7 +98,11 @@ String _$getFolderThumbnailsHash() =>
 /// 4. 結果を返す（空リストの場合もそのまま返す）
 
 final class GetFolderThumbnailsFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<Uint8List?>>, FavoriteFolder> {
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<List<Uint8List?>>,
+          ({String uri, String name})
+        > {
   GetFolderThumbnailsFamily._()
     : super(
         retry: null,
@@ -116,8 +120,13 @@ final class GetFolderThumbnailsFamily extends $Family
   /// 3. 取得結果をキャッシュに保存
   /// 4. 結果を返す（空リストの場合もそのまま返す）
 
-  GetFolderThumbnailsProvider call(FavoriteFolder folder) =>
-      GetFolderThumbnailsProvider._(argument: folder, from: this);
+  GetFolderThumbnailsProvider call({
+    required String uri,
+    required String name,
+  }) => GetFolderThumbnailsProvider._(
+    argument: (uri: uri, name: name),
+    from: this,
+  );
 
   @override
   String toString() => r'getFolderThumbnailsProvider';

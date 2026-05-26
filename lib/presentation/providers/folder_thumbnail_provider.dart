@@ -25,12 +25,13 @@ part 'folder_thumbnail_provider.g.dart';
 /// 4. 結果を返す（空リストの場合もそのまま返す）
 @riverpod
 Future<List<Uint8List?>> getFolderThumbnails(
-  Ref ref,
-  FavoriteFolder folder,
-) async {
+  Ref ref, {
+  required String uri,
+  required String name,
+}) async {
   // 1. キャッシュチェック
   final cache = ref.read(folderThumbnailCacheProvider.notifier);
-  final cached = cache.getList(folder.uri);
+  final cached = cache.getList(uri);
   if (cached != null) {
     return cached;
   }
@@ -42,11 +43,11 @@ Future<List<Uint8List?>> getFolderThumbnails(
     storageRepository: ref.read(storageRepositoryProvider),
   );
 
-  final result = await useCase.execute(folder: folder);
+  final result = await useCase.execute(uri: uri, name: name);
 
   // 3. 結果をキャッシュに保存（空でない場合のみ）
   if (result.isNotEmpty) {
-    cache.putList(folder.uri, result);
+    cache.putList(uri, result);
   }
 
   // 4. 結果を返す
