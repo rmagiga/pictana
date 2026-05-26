@@ -9,6 +9,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path/path.dart' as p;
+import 'package:desktop_drop/desktop_drop.dart';
 
 import '../../core/logging/app_logger.dart';
 import '../../core/utils/datetime_utils.dart';
@@ -47,6 +49,7 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
   late final ScrollController _mainScrollController;
   late final ScrollController _foldersScrollController;
   late final ScrollController _imagesScrollController;
+  bool _isDragging = false;
 
   @override
   void initState() {
@@ -236,55 +239,115 @@ class _StorageSelectionScreenState extends ConsumerState<StorageSelectionScreen>
     final theme = Theme.of(context);
     final isDesktop = Platform.isWindows;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      child: Material(
-        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.08),
+    Widget child = Material(
+      color: _isDragging
+          ? theme.colorScheme.primaryContainer.withValues(alpha: 0.2)
+          : theme.colorScheme.primaryContainer.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: () => _selectFolder(context),
         borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          onTap: () => _selectFolder(context),
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                width: 1.5,
-              ),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: _isDragging
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.primary.withValues(alpha: 0.2),
+              width: _isDragging ? 2.5 : 1.5,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.folder_open_rounded,
-                  size: 40,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.folder_open_rounded,
+                size: 40,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'フォルダを開く',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
                   color: theme.colorScheme.primary,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'フォルダを開く',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary,
-                  ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                isDesktop
+                    ? '画像が含まれるフォルダを選択、またはここにドラッグ＆ドロップして表示します'
+                    : '画像が含まれるフォルダを選択してギャラリーを表示します',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  isDesktop
-                      ? '画像が含まれるフォルダを選択してギャラリーを表示します\n(ドラッグ＆ドロップ対応予定)'
-                      : '画像が含まれるフォルダを選択してギャラリーを表示します',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       ),
+    );
+
+    if (isDesktop) {
+      child = DropTarget(
+        onDragEntered: (details) {
+          setState(() {
+            _isDragging = true;
+          });
+        },
+        onDragExited: (details) {
+          setState(() {
+            _isDragging = false;
+          });
+        },
+        onDragDone: (details) async {
+          setState(() {
+            _isDragging = false;
+          });
+          if (details.files.isNotEmpty) {
+            final file = details.files.first;
+            final path = file.path;
+            final isDir = await FileSystemEntity.isDirectory(path);
+            if (isDir) {
+              try {
+                final storageRepo = ref.read(storageRepositoryProvider);
+                final folder = storageRepo.restoreFolderFromUri(
+                  uri: path,
+                  name: p.basename(path).isEmpty ? path : p.basename(path),
+                );
+                // 選択されたフォルダをセットしてギャラリーへ
+                ref.read(currentFolderProvider.notifier).setFolder(folder);
+                if (context.mounted) {
+                  context.go(AppRoutes.galleryGrid);
+                }
+              } catch (e) {
+                appLogger.e('ドラッグ＆ドロップフォルダ設定エラー', error: e);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('フォルダの読み込みに失敗しました。')),
+                  );
+                }
+              }
+            } else {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('フォルダのみドロップ可能です。')),
+                );
+              }
+            }
+          }
+        },
+        child: child,
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: child,
     );
   }
 
