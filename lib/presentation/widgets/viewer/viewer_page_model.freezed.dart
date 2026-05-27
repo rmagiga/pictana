@@ -1,0 +1,285 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'viewer_page_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+/// @nodoc
+mixin _$ViewerPageModel {
+
+/// このページに含まれる画像エントリ（1枚または2枚）
+ List<ImageEntry> get entries;/// このページが見開き表示（2枚並び）されるかどうか
+ bool get isDoublePage;
+/// Create a copy of ViewerPageModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ViewerPageModelCopyWith<ViewerPageModel> get copyWith => _$ViewerPageModelCopyWithImpl<ViewerPageModel>(this as ViewerPageModel, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ViewerPageModel&&const DeepCollectionEquality().equals(other.entries, entries)&&(identical(other.isDoublePage, isDoublePage) || other.isDoublePage == isDoublePage));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(entries),isDoublePage);
+
+@override
+String toString() {
+  return 'ViewerPageModel(entries: $entries, isDoublePage: $isDoublePage)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ViewerPageModelCopyWith<$Res>  {
+  factory $ViewerPageModelCopyWith(ViewerPageModel value, $Res Function(ViewerPageModel) _then) = _$ViewerPageModelCopyWithImpl;
+@useResult
+$Res call({
+ List<ImageEntry> entries, bool isDoublePage
+});
+
+
+
+
+}
+/// @nodoc
+class _$ViewerPageModelCopyWithImpl<$Res>
+    implements $ViewerPageModelCopyWith<$Res> {
+  _$ViewerPageModelCopyWithImpl(this._self, this._then);
+
+  final ViewerPageModel _self;
+  final $Res Function(ViewerPageModel) _then;
+
+/// Create a copy of ViewerPageModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? entries = null,Object? isDoublePage = null,}) {
+  return _then(_self.copyWith(
+entries: null == entries ? _self.entries : entries // ignore: cast_nullable_to_non_nullable
+as List<ImageEntry>,isDoublePage: null == isDoublePage ? _self.isDoublePage : isDoublePage // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [ViewerPageModel].
+extension ViewerPageModelPatterns on ViewerPageModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ViewerPageModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ViewerPageModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ViewerPageModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _ViewerPageModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ViewerPageModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ViewerPageModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<ImageEntry> entries,  bool isDoublePage)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ViewerPageModel() when $default != null:
+return $default(_that.entries,_that.isDoublePage);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<ImageEntry> entries,  bool isDoublePage)  $default,) {final _that = this;
+switch (_that) {
+case _ViewerPageModel():
+return $default(_that.entries,_that.isDoublePage);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<ImageEntry> entries,  bool isDoublePage)?  $default,) {final _that = this;
+switch (_that) {
+case _ViewerPageModel() when $default != null:
+return $default(_that.entries,_that.isDoublePage);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _ViewerPageModel implements ViewerPageModel {
+  const _ViewerPageModel({required final  List<ImageEntry> entries, required this.isDoublePage}): _entries = entries;
+  
+
+/// このページに含まれる画像エントリ（1枚または2枚）
+ final  List<ImageEntry> _entries;
+/// このページに含まれる画像エントリ（1枚または2枚）
+@override List<ImageEntry> get entries {
+  if (_entries is EqualUnmodifiableListView) return _entries;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_entries);
+}
+
+/// このページが見開き表示（2枚並び）されるかどうか
+@override final  bool isDoublePage;
+
+/// Create a copy of ViewerPageModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ViewerPageModelCopyWith<_ViewerPageModel> get copyWith => __$ViewerPageModelCopyWithImpl<_ViewerPageModel>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ViewerPageModel&&const DeepCollectionEquality().equals(other._entries, _entries)&&(identical(other.isDoublePage, isDoublePage) || other.isDoublePage == isDoublePage));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_entries),isDoublePage);
+
+@override
+String toString() {
+  return 'ViewerPageModel(entries: $entries, isDoublePage: $isDoublePage)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ViewerPageModelCopyWith<$Res> implements $ViewerPageModelCopyWith<$Res> {
+  factory _$ViewerPageModelCopyWith(_ViewerPageModel value, $Res Function(_ViewerPageModel) _then) = __$ViewerPageModelCopyWithImpl;
+@override @useResult
+$Res call({
+ List<ImageEntry> entries, bool isDoublePage
+});
+
+
+
+
+}
+/// @nodoc
+class __$ViewerPageModelCopyWithImpl<$Res>
+    implements _$ViewerPageModelCopyWith<$Res> {
+  __$ViewerPageModelCopyWithImpl(this._self, this._then);
+
+  final _ViewerPageModel _self;
+  final $Res Function(_ViewerPageModel) _then;
+
+/// Create a copy of ViewerPageModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? entries = null,Object? isDoublePage = null,}) {
+  return _then(_ViewerPageModel(
+entries: null == entries ? _self._entries : entries // ignore: cast_nullable_to_non_nullable
+as List<ImageEntry>,isDoublePage: null == isDoublePage ? _self.isDoublePage : isDoublePage // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
+
+// dart format on

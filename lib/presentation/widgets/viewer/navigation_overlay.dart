@@ -25,6 +25,7 @@ class NavigationOverlay extends StatefulWidget {
     required this.isAnimating,
     required this.onPrevious,
     required this.onNext,
+    this.isRightToLeft = false,
   });
 
   /// 現在表示中の画像インデックス
@@ -41,6 +42,9 @@ class NavigationOverlay extends StatefulWidget {
 
   /// 次の画像に遷移するコールバック
   final VoidCallback onNext;
+
+  /// 右開き (RTL) かどうか
+  final bool isRightToLeft;
 
   @override
   State<NavigationOverlay> createState() => _NavigationOverlayState();
@@ -66,14 +70,24 @@ class _NavigationOverlayState extends State<NavigationOverlay> {
       widget.totalCount,
     );
 
+    // RTL（右開き）の場合、左右の矢印ボタンの表示条件とアクション、ツールチップを反転させる
+    final showLeft = widget.isRightToLeft ? canGoNext : canGoPrevious;
+    final showRight = widget.isRightToLeft ? canGoPrevious : canGoNext;
+
+    final leftAction = widget.isRightToLeft ? widget.onNext : widget.onPrevious;
+    final rightAction = widget.isRightToLeft ? widget.onPrevious : widget.onNext;
+
+    final leftTooltip = widget.isRightToLeft ? '次の画像' : '前の画像';
+    final rightTooltip = widget.isRightToLeft ? '前の画像' : '次の画像';
+
     return MouseRegion(
       opaque: false,
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: Stack(
         children: [
-          // 左矢印ボタン（前の画像）
-          if (canGoPrevious)
+          // 左矢印ボタン
+          if (showLeft)
             Positioned(
               left: _edgeInset,
               top: 0,
@@ -81,16 +95,16 @@ class _NavigationOverlayState extends State<NavigationOverlay> {
               child: Center(
                 child: _NavigationButton(
                   icon: Icons.chevron_left,
-                  tooltip: '前の画像',
+                  tooltip: leftTooltip,
                   isVisible: _isHovered,
                   isAnimating: widget.isAnimating,
-                  onPressed: widget.onPrevious,
+                  onPressed: leftAction,
                 ),
               ),
             ),
 
-          // 右矢印ボタン（次の画像）
-          if (canGoNext)
+          // 右矢印ボタン
+          if (showRight)
             Positioned(
               right: _edgeInset,
               top: 0,
@@ -98,10 +112,10 @@ class _NavigationOverlayState extends State<NavigationOverlay> {
               child: Center(
                 child: _NavigationButton(
                   icon: Icons.chevron_right,
-                  tooltip: '次の画像',
+                  tooltip: rightTooltip,
                   isVisible: _isHovered,
                   isAnimating: widget.isAnimating,
-                  onPressed: widget.onNext,
+                  onPressed: rightAction,
                 ),
               ),
             ),

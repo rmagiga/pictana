@@ -61,7 +61,7 @@ final class ViewerControllerProvider
   }
 }
 
-String _$viewerControllerHash() => r'4b812a6ca6e40bf000a9917770419cef7348a0f0';
+String _$viewerControllerHash() => r'de6eb4081f8dd63d6158a7a23f12d41fa446845b';
 
 /// ビューアの状態操作と通知を行うコントローラー
 

@@ -10,6 +10,7 @@ import '../../application/usecases/gallery/load_folder_images_usecase.dart';
 import '../../application/usecases/gallery/load_thumbnail_usecase.dart';
 import '../../application/usecases/gallery/sort_images_usecase.dart';
 import '../../application/usecases/gallery/index_exif_usecase.dart';
+import '../../application/usecases/viewer/image_size_resolve_usecase.dart';
 import 'storage_providers.dart';
 import '../../domain/entities/folder_entry.dart';
 import '../../domain/entities/image_entry.dart';
@@ -219,6 +220,8 @@ class GalleryImages extends _$GalleryImages {
       if (_currentFolder != null) {
         ref.read(indexExifUseCaseProvider).execute(_currentFolder!);
       }
+      // 画像解像度のパース処理をバックグラウンドで開始
+      ref.read(imageSizeResolveUseCaseProvider).execute(_buffer);
     });
   }
 

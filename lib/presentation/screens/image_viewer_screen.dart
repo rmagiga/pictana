@@ -16,6 +16,8 @@ import '../widgets/viewer/ctrl_wheel_zoom_handler.dart';
 import '../widgets/viewer/keyboard_navigation_handler.dart';
 import '../widgets/viewer/navigation_overlay.dart';
 import '../widgets/viewer/viewer_display_container.dart';
+import '../widgets/viewer/viewer_display_mode.dart';
+import '../widgets/viewer/viewer_settings_sheet.dart';
 
 class ImageViewerScreen extends ConsumerStatefulWidget {
   const ImageViewerScreen({super.key, required this.initialIndex});
@@ -126,23 +128,38 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
   }
 
   void _goToPreviousPage(ViewerController controller, ViewerState state, int targetIndex) {
-    if (targetIndex < 0) return;
-    _navigateToPage(controller, state, targetIndex);
+    controller.goToPrevious();
   }
 
   void _goToNextPage(ViewerController controller, ViewerState state, int targetIndex, int totalCount) {
-    if (targetIndex >= totalCount) return;
-    _navigateToPage(controller, state, targetIndex);
+    controller.goToNext();
+  }
+
+  void _showViewerSettings() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ViewerSettingsSheet(
+        initialIndex: widget.initialIndex,
+        totalCount: ref.read(galleryImagesProvider).value?.length ?? 0,
+      ),
+    );
   }
 
   void _navigateToPage(ViewerController controller, ViewerState state, int targetPage) {
     if (_isPageAnimating) {
-      final snappedPage = _pageController.page?.round() ?? state.currentIndex;
+      final snappedPage = _pageController.page?.round() ?? 
+          (state.displayMode == ViewerDisplayMode.double ? controller.currentPageIndex : state.currentIndex);
       _pageController.jumpToPage(snappedPage);
     }
 
     setState(() => _isPageAnimating = true);
-    controller.setCurrentIndex(targetPage);
+    if (state.displayMode == ViewerDisplayMode.double) {
+      controller.setCurrentPageIndex(targetPage);
+    } else {
+      controller.setCurrentIndex(targetPage);
+    }
+    
     _pageController
         .animateToPage(
           targetPage,
@@ -210,8 +227,11 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
 
           ref.listen<ViewerState>(provider, (prev, next) {
             if (prev != null && prev.currentIndex != next.currentIndex) {
-              if (!_isPageAnimating && _pageController.hasClients && _pageController.page?.round() != next.currentIndex) {
-                _pageController.jumpToPage(next.currentIndex);
+              final isDouble = next.displayMode == ViewerDisplayMode.double;
+              final targetPage = isDouble ? controller.currentPageIndex : next.currentIndex;
+              
+              if (!_isPageAnimating && _pageController.hasClients && _pageController.page?.round() != targetPage) {
+                _pageController.jumpToPage(targetPage);
               }
               _recordCurrentImageViewed();
             }
@@ -272,6 +292,11 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
                     ),
                     actions: [
                       IconButton(
+                        icon: const Icon(Icons.settings),
+                        onPressed: _showViewerSettings,
+                        tooltip: '表示設定',
+                      ),
+                      IconButton(
                         icon: const Icon(Icons.info_outline),
                         onPressed: () => _showImageInfo(currentImage),
                         tooltip: '画像情報',
@@ -301,7 +326,9 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
-                        '${currentIndex + 1} / ${images.length}',
+                        state.displayMode == ViewerDisplayMode.double
+                            ? '${controller.currentPageIndex + 1} / ${state.pages.length}'
+                            : '${currentIndex + 1} / ${images.length}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -315,25 +342,27 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
               // Windows: ナビゲーションオーバーレイ (矢印ボタン)
               if (Platform.isWindows)
                 NavigationOverlay(
-                  currentIndex: currentIndex,
-                  totalCount: images.length,
+                  currentIndex: state.displayMode == ViewerDisplayMode.double ? controller.currentPageIndex : currentIndex,
+                  totalCount: state.displayMode == ViewerDisplayMode.double ? state.pages.length : images.length,
                   isAnimating: _isPageAnimating,
                   onPrevious: () => _goToPreviousPage(controller, state, currentIndex - 1),
                   onNext: () => _goToNextPage(controller, state, currentIndex + 1, images.length),
+                  isRightToLeft: state.displayMode == ViewerDisplayMode.double && (state.folderSettings?.isRightToLeft ?? true),
                 ),
             ],
           );
 
           if (Platform.isWindows) {
             content = KeyboardNavigationHandler(
-              currentIndex: currentIndex,
-              totalCount: images.length,
+              currentIndex: state.displayMode == ViewerDisplayMode.double ? controller.currentPageIndex : currentIndex,
+              totalCount: state.displayMode == ViewerDisplayMode.double ? state.pages.length : images.length,
               isZoomed: state.isZoomed,
               onNavigate: (index) => _navigateToPage(controller, state, index),
               onToggleFavorite: _toggleFolderFavorite,
               onZoomIn: _zoomIn,
               onZoomOut: _zoomOut,
               onZoomReset: _zoomReset,
+              isRightToLeft: state.displayMode == ViewerDisplayMode.double && (state.folderSettings?.isRightToLeft ?? true),
               child: content,
             );
           }

@@ -14,6 +14,7 @@ import 'tables/recent_folders_table.dart';
 import 'tables/recent_images_table.dart';
 import 'tables/thumbnail_cache_table.dart';
 import 'tables/images_table.dart';
+import 'tables/folder_viewer_settings_table.dart';
 import '../../domain/value_objects/sort_option.dart';
 import '../../domain/repositories/image_repository.dart';
 
@@ -21,7 +22,7 @@ part 'app_database.g.dart';
 
 /// アプリ全体で使用するDriftデータベース
 @DriftDatabase(
-  tables: [RecentFolders, RecentImages, ThumbnailCaches, AppSettings, FavoriteFolders, Images],
+  tables: [RecentFolders, RecentImages, ThumbnailCaches, AppSettings, FavoriteFolders, Images, FolderViewerSettings],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -29,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -61,6 +62,10 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(images, images.exifCamera);
         await m.addColumn(images, images.exifGpsLatitude);
         await m.addColumn(images, images.exifGpsLongitude);
+      }
+      // v5 → v6: フォルダ別ビューア設定テーブルの追加
+      if (from < 6) {
+        await m.createTable(folderViewerSettings);
       }
     },
   );
@@ -406,6 +411,42 @@ class AppDatabase extends _$AppDatabase {
   /// 指定 EntryId の画像メタデータを取得する
   Future<ImageTableData?> getImageByEntryId(String entryId) =>
       (select(images)..where((t) => t.entryId.equals(entryId))).getSingleOrNull();
+
+  // --- FolderViewerSettings クエリ ---
+
+  /// 指定フォルダの設定を取得する
+  Future<FolderViewerSettingTableData?> getFolderViewerSetting(String folderUri) =>
+      (select(folderViewerSettings)..where((t) => t.folderUri.equals(folderUri))).getSingleOrNull();
+
+  /// フォルダ設定を保存する（Upsert）
+  Future<void> upsertFolderViewerSetting({
+    required String folderUri,
+    required String displayMode,
+    required bool isRightToLeft,
+    required bool hasCoverPage,
+  }) =>
+      into(folderViewerSettings).insertOnConflictUpdate(
+        FolderViewerSettingsCompanion.insert(
+          folderUri: folderUri,
+          displayMode: Value(displayMode),
+          isRightToLeft: Value(isRightToLeft),
+          hasCoverPage: Value(hasCoverPage),
+        ),
+      );
+
+  /// 画像の解像度（幅・高さ）を更新する
+  Future<void> updateImageSize({
+    required String entryId,
+    required int width,
+    required int height,
+  }) async {
+    await (update(images)..where((t) => t.entryId.equals(entryId))).write(
+      ImagesCompanion(
+        width: Value(width),
+        height: Value(height),
+      ),
+    );
+  }
 }
 
 

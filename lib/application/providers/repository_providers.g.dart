@@ -319,3 +319,59 @@ final class ExifProcessorProvider
 }
 
 String _$exifProcessorHash() => r'b172776d16e69666f3f3c3bca9563a6bc730fd0b';
+
+/// FolderViewerSettingsRepository Provider
+
+@ProviderFor(folderViewerSettingsRepository)
+final folderViewerSettingsRepositoryProvider =
+    FolderViewerSettingsRepositoryProvider._();
+
+/// FolderViewerSettingsRepository Provider
+
+final class FolderViewerSettingsRepositoryProvider
+    extends
+        $FunctionalProvider<
+          FolderViewerSettingsRepository,
+          FolderViewerSettingsRepository,
+          FolderViewerSettingsRepository
+        >
+    with $Provider<FolderViewerSettingsRepository> {
+  /// FolderViewerSettingsRepository Provider
+  FolderViewerSettingsRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'folderViewerSettingsRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$folderViewerSettingsRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<FolderViewerSettingsRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  FolderViewerSettingsRepository create(Ref ref) {
+    return folderViewerSettingsRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(FolderViewerSettingsRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<FolderViewerSettingsRepository>(
+        value,
+      ),
+    );
+  }
+}
+
+String _$folderViewerSettingsRepositoryHash() =>
+    r'f8d47ca58f566544c4018b96b67e3c100e2f24b7';

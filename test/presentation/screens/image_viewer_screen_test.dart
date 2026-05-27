@@ -38,6 +38,7 @@ import 'package:pictana/presentation/widgets/viewer/ctrl_wheel_zoom_handler.dart
 import 'package:pictana/presentation/widgets/viewer/keyboard_navigation_handler.dart';
 import 'package:pictana/presentation/widgets/viewer/navigation_overlay.dart';
 import 'package:pictana/presentation/widgets/viewer/swipe_direction_controller.dart';
+import 'package:pictana/presentation/widgets/viewer/viewer_page_model.dart';
 
 // ---------------------------------------------------------------------------
 // テスト用データ
@@ -101,6 +102,7 @@ class _FakePreloadAdjacentImagesUseCase extends PreloadAdjacentImagesUseCase {
     List<ImageEntry> entries,
     int currentIndex, {
     bool isMovingForward = true,
+    List<ViewerPageModel>? pages,
   }) async {
     // テスト用: 何もしない
   }

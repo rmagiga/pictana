@@ -5,6 +5,7 @@ import '../../../domain/entities/image_entry.dart';
 import '../../providers/viewer_controller_provider.dart';
 import 'viewer_display_mode.dart';
 import 'single_page_viewer.dart';
+import 'double_page_viewer.dart';
 
 /// 表示モードに応じて適切なビューアコンポーネントを切り替えるコンテナウィジェット
 class ViewerDisplayContainer extends ConsumerWidget {
@@ -38,7 +39,16 @@ class ViewerDisplayContainer extends ConsumerWidget {
           onZoomChanged: onZoomChanged,
         );
       case ViewerDisplayMode.double:
+        return DoublePageViewer(
+          images: images,
+          state: state,
+          controller: controller,
+          pageController: pageController,
+          transformationController: transformationController,
+          onZoomChanged: onZoomChanged,
+        );
       case ViewerDisplayMode.scroll:
+        // スクロールモードは現状シングル表示にフォールバック（将来実装）
         return SinglePageViewer(
           images: images,
           state: state,

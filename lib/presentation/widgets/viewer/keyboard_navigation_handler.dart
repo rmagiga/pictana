@@ -31,6 +31,7 @@ class KeyboardNavigationHandler extends StatefulWidget {
     this.onZoomIn,
     this.onZoomOut,
     this.onZoomReset,
+    this.isRightToLeft = false,
   });
 
   /// 子ウィジェット
@@ -59,6 +60,9 @@ class KeyboardNavigationHandler extends StatefulWidget {
 
   /// ズームリセットのコールバック
   final VoidCallback? onZoomReset;
+
+  /// 右開き (RTL) かどうか
+  final bool isRightToLeft;
 
   @override
   State<KeyboardNavigationHandler> createState() =>
@@ -174,7 +178,11 @@ class _KeyboardNavigationHandlerState extends State<KeyboardNavigationHandler> {
       widget.totalCount,
     );
 
-    if (isPreviousKey) {
+    // RTL（右開き）の場合、キーの左右の意味を反転させる
+    final actualPreviousAction = widget.isRightToLeft ? isNextKey : isPreviousKey;
+    final actualNextAction = widget.isRightToLeft ? isPreviousKey : isNextKey;
+
+    if (actualPreviousAction) {
       if (canGoPrevious) {
         widget.onNavigate(widget.currentIndex - 1);
       }
@@ -182,7 +190,7 @@ class _KeyboardNavigationHandlerState extends State<KeyboardNavigationHandler> {
       return KeyEventResult.handled;
     }
 
-    if (isNextKey) {
+    if (actualNextAction) {
       if (canGoNext) {
         widget.onNavigate(widget.currentIndex + 1);
       }

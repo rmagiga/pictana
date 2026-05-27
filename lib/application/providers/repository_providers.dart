@@ -11,8 +11,10 @@ import '../../domain/repositories/favorite_repository.dart';
 import '../../domain/repositories/image_repository.dart';
 import '../../domain/repositories/storage_repository.dart';
 import '../../domain/repositories/thumbnail_repository.dart';
+import '../../domain/repositories/folder_viewer_settings_repository.dart';
 import '../../infrastructure/database/app_database.dart';
 import '../../infrastructure/database/favorite_repository_impl.dart';
+import '../../infrastructure/database/folder_viewer_settings_repository_impl.dart';
 import '../../infrastructure/storage/common/exif_processor_impl.dart';
 import '../../infrastructure/storage/common/platform_storage_factory.dart';
 
@@ -76,3 +78,11 @@ FavoriteRepository favoriteRepository(Ref ref) {
 ExifProcessor exifProcessor(Ref ref) {
   return ExifProcessorImpl();
 }
+
+/// FolderViewerSettingsRepository Provider
+@Riverpod(keepAlive: true)
+FolderViewerSettingsRepository folderViewerSettingsRepository(Ref ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return FolderViewerSettingsRepositoryImpl(database: db);
+}
+

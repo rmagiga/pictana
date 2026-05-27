@@ -2880,6 +2880,356 @@ class ImagesCompanion extends UpdateCompanion<ImageTableData> {
   }
 }
 
+class $FolderViewerSettingsTable extends FolderViewerSettings
+    with TableInfo<$FolderViewerSettingsTable, FolderViewerSettingTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FolderViewerSettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _folderUriMeta = const VerificationMeta(
+    'folderUri',
+  );
+  @override
+  late final GeneratedColumn<String> folderUri = GeneratedColumn<String>(
+    'folder_uri',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _displayModeMeta = const VerificationMeta(
+    'displayMode',
+  );
+  @override
+  late final GeneratedColumn<String> displayMode = GeneratedColumn<String>(
+    'display_mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('single'),
+  );
+  static const VerificationMeta _isRightToLeftMeta = const VerificationMeta(
+    'isRightToLeft',
+  );
+  @override
+  late final GeneratedColumn<bool> isRightToLeft = GeneratedColumn<bool>(
+    'is_right_to_left',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_right_to_left" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _hasCoverPageMeta = const VerificationMeta(
+    'hasCoverPage',
+  );
+  @override
+  late final GeneratedColumn<bool> hasCoverPage = GeneratedColumn<bool>(
+    'has_cover_page',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("has_cover_page" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    folderUri,
+    displayMode,
+    isRightToLeft,
+    hasCoverPage,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'folder_viewer_settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FolderViewerSettingTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('folder_uri')) {
+      context.handle(
+        _folderUriMeta,
+        folderUri.isAcceptableOrUnknown(data['folder_uri']!, _folderUriMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_folderUriMeta);
+    }
+    if (data.containsKey('display_mode')) {
+      context.handle(
+        _displayModeMeta,
+        displayMode.isAcceptableOrUnknown(
+          data['display_mode']!,
+          _displayModeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_right_to_left')) {
+      context.handle(
+        _isRightToLeftMeta,
+        isRightToLeft.isAcceptableOrUnknown(
+          data['is_right_to_left']!,
+          _isRightToLeftMeta,
+        ),
+      );
+    }
+    if (data.containsKey('has_cover_page')) {
+      context.handle(
+        _hasCoverPageMeta,
+        hasCoverPage.isAcceptableOrUnknown(
+          data['has_cover_page']!,
+          _hasCoverPageMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {folderUri};
+  @override
+  FolderViewerSettingTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FolderViewerSettingTableData(
+      folderUri: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}folder_uri'],
+      )!,
+      displayMode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_mode'],
+      )!,
+      isRightToLeft: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_right_to_left'],
+      )!,
+      hasCoverPage: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}has_cover_page'],
+      )!,
+    );
+  }
+
+  @override
+  $FolderViewerSettingsTable createAlias(String alias) {
+    return $FolderViewerSettingsTable(attachedDatabase, alias);
+  }
+}
+
+class FolderViewerSettingTableData extends DataClass
+    implements Insertable<FolderViewerSettingTableData> {
+  /// フォルダの一意なURI
+  final String folderUri;
+
+  /// 表示モード ('single', 'double', 'scroll')
+  final String displayMode;
+
+  /// めくり方向が右から左 (RTL, 和書/漫画形式) かどうか
+  final bool isRightToLeft;
+
+  /// 最初の1ページを表紙（単一）として扱うかどうか
+  final bool hasCoverPage;
+  const FolderViewerSettingTableData({
+    required this.folderUri,
+    required this.displayMode,
+    required this.isRightToLeft,
+    required this.hasCoverPage,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['folder_uri'] = Variable<String>(folderUri);
+    map['display_mode'] = Variable<String>(displayMode);
+    map['is_right_to_left'] = Variable<bool>(isRightToLeft);
+    map['has_cover_page'] = Variable<bool>(hasCoverPage);
+    return map;
+  }
+
+  FolderViewerSettingsCompanion toCompanion(bool nullToAbsent) {
+    return FolderViewerSettingsCompanion(
+      folderUri: Value(folderUri),
+      displayMode: Value(displayMode),
+      isRightToLeft: Value(isRightToLeft),
+      hasCoverPage: Value(hasCoverPage),
+    );
+  }
+
+  factory FolderViewerSettingTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FolderViewerSettingTableData(
+      folderUri: serializer.fromJson<String>(json['folderUri']),
+      displayMode: serializer.fromJson<String>(json['displayMode']),
+      isRightToLeft: serializer.fromJson<bool>(json['isRightToLeft']),
+      hasCoverPage: serializer.fromJson<bool>(json['hasCoverPage']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'folderUri': serializer.toJson<String>(folderUri),
+      'displayMode': serializer.toJson<String>(displayMode),
+      'isRightToLeft': serializer.toJson<bool>(isRightToLeft),
+      'hasCoverPage': serializer.toJson<bool>(hasCoverPage),
+    };
+  }
+
+  FolderViewerSettingTableData copyWith({
+    String? folderUri,
+    String? displayMode,
+    bool? isRightToLeft,
+    bool? hasCoverPage,
+  }) => FolderViewerSettingTableData(
+    folderUri: folderUri ?? this.folderUri,
+    displayMode: displayMode ?? this.displayMode,
+    isRightToLeft: isRightToLeft ?? this.isRightToLeft,
+    hasCoverPage: hasCoverPage ?? this.hasCoverPage,
+  );
+  FolderViewerSettingTableData copyWithCompanion(
+    FolderViewerSettingsCompanion data,
+  ) {
+    return FolderViewerSettingTableData(
+      folderUri: data.folderUri.present ? data.folderUri.value : this.folderUri,
+      displayMode: data.displayMode.present
+          ? data.displayMode.value
+          : this.displayMode,
+      isRightToLeft: data.isRightToLeft.present
+          ? data.isRightToLeft.value
+          : this.isRightToLeft,
+      hasCoverPage: data.hasCoverPage.present
+          ? data.hasCoverPage.value
+          : this.hasCoverPage,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FolderViewerSettingTableData(')
+          ..write('folderUri: $folderUri, ')
+          ..write('displayMode: $displayMode, ')
+          ..write('isRightToLeft: $isRightToLeft, ')
+          ..write('hasCoverPage: $hasCoverPage')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(folderUri, displayMode, isRightToLeft, hasCoverPage);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FolderViewerSettingTableData &&
+          other.folderUri == this.folderUri &&
+          other.displayMode == this.displayMode &&
+          other.isRightToLeft == this.isRightToLeft &&
+          other.hasCoverPage == this.hasCoverPage);
+}
+
+class FolderViewerSettingsCompanion
+    extends UpdateCompanion<FolderViewerSettingTableData> {
+  final Value<String> folderUri;
+  final Value<String> displayMode;
+  final Value<bool> isRightToLeft;
+  final Value<bool> hasCoverPage;
+  final Value<int> rowid;
+  const FolderViewerSettingsCompanion({
+    this.folderUri = const Value.absent(),
+    this.displayMode = const Value.absent(),
+    this.isRightToLeft = const Value.absent(),
+    this.hasCoverPage = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FolderViewerSettingsCompanion.insert({
+    required String folderUri,
+    this.displayMode = const Value.absent(),
+    this.isRightToLeft = const Value.absent(),
+    this.hasCoverPage = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : folderUri = Value(folderUri);
+  static Insertable<FolderViewerSettingTableData> custom({
+    Expression<String>? folderUri,
+    Expression<String>? displayMode,
+    Expression<bool>? isRightToLeft,
+    Expression<bool>? hasCoverPage,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (folderUri != null) 'folder_uri': folderUri,
+      if (displayMode != null) 'display_mode': displayMode,
+      if (isRightToLeft != null) 'is_right_to_left': isRightToLeft,
+      if (hasCoverPage != null) 'has_cover_page': hasCoverPage,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FolderViewerSettingsCompanion copyWith({
+    Value<String>? folderUri,
+    Value<String>? displayMode,
+    Value<bool>? isRightToLeft,
+    Value<bool>? hasCoverPage,
+    Value<int>? rowid,
+  }) {
+    return FolderViewerSettingsCompanion(
+      folderUri: folderUri ?? this.folderUri,
+      displayMode: displayMode ?? this.displayMode,
+      isRightToLeft: isRightToLeft ?? this.isRightToLeft,
+      hasCoverPage: hasCoverPage ?? this.hasCoverPage,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (folderUri.present) {
+      map['folder_uri'] = Variable<String>(folderUri.value);
+    }
+    if (displayMode.present) {
+      map['display_mode'] = Variable<String>(displayMode.value);
+    }
+    if (isRightToLeft.present) {
+      map['is_right_to_left'] = Variable<bool>(isRightToLeft.value);
+    }
+    if (hasCoverPage.present) {
+      map['has_cover_page'] = Variable<bool>(hasCoverPage.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FolderViewerSettingsCompanion(')
+          ..write('folderUri: $folderUri, ')
+          ..write('displayMode: $displayMode, ')
+          ..write('isRightToLeft: $isRightToLeft, ')
+          ..write('hasCoverPage: $hasCoverPage, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2893,6 +3243,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $ImagesTable images = $ImagesTable(this);
+  late final $FolderViewerSettingsTable folderViewerSettings =
+      $FolderViewerSettingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2904,6 +3256,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     appSettings,
     favoriteFolders,
     images,
+    folderViewerSettings,
   ];
 }
 
@@ -4362,6 +4715,209 @@ typedef $$ImagesTableProcessedTableManager =
       ImageTableData,
       PrefetchHooks Function()
     >;
+typedef $$FolderViewerSettingsTableCreateCompanionBuilder =
+    FolderViewerSettingsCompanion Function({
+      required String folderUri,
+      Value<String> displayMode,
+      Value<bool> isRightToLeft,
+      Value<bool> hasCoverPage,
+      Value<int> rowid,
+    });
+typedef $$FolderViewerSettingsTableUpdateCompanionBuilder =
+    FolderViewerSettingsCompanion Function({
+      Value<String> folderUri,
+      Value<String> displayMode,
+      Value<bool> isRightToLeft,
+      Value<bool> hasCoverPage,
+      Value<int> rowid,
+    });
+
+class $$FolderViewerSettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $FolderViewerSettingsTable> {
+  $$FolderViewerSettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get folderUri => $composableBuilder(
+    column: $table.folderUri,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayMode => $composableBuilder(
+    column: $table.displayMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isRightToLeft => $composableBuilder(
+    column: $table.isRightToLeft,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get hasCoverPage => $composableBuilder(
+    column: $table.hasCoverPage,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FolderViewerSettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $FolderViewerSettingsTable> {
+  $$FolderViewerSettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get folderUri => $composableBuilder(
+    column: $table.folderUri,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayMode => $composableBuilder(
+    column: $table.displayMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isRightToLeft => $composableBuilder(
+    column: $table.isRightToLeft,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get hasCoverPage => $composableBuilder(
+    column: $table.hasCoverPage,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FolderViewerSettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FolderViewerSettingsTable> {
+  $$FolderViewerSettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get folderUri =>
+      $composableBuilder(column: $table.folderUri, builder: (column) => column);
+
+  GeneratedColumn<String> get displayMode => $composableBuilder(
+    column: $table.displayMode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isRightToLeft => $composableBuilder(
+    column: $table.isRightToLeft,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get hasCoverPage => $composableBuilder(
+    column: $table.hasCoverPage,
+    builder: (column) => column,
+  );
+}
+
+class $$FolderViewerSettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FolderViewerSettingsTable,
+          FolderViewerSettingTableData,
+          $$FolderViewerSettingsTableFilterComposer,
+          $$FolderViewerSettingsTableOrderingComposer,
+          $$FolderViewerSettingsTableAnnotationComposer,
+          $$FolderViewerSettingsTableCreateCompanionBuilder,
+          $$FolderViewerSettingsTableUpdateCompanionBuilder,
+          (
+            FolderViewerSettingTableData,
+            BaseReferences<
+              _$AppDatabase,
+              $FolderViewerSettingsTable,
+              FolderViewerSettingTableData
+            >,
+          ),
+          FolderViewerSettingTableData,
+          PrefetchHooks Function()
+        > {
+  $$FolderViewerSettingsTableTableManager(
+    _$AppDatabase db,
+    $FolderViewerSettingsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FolderViewerSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FolderViewerSettingsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$FolderViewerSettingsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> folderUri = const Value.absent(),
+                Value<String> displayMode = const Value.absent(),
+                Value<bool> isRightToLeft = const Value.absent(),
+                Value<bool> hasCoverPage = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FolderViewerSettingsCompanion(
+                folderUri: folderUri,
+                displayMode: displayMode,
+                isRightToLeft: isRightToLeft,
+                hasCoverPage: hasCoverPage,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String folderUri,
+                Value<String> displayMode = const Value.absent(),
+                Value<bool> isRightToLeft = const Value.absent(),
+                Value<bool> hasCoverPage = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FolderViewerSettingsCompanion.insert(
+                folderUri: folderUri,
+                displayMode: displayMode,
+                isRightToLeft: isRightToLeft,
+                hasCoverPage: hasCoverPage,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FolderViewerSettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FolderViewerSettingsTable,
+      FolderViewerSettingTableData,
+      $$FolderViewerSettingsTableFilterComposer,
+      $$FolderViewerSettingsTableOrderingComposer,
+      $$FolderViewerSettingsTableAnnotationComposer,
+      $$FolderViewerSettingsTableCreateCompanionBuilder,
+      $$FolderViewerSettingsTableUpdateCompanionBuilder,
+      (
+        FolderViewerSettingTableData,
+        BaseReferences<
+          _$AppDatabase,
+          $FolderViewerSettingsTable,
+          FolderViewerSettingTableData
+        >,
+      ),
+      FolderViewerSettingTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4378,4 +4934,6 @@ class $AppDatabaseManager {
       $$FavoriteFoldersTableTableManager(_db, _db.favoriteFolders);
   $$ImagesTableTableManager get images =>
       $$ImagesTableTableManager(_db, _db.images);
+  $$FolderViewerSettingsTableTableManager get folderViewerSettings =>
+      $$FolderViewerSettingsTableTableManager(_db, _db.folderViewerSettings);
 }
