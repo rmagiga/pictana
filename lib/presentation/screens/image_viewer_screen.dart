@@ -225,6 +225,21 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
           final currentIndex = state.currentIndex;
           final currentImage = images[currentIndex];
 
+          final isDouble = state.displayMode == ViewerDisplayMode.double;
+          String titleText = currentImage.name;
+          if (isDouble && state.pages.isNotEmpty) {
+            final pageIndex = controller.currentPageIndex;
+            if (pageIndex >= 0 && pageIndex < state.pages.length) {
+              final page = state.pages[pageIndex];
+              if (page.isDoublePage && page.entries.length >= 2) {
+                final isRtl = state.folderSettings?.isRightToLeft ?? true;
+                final entryLeft = isRtl ? page.entries[1] : page.entries[0];
+                final entryRight = isRtl ? page.entries[0] : page.entries[1];
+                titleText = '${entryLeft.name} - ${entryRight.name}';
+              }
+            }
+          }
+
           ref.listen<ViewerState>(provider, (prev, next) {
             if (prev != null && prev.currentIndex != next.currentIndex) {
               final isDouble = next.displayMode == ViewerDisplayMode.double;
@@ -287,8 +302,12 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
                     elevation: 0,
                     foregroundColor: Colors.white,
                     title: Text(
-                      currentImage.name,
-                      style: const TextStyle(fontSize: 16),
+                      titleText,
+                      style: TextStyle(
+                        fontSize: isDouble ? 14 : 16,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     actions: [
                       IconButton(
