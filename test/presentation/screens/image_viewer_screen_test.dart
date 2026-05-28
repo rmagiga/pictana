@@ -21,6 +21,11 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pictana/application/providers/repository_providers.dart';
+import 'package:pictana/domain/entities/folder_entry.dart';
+import 'package:pictana/domain/entities/folder_viewer_settings.dart';
+import 'package:pictana/domain/repositories/folder_viewer_settings_repository.dart';
+import 'package:pictana/domain/value_objects/viewer_display_mode.dart';
 import 'package:pictana/application/usecases/gallery/load_thumbnail_usecase.dart';
 import 'package:pictana/core/utils/cancel_token.dart';
 import 'package:pictana/application/usecases/settings/swipe_direction_setting.dart';
@@ -147,6 +152,33 @@ class _FakeGalleryImages extends GalleryImages {
   }
 }
 
+/// Fake FolderViewerSettingsRepository
+class _FakeFolderViewerSettingsRepository implements FolderViewerSettingsRepository {
+  final FolderViewerSettings? Function(String)? onGetSettings;
+  _FakeFolderViewerSettingsRepository({this.onGetSettings});
+
+  @override
+  Future<FolderViewerSettings?> getSettings(String folderUri) async {
+    return onGetSettings?.call(folderUri) ?? FolderViewerSettings(folderUri: folderUri);
+  }
+
+  @override
+  Future<void> saveSettings(FolderViewerSettings settings) async {
+    // No-op
+  }
+}
+
+class _FakeCurrentFolder extends CurrentFolder {
+  @override
+  FolderEntry? build() {
+    return FolderEntry(
+      id: EntryId.windows(r'C:\test'),
+      name: 'test',
+      uri: r'C:\test',
+    );
+  }
+}
+
 /// Fake SwipeDirectionSetting Provider
 class _FakeSwipeDirectionSetting extends SwipeDirectionSetting {
   @override
@@ -166,11 +198,17 @@ class _FakeSwipeDirectionSetting extends SwipeDirectionSetting {
 ///
 /// [initialIndex] で初期表示する画像のインデックスを指定する。
 /// [images] でテスト用画像リストを指定する（デフォルトは 3 枚）。
-Widget _createTestWidget({int initialIndex = 0, List<ImageEntry>? images}) {
+Widget _createTestWidget({
+  int initialIndex = 0,
+  List<ImageEntry>? images,
+  FolderViewerSettings? Function(String)? onGetSettings,
+}) {
   final testImages = images ?? _createTestImages();
 
   return ProviderScope(
     overrides: [
+      // currentFolderProvider: テスト用のダミーフォルダ
+      currentFolderProvider.overrideWith(() => _FakeCurrentFolder()),
       // galleryImagesProvider: テスト用画像リストを返す AsyncNotifier
       galleryImagesProvider.overrideWith(() => _FakeGalleryImages(testImages)),
       // preloadAdjacentImagesUseCaseProvider: No-op
@@ -192,6 +230,10 @@ Widget _createTestWidget({int initialIndex = 0, List<ImageEntry>? images}) {
       // swipeDirectionSettingProvider: デフォルト値
       swipeDirectionSettingProvider.overrideWith(
         () => _FakeSwipeDirectionSetting(),
+      ),
+      // folderViewerSettingsRepositoryProvider: モック
+      folderViewerSettingsRepositoryProvider.overrideWithValue(
+        _FakeFolderViewerSettingsRepository(onGetSettings: onGetSettings),
       ),
     ],
     child: MaterialApp(home: ImageViewerScreen(initialIndex: initialIndex)),
@@ -320,6 +362,45 @@ void main() {
       // chevron アイコンが表示されていないことを確認
       expect(find.byIcon(Icons.chevron_left), findsNothing);
       expect(find.byIcon(Icons.chevron_right), findsNothing);
+    });
+
+    testWidgets('見開きモードで2枚目の画像（インデックス1）を選択したとき、1枚目と2枚目の見開きが正しく表示される', (tester) async {
+      // 画面サイズを横長に設定する
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final fourImages = [
+        ..._createTestImages(),
+        ImageEntry(
+          id: EntryId.windows(r'C:\test\image4.png'),
+          name: 'image4.png',
+          extension: 'png',
+          size: 4096,
+          modifiedAt: DateTime(2024, 1, 4),
+          uri: r'C:\test\image4.png',
+          mimeType: ImageMimeType.png,
+        ),
+      ];
+
+      await tester.pumpWidget(_createTestWidget(
+        initialIndex: 1,
+        images: fourImages,
+        onGetSettings: (uri) => FolderViewerSettings(
+          folderUri: uri,
+          displayMode: ViewerDisplayMode.double,
+          hasCoverPage: false,
+          isRightToLeft: false,
+        ),
+      ));
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('image1.jpg - image2.png'), findsOneWidget);
+      expect(find.text('1 / 2'), findsOneWidget);
     });
   });
 }

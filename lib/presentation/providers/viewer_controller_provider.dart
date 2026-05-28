@@ -18,6 +18,7 @@ class ViewerState {
     required this.displayMode,
     this.pages = const [],
     this.folderSettings,
+    this.isInitialized = false,
   });
 
   /// 現在表示中の画像インデックス
@@ -41,6 +42,8 @@ class ViewerState {
   /// フォルダ固有の設定
   final FolderViewerSettings? folderSettings;
 
+  final bool isInitialized;
+
   ViewerState copyWith({
     int? currentIndex,
     int? totalCount,
@@ -49,6 +52,7 @@ class ViewerState {
     ViewerDisplayMode? displayMode,
     List<ViewerPageModel>? pages,
     FolderViewerSettings? folderSettings,
+    bool? isInitialized,
   }) {
     return ViewerState(
       currentIndex: currentIndex ?? this.currentIndex,
@@ -58,6 +62,7 @@ class ViewerState {
       displayMode: displayMode ?? this.displayMode,
       pages: pages ?? this.pages,
       folderSettings: folderSettings ?? this.folderSettings,
+      isInitialized: isInitialized ?? this.isInitialized,
     );
   }
 }
@@ -73,6 +78,7 @@ class ViewerController extends _$ViewerController {
       isOverlayVisible: true,
       isZoomed: false,
       displayMode: ViewerDisplayMode.single,
+      isInitialized: false,
     );
 
     // 設定ロード処理をバックグラウンド実行
@@ -84,7 +90,10 @@ class ViewerController extends _$ViewerController {
   /// 現在のフォルダ設定と画像一覧を取得して、初期状態の pages を構築する
   Future<void> _loadSettings() async {
     final folder = ref.read(currentFolderProvider);
-    if (folder == null) return;
+    if (folder == null) {
+      state = state.copyWith(isInitialized: true);
+      return;
+    }
 
     final settings = await ref
         .read(getFolderViewerSettingsUseCaseProvider.notifier)
@@ -103,6 +112,7 @@ class ViewerController extends _$ViewerController {
       folderSettings: settings,
       displayMode: settings.displayMode,
       pages: pages,
+      isInitialized: true,
     );
   }
 

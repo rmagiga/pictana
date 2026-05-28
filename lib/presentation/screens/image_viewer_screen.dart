@@ -29,7 +29,7 @@ class ImageViewerScreen extends ConsumerStatefulWidget {
 }
 
 class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
-  late PageController _pageController;
+  PageController? _pageController;
   bool _isPageAnimating = false;
   double _currentScale = 1.0;
   final TransformationController _transformationController =
@@ -38,7 +38,6 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: widget.initialIndex);
     _transformationController.addListener(_onTransformChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _recordCurrentImageViewed();
@@ -49,7 +48,7 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
   void dispose() {
     _transformationController.removeListener(_onTransformChanged);
     _transformationController.dispose();
-    _pageController.dispose();
+    _pageController?.dispose();
     super.dispose();
   }
 
@@ -147,10 +146,11 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
   }
 
   void _navigateToPage(ViewerController controller, ViewerState state, int targetPage) {
+    if (_pageController == null) return;
     if (_isPageAnimating) {
-      final snappedPage = _pageController.page?.round() ?? 
+      final snappedPage = _pageController!.page?.round() ?? 
           (state.displayMode == ViewerDisplayMode.double ? controller.currentPageIndex : state.currentIndex);
-      _pageController.jumpToPage(snappedPage);
+      _pageController!.jumpToPage(snappedPage);
     }
 
     setState(() => _isPageAnimating = true);
@@ -160,7 +160,7 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
       controller.setCurrentIndex(targetPage);
     }
     
-    _pageController
+    _pageController!
         .animateToPage(
           targetPage,
           duration: const Duration(milliseconds: 200),
@@ -222,6 +222,19 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
           final state = ref.watch(provider);
           final controller = ref.read(provider.notifier);
 
+          if (!state.isInitialized) {
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            );
+          }
+
+          if (_pageController == null) {
+            final initialPage = state.displayMode == ViewerDisplayMode.double
+                ? controller.currentPageIndex
+                : state.currentIndex;
+            _pageController = PageController(initialPage: initialPage);
+          }
+
           final currentIndex = state.currentIndex;
           final currentImage = images[currentIndex];
 
@@ -245,8 +258,8 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
               final isDouble = next.displayMode == ViewerDisplayMode.double;
               final targetPage = isDouble ? controller.currentPageIndex : next.currentIndex;
               
-              if (!_isPageAnimating && _pageController.hasClients && _pageController.page?.round() != targetPage) {
-                _pageController.jumpToPage(targetPage);
+              if (_pageController != null && !_isPageAnimating && _pageController!.hasClients && _pageController!.page?.round() != targetPage) {
+                _pageController!.jumpToPage(targetPage);
               }
               _recordCurrentImageViewed();
             }
@@ -258,7 +271,7 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
               images: images,
               state: state,
               controller: controller,
-              pageController: _pageController,
+              pageController: _pageController!,
               transformationController: _transformationController,
               onZoomChanged: (zoomed) => controller.setZoomed(zoomed),
             ),
