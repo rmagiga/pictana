@@ -192,12 +192,12 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
     _transformationController.value = matrix;
   }
 
-  void _showImageInfo(ImageEntry image) {
+  void _showImageInfo(List<ImageEntry> images) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (context) => ImageInfoSheet(image: image),
+      builder: (context) => ImageInfoSheet(images: images),
     );
   }
 
@@ -333,7 +333,21 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.info_outline),
-                        onPressed: () => _showImageInfo(currentImage),
+                        onPressed: () {
+                          List<ImageEntry> targetImages;
+                          if (state.displayMode == ViewerDisplayMode.double &&
+                              state.pages.isNotEmpty) {
+                            final pageIndex = controller.currentPageIndex;
+                            if (pageIndex >= 0 && pageIndex < state.pages.length) {
+                              targetImages = state.pages[pageIndex].entries;
+                            } else {
+                              targetImages = [currentImage];
+                            }
+                          } else {
+                            targetImages = [currentImage];
+                          }
+                          _showImageInfo(targetImages);
+                        },
                         tooltip: '画像情報',
                       ),
                     ],

@@ -11,15 +11,26 @@ import '../providers/viewer_providers.dart';
 class ImageInfoSheet extends ConsumerWidget {
   const ImageInfoSheet({
     super.key,
-    required this.image,
+    required this.images,
   });
 
-  final ImageEntry image;
+  final List<ImageEntry> images;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (images.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    if (images.length == 1) {
+      return _buildSingleInfo(context, ref, images.first);
+    }
+
+    return _buildDoubleInfo(context, ref);
+  }
+
+  Widget _buildSingleInfo(BuildContext context, WidgetRef ref, ImageEntry image) {
     final theme = Theme.of(context);
-    // メタデータを再取得（EXIFなどより正確な情報があれば更新される）
     final metadataAsync = ref.watch(imageMetadataProvider(image));
 
     return Container(
@@ -60,6 +71,86 @@ class ImageInfoSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDoubleInfo(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+
+    return DefaultTabController(
+      length: images.length,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 16.0),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.75,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '画像情報',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TabBar(
+                labelColor: theme.colorScheme.primary,
+                unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
+                indicatorSize: TabBarIndicatorSize.tab,
+                tabs: images.map((img) {
+                  return Tab(
+                    child: Text(
+                      img.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+              Flexible(
+                child: TabBarView(
+                  children: images.map((img) {
+                    return Consumer(
+                      builder: (context, ref, _) {
+                        final metadataAsync = ref.watch(imageMetadataProvider(img));
+                        return SingleChildScrollView(
+                          child: metadataAsync.when(
+                            data: (metadata) => _InfoList(image: metadata),
+                            loading: () => const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(32.0),
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                            error: (_, st) => _InfoList(image: img),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
