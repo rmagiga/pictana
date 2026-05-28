@@ -254,12 +254,15 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
           }
 
           ref.listen<ViewerState>(provider, (prev, next) {
-            if (prev != null && prev.currentIndex != next.currentIndex) {
+            if (prev != null && (prev.currentIndex != next.currentIndex || prev.displayMode != next.displayMode)) {
               final isDouble = next.displayMode == ViewerDisplayMode.double;
               final targetPage = isDouble ? controller.currentPageIndex : next.currentIndex;
               
-              if (_pageController != null && !_isPageAnimating && _pageController!.hasClients && _pageController!.page?.round() != targetPage) {
-                _pageController!.jumpToPage(targetPage);
+              if (_pageController != null && _pageController!.hasClients) {
+                final isModeChanged = prev.displayMode != next.displayMode;
+                if (isModeChanged || (!_isPageAnimating && _pageController!.page?.round() != targetPage)) {
+                  _pageController!.jumpToPage(targetPage);
+                }
               }
               _recordCurrentImageViewed();
             }

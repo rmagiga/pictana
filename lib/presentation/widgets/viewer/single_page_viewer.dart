@@ -33,6 +33,7 @@ class SinglePageViewer extends ConsumerWidget {
     Widget itemBuilder(BuildContext context, int index) {
       final image = images[index];
       return InteractiveImageView(
+        key: ValueKey('single_image_${index}_${image.id.rawValue}'),
         image: image,
         transformationController: Platform.isWindows && index == state.currentIndex
             ? transformationController

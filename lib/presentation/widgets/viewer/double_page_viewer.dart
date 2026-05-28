@@ -63,9 +63,11 @@ class DoublePageViewer extends ConsumerWidget {
         final entryRight = isRtl ? page.entries[0] : page.entries[1];
 
         return Row(
+          key: ValueKey('double_page_${pageIndex}_${entryLeft.id.rawValue}_${entryRight.id.rawValue}'),
           children: [
             Expanded(
               child: InteractiveImageView(
+                key: ValueKey('image_left_${entryLeft.id.rawValue}'),
                 image: entryLeft,
                 // Windowsかつ現在のアクティブ画像と同じ場合のみtransformationControllerを適用
                 transformationController: Platform.isWindows && entryLeft.id.rawValue == images[state.currentIndex].id.rawValue
@@ -76,6 +78,7 @@ class DoublePageViewer extends ConsumerWidget {
             ),
             Expanded(
               child: InteractiveImageView(
+                key: ValueKey('image_right_${entryRight.id.rawValue}'),
                 image: entryRight,
                 transformationController: Platform.isWindows && entryRight.id.rawValue == images[state.currentIndex].id.rawValue
                     ? transformationController
@@ -90,7 +93,9 @@ class DoublePageViewer extends ConsumerWidget {
       // 単一ページ表示（表紙、横長画像、端数）
       final image = page.entries.first;
       return Center(
+        key: ValueKey('single_page_${pageIndex}_${image.id.rawValue}'),
         child: InteractiveImageView(
+          key: ValueKey('image_center_${image.id.rawValue}'),
           image: image,
           transformationController: Platform.isWindows && image.id.rawValue == images[state.currentIndex].id.rawValue
               ? transformationController
