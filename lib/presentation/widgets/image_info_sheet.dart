@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/image_entry.dart';
@@ -74,22 +75,22 @@ class _InfoList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildRow('ファイル名', image.name),
-        _buildRow('サイズ', _formatBytes(image.size)),
-        _buildRow('形式', image.extension.toUpperCase()),
-        _buildRow('解像度', image.resolutionString),
+        _buildRow(context, 'ファイル名', image.name),
+        _buildRow(context, 'サイズ', _formatBytes(image.size)),
+        _buildRow(context, '形式', image.extension.toUpperCase()),
+        _buildRow(context, '解像度', image.resolutionString),
         if (image.createdAt != null)
-          _buildRow('作成日時', _formatDate(image.createdAt!)),
-        _buildRow('更新日時', _formatDate(image.modifiedAt)),
+          _buildRow(context, '作成日時', _formatDate(image.createdAt!)),
+        _buildRow(context, '更新日時', _formatDate(image.modifiedAt)),
         const SizedBox(height: 8),
-        _buildRow('パス', image.uri),
+        _buildRow(context, 'パス', image.uri),
       ],
     );
   }
 
-  Widget _buildRow(String label, String value) {
+  Widget _buildRow(BuildContext context, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.only(bottom: 12.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -105,10 +106,28 @@ class _InfoList extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: Text(
+            child: SelectableText(
               value,
               style: const TextStyle(fontWeight: FontWeight.w500),
             ),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: const Icon(Icons.copy, size: 16),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: value));
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('$labelをコピーしました'),
+                    duration: const Duration(milliseconds: 800),
+                  ),
+                );
+              }
+            },
+            tooltip: '$labelをコピー',
           ),
         ],
       ),

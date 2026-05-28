@@ -3,6 +3,7 @@
 // バイトデータから EXIF Orientation タグを解析し、
 // 回転角度を返す実装クラス。
 import 'package:exif/exif.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pictana/domain/repositories/exif_processor.dart';
 import 'package:pictana/domain/value_objects/exif_rotation.dart';
 
@@ -303,6 +304,10 @@ class ExifProcessorImpl implements ExifProcessor {
 
   @override
   Future<ExifMetadata> extractMetadata(List<int> bytes) async {
+    return compute(_extractMetadataInIsolate, bytes);
+  }
+
+  static Future<ExifMetadata> _extractMetadataInIsolate(List<int> bytes) async {
     try {
       final tags = await readExifFromBytes(bytes);
       if (tags.isEmpty) return ExifMetadata.empty;
@@ -341,11 +346,11 @@ class ExifProcessorImpl implements ExifProcessor {
       }
 
       // 3. GPS座標
-      final latitude = _parseGpsCoordinate(
+      final latitude = _parseGpsCoordinateStatic(
         tags['GPS GPSLatitude'],
         tags['GPS GPSLatitudeRef'],
       );
-      final longitude = _parseGpsCoordinate(
+      final longitude = _parseGpsCoordinateStatic(
         tags['GPS GPSLongitude'],
         tags['GPS GPSLongitudeRef'],
       );
@@ -361,7 +366,7 @@ class ExifProcessorImpl implements ExifProcessor {
     }
   }
 
-  double? _parseGpsCoordinate(IfdTag? tag, IfdTag? refTag) {
+  static double? _parseGpsCoordinateStatic(IfdTag? tag, IfdTag? refTag) {
     if (tag == null) return null;
     final values = tag.values.toList();
     if (values.length < 3) return null;

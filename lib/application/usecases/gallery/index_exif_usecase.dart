@@ -39,7 +39,7 @@ class IndexExifUseCase {
 
       // 非同期で1枚ずつ処理する (UIスレッドを占有しないよう遅延を入れつつ処理)
       // I/O を伴うため、一括処理ではなく逐次非同期実行にする
-      _runIndexing(missingExifImages);
+      await _runIndexing(missingExifImages);
     } catch (e, st) {
       appLogger.w('EXIF インデックス処理起動に失敗しました', error: e, stackTrace: st);
     }
