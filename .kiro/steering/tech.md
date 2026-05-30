@@ -15,11 +15,14 @@
 | コード生成 | freezed, json_serializable, riverpod_generator, drift_dev | イミュータブルモデル・Provider 自動生成 |
 | データベース | drift, sqlite3_flutter_libs | ローカル SQLite DB |
 | 画像表示 | extended_image | ズーム・ジェスチャー対応画像ウィジェット |
+| 画像メタデータ | exif | EXIF 情報の読み取り |
 | キャッシュ | flutter_cache_manager | サムネイル等のファイルキャッシュ |
 | ルーティング | go_router | 宣言的ルーティング |
 | ファイル選択 | file_picker | ストレージルート選択 |
-| UI エフェクト | shimmer | ローディングプレースホルダー |
+| ドラッグ&ドロップ | desktop_drop | デスクトップでのファイルドロップ対応 |
+| UI エフェクト | shimmer, skeletonizer | ローディングプレースホルダー・スケルトン |
 | ユーティリティ | path, path_provider, collection, logger | パス操作・ログ |
+| モノレポ管理 | melos (dev) | ワークスペース管理 |
 | テスト (PBT) | glados (git) | Property-based testing |
 
 ## ビルドシステム
@@ -54,7 +57,6 @@ flutter build windows
 ## Lint 設定
 
 - `package:flutter_lints/flutter.yaml` を基本ルールとして使用
-- `custom_lint` + `riverpod_lint` によるカスタムリント有効
 
 ## コード生成ファイル
 

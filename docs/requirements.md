@@ -4,7 +4,7 @@
 
 ## 1.1 目的
 
-Androidを主軸とし、Windowsでも動作する高性能な画像参照アプリを開発する。
+ローカルストレージ上の画像を閲覧・管理するための Flutter デスクトップ/モバイルアプリケーション。
 
 本アプリは以下を重視する。
 
@@ -27,10 +27,12 @@ Androidを主軸とし、Windowsでも動作する高性能な画像参照アプ
 
 | 項目 | 内容 |
 |---|---|
+| Dart SDK | ^3.11.5 |
 | Flutter | stable 最新 |
-| Dart | stable 最新 |
-| Android | Android 14+ |
+| Android | Android 14+ (API 34) |
 | Windows | Windows 11 |
+| UI フレームワーク | Material Design 3 |
+| パッケージ名 | `pictana` |
 
 ---
 
@@ -81,7 +83,8 @@ OS差異を吸収可能な構造とする。
 |---|---|
 | flutter_riverpod | 状態管理 |
 | hooks_riverpod | Hook統合 |
-| flutter_hooks | Hook |
+| flutter_hooks | HookWidget によるステートフルロジック再利用 |
+| riverpod_annotation | @riverpod によるコード生成 Provider |
 
 ---
 
@@ -89,8 +92,8 @@ OS差異を吸収可能な構造とする。
 
 | ライブラリ | 用途 |
 |---|---|
-| extended_image | 画像表示/zoom/pan |
-| photo_view | 必要時のみ検討 |
+| extended_image | 画像表示/zoom/pan/gesture/cache |
+| exif | EXIF メタデータ読み取り |
 
 extended_image を主軸とする。
 
@@ -117,11 +120,13 @@ extended_image を主軸とする。
 
 ## 4.4 Android Storage
 
-| ライブラリ | 用途 |
-|---|---|
-| saf_stream | SAF stream access |
+Androidネイティブ側は Kotlin 実装。
 
-Androidネイティブ側は Kotlin 実装を許容する。
+- SAF (Storage Access Framework) による `ACTION_OPEN_DOCUMENT_TREE`
+- `ContentResolver.query()` によるカーソルベース高速列挙
+- `ContentResolver.loadThumbnail()` (API 29+) によるサムネイル取得
+- `takePersistableUriPermission()` によるパーミッション永続化
+- MethodChannel / EventChannel によるFlutter連携
 
 ---
 
@@ -137,15 +142,43 @@ Androidネイティブ側は Kotlin 実装を許容する。
 
 | ライブラリ | 用途 |
 |---|---|
-| freezed | immutable model |
-| json_serializable | serialization |
+| freezed / freezed_annotation | immutable model |
+| json_serializable / json_annotation | serialization |
+| riverpod_generator | Provider コード生成 |
+| drift_dev | Drift コード生成 |
 | path | path utility |
-| collection | utility |
+| path_provider | プラットフォーム別パス取得 |
+| collection | コレクションユーティリティ |
 | logger | logging |
+| go_router | 宣言的ルーティング |
+| file_picker | OS標準フォルダ選択ダイアログ |
+| desktop_drop | デスクトップでのファイルドロップ対応 |
+| shimmer | ローディングプレースホルダー |
+| skeletonizer | スケルトンUI |
 
 ---
 
-## 4.7 将来拡張デコーダー
+## 4.7 テスト
+
+| ライブラリ | 用途 |
+|---|---|
+| flutter_test | 標準テストフレームワーク |
+| glados (git) | Property-based testing |
+
+---
+
+## 4.8 ビルド・開発ツール
+
+| ライブラリ | 用途 |
+|---|---|
+| build_runner | コード生成実行 |
+| melos | モノレポ管理 |
+| flutter_lints | Lint ルール |
+| flutter_launcher_icons | アプリアイコン生成 |
+
+---
+
+## 4.9 将来拡張デコーダー
 
 ### 将来検討
 
@@ -164,6 +197,15 @@ Androidネイティブ側は Kotlin 実装を許容する。
 Domain/Application層は decoder 実装へ依存しない。
 
 Infrastructure層で切り替え可能にする。
+
+---
+
+# 5. 言語方針
+
+- コード内コメント・ドキュメンテーションコメントは日本語
+- UI テキストは日本語
+- 変数名・クラス名・関数名は英語（Dart 慣例に従う）
+- AI への応答・コミットメッセージも日本語
 
 ---
 

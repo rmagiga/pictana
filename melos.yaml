@@ -1,4 +1,4 @@
-name: optrig
+name: pictana
 
 packages:
   - .
@@ -37,11 +37,11 @@ scripts:
     description: Windows向けのリリースビルドを生成します。
 
   build_runner:
-    run: dart run build_runner build -d
+    run: dart run build_runner build --delete-conflicting-outputs
     description: コード生成（build_runner）を実行します。
 
   watch:
-    run: dart run build_runner watch -d
+    run: dart run build_runner watch --delete-conflicting-outputs
     description: ファイル変更を監視し、自動でコード生成を実行します。
 
   icon:
@@ -51,3 +51,4 @@ scripts:
   clean:
     run: flutter clean && dart run build_runner clean
     description: Flutterのビルド生成物およびbuild_runnerのキャッシュをクリアします。
+

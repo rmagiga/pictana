@@ -4,16 +4,10 @@
 
 ## 7.1 採用アーキテクチャ
 
-DDD寄り Clean Architecture を採用する。
+DDD寄り Clean Architecture（レイヤードアーキテクチャ）を採用する。依存方向は外側から内側へ。
 
 ```text
-presentation
-  ↓
-application
-  ↓
-domain
-  ↓
-infrastructure
+presentation → application → domain ← infrastructure
 ```
 
 ---
@@ -57,40 +51,37 @@ Application層は抽象Interfaceへ依存する。
 
 ```text
 lib/
- ├ core/
- │   ├ constants/
- │   ├ errors/
- │   ├ extensions/
- │   ├ logging/
- │   └ utils/
- │
- ├ domain/
- │   ├ entities/
- │   ├ repositories/
- │   ├ value_objects/
- │   └ services/
- │
- ├ application/
- │   ├ usecases/
- │   ├ dto/
- │   └ providers/
- │
- ├ infrastructure/
- │   ├ storage/
- │   │   ├ android/
- │   │   ├ windows/
- │   │   └ common/
- │   ├ database/
- │   ├ cache/
- │   └ repositories/
- │
- ├ presentation/
- │   ├ screens/
- │   ├ widgets/
- │   ├ providers/
- │   └ themes/
- │
- └ main.dart
+├── main.dart                    # エントリーポイント
+├── core/                        # 横断的関心事
+│   ├── constants/               # アプリ定数
+│   ├── errors/                  # 例外クラス（StorageDisconnected 等）
+│   ├── extensions/              # Dart 拡張メソッド
+│   ├── logging/                 # ロガー設定
+│   └── utils/                   # ユーティリティ
+├── domain/                      # ドメイン層（ビジネスルール）
+│   ├── entities/                # エンティティ（freezed で定義）
+│   ├── repositories/            # リポジトリインターフェース
+│   └── value_objects/           # 値オブジェクト（EntryId 等）
+├── application/                 # アプリケーション層
+│   ├── providers/               # リポジトリ DI 用 Provider
+│   └── usecases/                # ユースケース（機能別サブフォルダ）
+│       ├── favorites/
+│       ├── gallery/
+│       ├── settings/
+│       ├── storage/
+│       └── viewer/
+├── infrastructure/              # インフラ層（外部依存の実装）
+│   ├── database/                # Drift DB 定義
+│   └── storage/                 # ストレージアクセス実装
+│       ├── android/             # Android SAF 固有実装
+│       ├── common/              # プラットフォーム共通ファクトリ
+│       └── windows/             # Windows 固有実装
+├── presentation/                # プレゼンテーション層
+│   ├── providers/               # UI 状態管理 Provider
+│   ├── screens/                 # 画面ウィジェット
+│   ├── themes/                  # テーマ定義
+│   └── widgets/                 # 再利用可能ウィジェット
+└── router/                      # GoRouter ルート定義
 ```
 
 ---
@@ -226,18 +217,21 @@ Image.memory(fullImage)
 
 # 14. Provider設計
 
-## 14.1 Riverpod分類
+## 14.1 Riverpod + riverpod_generator
 
-| Provider | 用途 |
+`@riverpod` アノテーションによるコード生成 Provider を使用する。
+
+| Provider パターン | 用途 |
 |---|---|
-| RepositoryProvider | repository DI |
-| StateNotifierProvider | state管理 |
-| FutureProvider | async load |
-| StreamProvider | storage監視 |
-| SortStateProvider | ソート状態管理 |
-| SearchQueryProvider | 検索クエリ管理 |
-| GridSettingsProvider | グリッド列数等 |
-| AppSettingsProvider | アプリ設定管理 |
+| `@riverpod` (自動破棄) | 画面固有の状態、一時的なデータ |
+| `@Riverpod(keepAlive: true)` | シングルトン的に保持すべき Provider（Repository DI 等） |
+| FutureProvider (生成) | 非同期データロード |
+| StreamProvider (生成) | ストレージ監視等のリアクティブデータ |
+
+### Provider 命名規約
+
+- riverpod_generator が自動生成するため、関数名がそのまま Provider 名になる
+- `*.g.dart` ファイルは手動編集しない
 
 ---
 
@@ -256,11 +250,19 @@ Image.memory(fullImage)
 - LoadThumbnailUseCase
 - SortImagesUseCase
 - SearchImagesUseCase
+- IndexExifUseCase
 
 ## 15.3 Viewer
 
 - LoadImageUseCase
 - PreloadAdjacentImagesUseCase
+- ResumePositionUseCase
+- GetViewerPagesUseCase
+
+## 15.4 Favorites
+
+- ToggleFavoriteUseCase
+- GetFavoritesUseCase
 
 ---
 
@@ -287,8 +289,8 @@ Image.memory(fullImage)
 Infrastructure層では以下例外を必ず捕捉する。
 
 - FileSystemException
-- SAF access exception
-- ContentResolver exception
+- SAF access exception (SecurityException)
+- ContentResolver exception (FileNotFoundException, IllegalArgumentException)
 
 これらを以下Domain例外へ変換する。
 
@@ -306,18 +308,33 @@ StorageDisconnected例外を受けた場合、画面遷移ではなくインラ�
 
 ## 20.1 Kotlin責務
 
-- SAF interaction
-- URI permission
-- USB attach/detach
-- stream access
+- SAF interaction (ACTION_OPEN_DOCUMENT_TREE)
+- URI permission (takePersistableUriPermission)
+- ContentResolver.query() による高速ファイル列挙
+- ContentResolver.loadThumbnail() によるサムネイル取得
+- USB attach/detach 監視
+- stream access (ContentResolver.openInputStream)
 
 Flutterへは抽象化済みAPIのみ提供。
+
+## 20.2 プラットフォームチャネル
+
+| 用途 | チャネル種別 |
+|---|---|
+| フォルダ選択、ファイル列挙、画像読み込み | MethodChannel |
+| USB 接続/切断監視、ストレージ変更通知 | EventChannel |
+
+## 20.3 スレッディング
+
+- SAF のファイル I/O は必ずバックグラウンドスレッドで実行
+- Kotlin コルーチン (`Dispatchers.IO`) を使用
+- メインスレッドでの ContentResolver 操作は ANR の原因になるため禁止
 
 ---
 
 # 21. Windows設計
 
-Windowsは開発高速化目的で必須。
+Windowsは開発高速化目的で主要ターゲット。
 
 ## 必須要件
 
@@ -325,6 +342,9 @@ Windowsは開発高速化目的で必須。
 - 同一UseCase
 - 同一Repository Interface
 - Local/USB drive対応
+- dart:io による FileSystem アクセス
+- file_picker による OS標準フォルダ選択ダイアログ
+- desktop_drop によるドラッグ&ドロップ対応
 
 OS差異はInfrastructure層で吸収。
 
@@ -379,18 +399,13 @@ Infrastructure層のみで変換する。
 USB切断時:
 
 ```text
-FileSystemException
+FileSystemException → StorageDisconnected
+SecurityException → PermissionDenied
+FileNotFoundException → StorageDisconnected
+IllegalArgumentException → StorageDisconnected
 ```
 
-を直接UIへ渡さない。
-
-必ず:
-
-```text
-StorageDisconnected
-```
-
-へ変換する。
+を直接UIへ渡さない。必ずDomain例外へ変換する。
 
 ## 22.2 禁止
 
@@ -401,6 +416,7 @@ StorageDisconnected
 - 巨大Bitmap保持
 - 同期IO
 - OS条件分岐をUIへ書く
+- `*.freezed.dart` / `*.g.dart` の手動編集
 
 ## 22.3 Pull Request単位
 

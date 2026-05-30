@@ -6,8 +6,8 @@
 
 | 種類 | 用途 |
 |---|---|
-| Memory Cache | 短期表示 |
-| Disk Cache | サムネイル保存 |
+| Memory Cache | 短期表示（Viewport内） |
+| Disk Cache | サムネイル永続保存（flutter_cache_manager） |
 
 ## 11.2 サムネイル戦略
 
@@ -28,14 +28,25 @@
 - CPU負荷分離
 - scroll性能維持
 
-Androidでは以下を優先:
-```text
-ContentResolver.loadThumbnail()
+### プラットフォーム別サムネイル取得
+
+#### Android (API 29+)
+以下を優先利用:
+```kotlin
+ContentResolver.loadThumbnail(uri, Size(256, 256), null)
 ```
 
-Fallback:
-- isolate decode
-- custom thumbnail generation
+理由:
+- OSキャッシュ活用
+- 高速decode
+- メモリ削減
+
+Fallback（loadThumbnail 非対応時）:
+- Isolate でフル画像をデコードし縮小
+
+#### Windows
+- Isolate 内で dart:io によりファイルを読み込み、縮小デコード
+- flutter_cache_manager でディスクキャッシュ
 
 ---
 
@@ -64,18 +75,6 @@ extended_image の以下設定を活用する。
 ```text
 clearMemoryCacheWhenDispose
 ```
-
----
-
-# 10. Android Thumbnail最適化
-
-Android 10+ では `ContentResolver.loadThumbnail()` を優先利用する。
-
-理由:
-- OSキャッシュ活用
-- 高速decode
-- メモリ削減
-- thumbnail生成高速化
 
 ---
 
