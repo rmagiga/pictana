@@ -7,6 +7,9 @@ library;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../presentation/screens/collection_image_detail_screen.dart';
+import '../presentation/screens/collection_image_list_screen.dart';
+import '../presentation/screens/collection_list_screen.dart';
 import '../presentation/screens/folder_browser_screen.dart';
 import '../presentation/screens/gallery_grid_screen.dart';
 import '../presentation/screens/image_viewer_screen.dart';
@@ -21,6 +24,9 @@ abstract final class AppRoutes {
   static const folderBrowser = '/folders';
   static const galleryGrid = '/gallery';
   static const imageViewer = '/viewer';
+  static const collectionList = '/collections';
+  static const collectionImages = '/collection-images';
+  static const collectionViewer = '/collection-viewer';
   static const settings = '/settings';
 }
 
@@ -62,6 +68,33 @@ final appRouter = GoRouter(
       path: AppRoutes.settings,
       name: 'settings',
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.collectionList,
+      name: 'collectionList',
+      builder: (context, state) => const CollectionListScreen(),
+    ),
+    GoRoute(
+      path: '${AppRoutes.collectionImages}/:id',
+      name: 'collectionImages',
+      builder: (context, state) {
+        final idStr = state.pathParameters['id'] ?? '0';
+        final id = int.tryParse(idStr) ?? 0;
+        return CollectionImageListScreen(collectionId: id);
+      },
+    ),
+    GoRoute(
+      path: '${AppRoutes.collectionViewer}/:collectionId/:entryId',
+      name: 'collectionViewer',
+      builder: (context, state) {
+        final collectionIdStr = state.pathParameters['collectionId'] ?? '0';
+        final collectionId = int.tryParse(collectionIdStr) ?? 0;
+        final entryId = state.pathParameters['entryId'] ?? '';
+        return CollectionImageDetailScreen(
+          collectionId: collectionId,
+          initialEntryId: Uri.decodeComponent(entryId),
+        );
+      },
     ),
   ],
   errorBuilder: (context, state) => Scaffold(

@@ -375,3 +375,65 @@ final class FolderViewerSettingsRepositoryProvider
 
 String _$folderViewerSettingsRepositoryHash() =>
     r'f8d47ca58f566544c4018b96b67e3c100e2f24b7';
+
+/// CollectionRepository Provider
+///
+/// コレクション管理の永続化を担当するリポジトリの DI 定義。
+/// [AppDatabase] を注入して [CollectionRepositoryImpl] を生成する。
+
+@ProviderFor(collectionRepository)
+final collectionRepositoryProvider = CollectionRepositoryProvider._();
+
+/// CollectionRepository Provider
+///
+/// コレクション管理の永続化を担当するリポジトリの DI 定義。
+/// [AppDatabase] を注入して [CollectionRepositoryImpl] を生成する。
+
+final class CollectionRepositoryProvider
+    extends
+        $FunctionalProvider<
+          CollectionRepository,
+          CollectionRepository,
+          CollectionRepository
+        >
+    with $Provider<CollectionRepository> {
+  /// CollectionRepository Provider
+  ///
+  /// コレクション管理の永続化を担当するリポジトリの DI 定義。
+  /// [AppDatabase] を注入して [CollectionRepositoryImpl] を生成する。
+  CollectionRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'collectionRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$collectionRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<CollectionRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  CollectionRepository create(Ref ref) {
+    return collectionRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(CollectionRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<CollectionRepository>(value),
+    );
+  }
+}
+
+String _$collectionRepositoryHash() =>
+    r'eabf85062e2a9a608897332e25316f92f99cfd61';

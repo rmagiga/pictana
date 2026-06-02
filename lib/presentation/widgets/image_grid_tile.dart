@@ -25,10 +25,16 @@ const _kThumbnailTimeout = Duration(seconds: 10);
 const _kFadeDuration = Duration(milliseconds: 100);
 
 class ImageGridTile extends ConsumerStatefulWidget {
-  const ImageGridTile({super.key, required this.image, required this.onTap});
+  const ImageGridTile({
+    super.key,
+    required this.image,
+    required this.onTap,
+    this.onLongPress,
+  });
 
   final ImageEntry image;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   @override
   ConsumerState<ImageGridTile> createState() => _ImageGridTileState();
@@ -80,7 +86,9 @@ class _ImageGridTileState extends ConsumerState<ImageGridTile> {
   }
 
   Future<void> _loadThumbnail() async {
-    final isSearching = ref.read(searchControllerProvider.select((s) => s.isSearching));
+    final isSearching = ref.read(
+      searchControllerProvider.select((s) => s.isSearching),
+    );
     if (isSearching) {
       // 検索中の場合はリクエストを行わない（プレースホルダー状態を維持）
       return;
@@ -98,7 +106,11 @@ class _ImageGridTileState extends ConsumerState<ImageGridTile> {
 
     final useCase = ref.read(loadThumbnailUseCaseProvider);
     final sizeOption = ref.read(thumbnailSizeSettingProvider);
-    final bytes = await useCase.execute(widget.image, size: sizeOption, cancelToken: token);
+    final bytes = await useCase.execute(
+      widget.image,
+      size: sizeOption,
+      cancelToken: token,
+    );
 
     if (!mounted) return;
     if (token.isCancelled) return;
@@ -120,14 +132,14 @@ class _ImageGridTileState extends ConsumerState<ImageGridTile> {
   @override
   Widget build(BuildContext context) {
     // 検索中フラグが解除されたら、未ロードのサムネイルのロードを開始する
-    ref.listen<bool>(
-      searchControllerProvider.select((s) => s.isSearching),
-      (previous, isSearching) {
-        if (!isSearching && _thumbnailBytes == null && _isLoading) {
-          _loadThumbnail();
-        }
-      },
-    );
+    ref.listen<bool>(searchControllerProvider.select((s) => s.isSearching), (
+      previous,
+      isSearching,
+    ) {
+      if (!isSearching && _thumbnailBytes == null && _isLoading) {
+        _loadThumbnail();
+      }
+    });
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -141,6 +153,7 @@ class _ImageGridTileState extends ConsumerState<ImageGridTile> {
       ),
       child: InkWell(
         onTap: widget.onTap,
+        onLongPress: widget.onLongPress,
         child: Stack(
           fit: StackFit.expand,
           children: [

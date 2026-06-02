@@ -16,6 +16,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../application/usecases/gallery/search_controller.dart';
 import '../../application/usecases/storage/storage_monitor.dart';
 import '../../core/logging/app_logger.dart';
+import '../../domain/entities/entry_id.dart';
 import '../../domain/entities/image_entry.dart';
 import '../../domain/entities/storage_monitor_state.dart';
 import '../../router/app_router.dart';
@@ -23,6 +24,7 @@ import '../providers/gallery_providers.dart';
 import '../providers/grid_column_settings_provider.dart';
 import '../providers/storage_providers.dart';
 import '../providers/viewer_providers.dart';
+import '../widgets/collection_select_dialog.dart';
 import '../widgets/favorite_indicator.dart';
 import '../widgets/gallery/fast_scroll_handler.dart';
 import '../widgets/gallery/filter_chips_widget.dart';
@@ -72,6 +74,10 @@ class GalleryGridScreen extends HookConsumerWidget {
     // 高速スクロール用 ScrollController
     final scrollController = useScrollController();
 
+    // 画像選択モード管理
+    final isSelectionMode = useState(false);
+    final selectedEntryIds = useState(<EntryId>{});
+
     // 自動スクロール済みフラグ
     final hasAutoScrolled = useRef(false);
 
@@ -93,7 +99,9 @@ class GalleryGridScreen extends HookConsumerWidget {
       final images = imagesAsync.value;
       if (images == null || images.isEmpty) return null;
 
-      final index = images.indexWhere((img) => img.id.rawValue == resumeEntryId);
+      final index = images.indexWhere(
+        (img) => img.id.rawValue == resumeEntryId,
+      );
       if (index >= 0) {
         hasAutoScrolled.value = true;
         Future.microtask(() {
@@ -101,7 +109,9 @@ class GalleryGridScreen extends HookConsumerWidget {
             final settings = ref.read(gridColumnSettingsProvider);
             final crossAxisCount = settings.currentColumns;
             final row = index ~/ crossAxisCount;
-            final tileHeight = (scrollController.position.viewportDimension / crossAxisCount) + 4.0;
+            final tileHeight =
+                (scrollController.position.viewportDimension / crossAxisCount) +
+                4.0;
             final offset = row * tileHeight;
             scrollController.jumpTo(
               offset.clamp(0.0, scrollController.position.maxScrollExtent),
@@ -172,7 +182,9 @@ class GalleryGridScreen extends HookConsumerWidget {
       // 遷移処理を開始するため、持ち越しや二重動作を防ぐため即座にクリアする
       ref.read(pendingViewerEntryIdProvider.notifier).clear();
 
-      final index = images.indexWhere((img) => img.id.rawValue == pendingEntryId);
+      final index = images.indexWhere(
+        (img) => img.id.rawValue == pendingEntryId,
+      );
       if (index >= 0) {
         Future.microtask(() {
           // 自動スクロール
@@ -181,13 +193,15 @@ class GalleryGridScreen extends HookConsumerWidget {
             final crossAxisCount = settings.currentColumns;
             final row = index ~/ crossAxisCount;
             // タイルの高さと余白（4.0）を考慮
-            final tileHeight = (scrollController.position.viewportDimension / crossAxisCount) + 4.0;
+            final tileHeight =
+                (scrollController.position.viewportDimension / crossAxisCount) +
+                4.0;
             final offset = row * tileHeight;
             scrollController.jumpTo(
               offset.clamp(0.0, scrollController.position.maxScrollExtent),
             );
           }
-          
+
           // ビューアを起動
           if (context.mounted) {
             context.push('${AppRoutes.imageViewer}/$index');
@@ -202,18 +216,28 @@ class GalleryGridScreen extends HookConsumerWidget {
     final navBarHeight = MediaQuery.of(context).viewPadding.bottom;
 
     return PopScope(
-      canPop: false,
+      canPop: !isSelectionMode.value,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) {
-          context.go(AppRoutes.storageSelection);
+          if (isSelectionMode.value) {
+            // 選択モード中の戻る操作で選択を解除する
+            isSelectionMode.value = false;
+            selectedEntryIds.value = {};
+          } else {
+            context.go(AppRoutes.storageSelection);
+          }
         }
       },
       child: Scaffold(
         floatingActionButton: (() {
+          // 選択モード中は FAB を非表示
+          if (isSelectionMode.value) return null;
           if (resumeEntryId == null) return null;
           final images = imagesAsync.value;
           if (images == null || images.isEmpty) return null;
-          final index = images.indexWhere((img) => img.id.rawValue == resumeEntryId);
+          final index = images.indexWhere(
+            (img) => img.id.rawValue == resumeEntryId,
+          );
           if (index < 0) return null;
 
           final targetImage = images[index];
@@ -225,73 +249,86 @@ class GalleryGridScreen extends HookConsumerWidget {
             label: Text('続きから読む (${targetImage.name})'),
           );
         })(),
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            tooltip: 'フォルダ選択に戻る',
-            onPressed: () => context.go(AppRoutes.storageSelection),
-          ),
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(folder?.name ?? 'Pictana Gallery'),
-              if (countAsync.value != null)
-                Text(
-                  '${countAsync.value} items',
-                  style: Theme.of(context).textTheme.bodySmall,
+        appBar: isSelectionMode.value
+            ? _buildSelectionModeAppBar(
+                context,
+                ref,
+                selectedEntryIds,
+                isSelectionMode,
+              )
+            : AppBar(
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  tooltip: 'フォルダ選択に戻る',
+                  onPressed: () => context.go(AppRoutes.storageSelection),
                 ),
-            ],
-          ),
-          actions: [
-            // フォルダ選択ボタン
-            IconButton(
-              icon: const Icon(Icons.folder_open),
-              tooltip: 'フォルダを選択',
-              onPressed: () => _selectFolder(context, ref),
-            ),
-            // お気に入りトグルボタン
-            if (folder != null)
-              FavoriteIndicator(uri: folder.uri, name: folder.name),
-            // 検索アイコンボタン (Req 11.1)
-            // 折りたたみ時のみ AppBar に表示
-            if (!searchFilterState.isSearchBarExpanded)
-              IconButton(
-                icon: const Icon(Icons.search),
-                tooltip: '検索',
-                onPressed: () {
-                  ref.read(searchControllerProvider.notifier).toggleSearchBar();
-                },
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(folder?.name ?? 'Pictana Gallery'),
+                    if (countAsync.value != null)
+                      Text(
+                        '${countAsync.value} items',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                  ],
+                ),
+                actions: [
+                  // フォルダ選択ボタン
+                  IconButton(
+                    icon: const Icon(Icons.folder_open),
+                    tooltip: 'フォルダを選択',
+                    onPressed: () => _selectFolder(context, ref),
+                  ),
+                  // お気に入りトグルボタン
+                  if (folder != null)
+                    FavoriteIndicator(uri: folder.uri, name: folder.name),
+                  // 検索アイコンボタン (Req 11.1)
+                  // 折りたたみ時のみ AppBar に表示
+                  if (!searchFilterState.isSearchBarExpanded)
+                    IconButton(
+                      icon: const Icon(Icons.search),
+                      tooltip: '検索',
+                      onPressed: () {
+                        ref
+                            .read(searchControllerProvider.notifier)
+                            .toggleSearchBar();
+                      },
+                    ),
+                  // 表示密度変更ボタン
+                  IconButton(
+                    icon: const Icon(Icons.grid_view),
+                    tooltip: '表示密度（列数）を変更',
+                    onPressed: () {
+                      showDensitySlider.value = !showDensitySlider.value;
+                    },
+                  ),
+                  // ソートメニュー
+                  const SortMenu(),
+                  // コレクション一覧ボタン
+                  IconButton(
+                    icon: const Icon(Icons.collections_bookmark_outlined),
+                    tooltip: 'コレクション',
+                    onPressed: () {
+                      context.push(AppRoutes.collectionList);
+                    },
+                  ),
+                  // 設定ボタン
+                  IconButton(
+                    icon: const Icon(Icons.settings),
+                    onPressed: () {
+                      context.push(AppRoutes.settings);
+                    },
+                  ),
+                ],
               ),
-            // 表示密度変更ボタン
-            IconButton(
-              icon: const Icon(Icons.grid_view),
-              tooltip: '表示密度（列数）を変更',
-              onPressed: () {
-                showDensitySlider.value = !showDensitySlider.value;
-              },
-            ),
-            // ソートメニュー
-            const SortMenu(),
-            // 設定ボタン
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {
-                context.push(AppRoutes.settings);
-              },
-            ),
-          ],
-        ),
         body: Column(
           children: [
             const StorageDisconnectBanner(), // USB切断時のみ表示される
-            if (isSyncing)
-              const LinearProgressIndicator(
-                minHeight: 2,
-              ),
+            if (isSyncing) const LinearProgressIndicator(minHeight: 2),
             // 表示密度調整スライダー
-            if (showDensitySlider.value)
-              _buildDensitySliderPanel(context, ref),
+            if (showDensitySlider.value) _buildDensitySliderPanel(context, ref),
             // 検索バーウィジェット (Req 11.1, 11.5)
             // 展開時のみ表示
             if (searchFilterState.isSearchBarExpanded)
@@ -366,11 +403,42 @@ class GalleryGridScreen extends HookConsumerWidget {
                         itemCount: filteredImages.length,
                         itemBuilder: (context, index) {
                           final image = filteredImages[index];
-                          return ImageGridTile(
+                          final isSelected = selectedEntryIds.value.contains(
+                            image.id,
+                          );
+
+                          return _SelectableImageGridTile(
                             key: ValueKey(image.uri),
                             image: image,
+                            isSelectionMode: isSelectionMode.value,
+                            isSelected: isSelected,
                             onTap: () {
-                              context.push('${AppRoutes.imageViewer}/$index');
+                              if (isSelectionMode.value) {
+                                // 選択モード中: 選択トグル
+                                final newSet = Set<EntryId>.from(
+                                  selectedEntryIds.value,
+                                );
+                                if (isSelected) {
+                                  newSet.remove(image.id);
+                                  // 全解除で選択モード終了
+                                  if (newSet.isEmpty) {
+                                    isSelectionMode.value = false;
+                                  }
+                                } else {
+                                  newSet.add(image.id);
+                                }
+                                selectedEntryIds.value = newSet;
+                              } else {
+                                // 通常モード: ビューア遷移
+                                context.push('${AppRoutes.imageViewer}/$index');
+                              }
+                            },
+                            onLongPress: () {
+                              if (!isSelectionMode.value) {
+                                // 長押しで選択モード開始
+                                isSelectionMode.value = true;
+                                selectedEntryIds.value = {image.id};
+                              }
                             },
                           );
                         },
@@ -404,7 +472,8 @@ class GalleryGridScreen extends HookConsumerWidget {
                               lastScaleRef.value = currentScale;
                               isChanged = true;
                             }
-                          } else if (currentScale / lastScale <= 1.0 / thresholdRatio) {
+                          } else if (currentScale / lastScale <=
+                              1.0 / thresholdRatio) {
                             // ピンチイン (縮小) = 列数増加 (画像を小さく)
                             if (targetColumns < settings.maxColumns) {
                               targetColumns++;
@@ -413,7 +482,8 @@ class GalleryGridScreen extends HookConsumerWidget {
                             }
                           }
 
-                          if (isChanged && targetColumns != settings.currentColumns) {
+                          if (isChanged &&
+                              targetColumns != settings.currentColumns) {
                             lastChangeTimeRef.value = now;
                             ref
                                 .read(gridColumnSettingsProvider.notifier)
@@ -555,13 +625,89 @@ class GalleryGridScreen extends HookConsumerWidget {
     );
   }
 
+  /// 選択モードの AppBar を構築する (Requirement 4.1, 13.1)
+  ///
+  /// 選択件数と「コレクションに追加」アクションボタンを表示する。
+  /// キャンセルボタンで選択モードを終了する。
+  PreferredSizeWidget _buildSelectionModeAppBar(
+    BuildContext context,
+    WidgetRef ref,
+    ValueNotifier<Set<EntryId>> selectedEntryIds,
+    ValueNotifier<bool> isSelectionMode,
+  ) {
+    final selectedCount = selectedEntryIds.value.length;
+
+    return AppBar(
+      // キャンセルボタン
+      leading: IconButton(
+        icon: const Icon(Icons.close),
+        tooltip: 'キャンセル',
+        onPressed: () {
+          isSelectionMode.value = false;
+          selectedEntryIds.value = {};
+        },
+      ),
+      // 選択件数表示
+      title: Text('$selectedCount件選択'),
+      actions: [
+        // コレクションに追加ボタン (Requirement 4.1, 13.1)
+        IconButton(
+          icon: const Icon(Icons.collections_bookmark_outlined),
+          tooltip: 'コレクションに追加',
+          onPressed: selectedCount > 0
+              ? () => _onAddToCollection(
+                  context,
+                  ref,
+                  selectedEntryIds,
+                  isSelectionMode,
+                )
+              : null,
+        ),
+      ],
+    );
+  }
+
+  /// コレクションに追加アクションを実行する (Requirement 4.1, 4.8, 4.10, 13.1)
+  ///
+  /// 選択中の画像 EntryId リストで CollectionSelectDialog を表示し、
+  /// 追加完了時に SnackBar で件数を通知する。
+  /// 100枚以上の場合はローディングインジケータを表示する。
+  Future<void> _onAddToCollection(
+    BuildContext context,
+    WidgetRef ref,
+    ValueNotifier<Set<EntryId>> selectedEntryIds,
+    ValueNotifier<bool> isSelectionMode,
+  ) async {
+    final entryIds = selectedEntryIds.value.toList();
+
+    // CollectionSelectDialog を表示する
+    final addedCount = await showCollectionSelectDialog(context, entryIds);
+
+    if (addedCount != null && context.mounted) {
+      // 追加完了通知 (Requirement 4.8)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$addedCount枚の画像をコレクションに追加しました'),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+
+      // 選択モードを終了する
+      isSelectionMode.value = false;
+      selectedEntryIds.value = {};
+    }
+  }
+
   /// 表示密度調整用のスライダーパネルを構築する
   Widget _buildDensitySliderPanel(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(gridColumnSettingsProvider);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         border: Border(
           bottom: BorderSide(
             color: Theme.of(context).colorScheme.outlineVariant,
@@ -599,6 +745,94 @@ class GalleryGridScreen extends HookConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// 選択モード対応の画像グリッドタイルウィジェット
+///
+/// 通常モードでは ImageGridTile をそのまま表示し、
+/// 選択モードでは長押し開始と選択状態のオーバーレイを追加する。
+class _SelectableImageGridTile extends ConsumerStatefulWidget {
+  const _SelectableImageGridTile({
+    super.key,
+    required this.image,
+    required this.isSelectionMode,
+    required this.isSelected,
+    required this.onTap,
+    required this.onLongPress,
+  });
+
+  final ImageEntry image;
+  final bool isSelectionMode;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+
+  @override
+  ConsumerState<_SelectableImageGridTile> createState() =>
+      _SelectableImageGridTileState();
+}
+
+class _SelectableImageGridTileState
+    extends ConsumerState<_SelectableImageGridTile> {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // ベースとなる画像タイル
+        ImageGridTile(
+          image: widget.image,
+          onTap: widget.onTap,
+          onLongPress: widget.onLongPress,
+        ),
+        // 選択状態のオーバーレイ
+        if (widget.isSelected)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        // 選択チェックマーク
+        if (widget.isSelectionMode)
+          Positioned(
+            top: 4,
+            left: 4,
+            child: IgnorePointer(
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: widget.isSelected
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.surface.withValues(alpha: 0.7),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: widget.isSelected
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.outline,
+                    width: 2,
+                  ),
+                ),
+                child: widget.isSelected
+                    ? Icon(
+                        Icons.check,
+                        size: 16,
+                        color: theme.colorScheme.onPrimary,
+                      )
+                    : null,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

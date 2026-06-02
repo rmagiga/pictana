@@ -9,6 +9,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'tables/app_settings_table.dart';
+import 'tables/collection_images_table.dart';
+import 'tables/collections_table.dart';
 import 'tables/favorite_folders_table.dart';
 import 'tables/recent_folders_table.dart';
 import 'tables/recent_images_table.dart';
@@ -22,7 +24,17 @@ part 'app_database.g.dart';
 
 /// アプリ全体で使用するDriftデータベース
 @DriftDatabase(
-  tables: [RecentFolders, RecentImages, ThumbnailCaches, AppSettings, FavoriteFolders, Images, FolderViewerSettings],
+  tables: [
+    RecentFolders,
+    RecentImages,
+    ThumbnailCaches,
+    AppSettings,
+    FavoriteFolders,
+    Images,
+    FolderViewerSettings,
+    Collections,
+    CollectionImages,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -30,15 +42,29 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createAll();
-      await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_name ON images (folder_uri, name)');
-      await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_modified ON images (folder_uri, modified)');
-      await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_size ON images (folder_uri, size)');
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_folder_name ON images (folder_uri, name)',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_folder_modified ON images (folder_uri, modified)',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_folder_size ON images (folder_uri, size)',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_collection_images_collection_sort '
+        'ON collection_images (collection_id, sort_order)',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_collection_images_entry '
+        'ON collection_images (entry_id)',
+      );
     },
     onUpgrade: (m, from, to) async {
       // v1 → v2: お気に入りフォルダテーブルを追加
@@ -48,9 +74,15 @@ class AppDatabase extends _$AppDatabase {
       // v2 → v3: 画像メタデータテーブルを追加
       if (from < 3) {
         await m.createTable(images);
-        await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_name ON images (folder_uri, name)');
-        await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_modified ON images (folder_uri, modified)');
-        await customStatement('CREATE INDEX IF NOT EXISTS idx_folder_size ON images (folder_uri, size)');
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_folder_name ON images (folder_uri, name)',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_folder_modified ON images (folder_uri, modified)',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_folder_size ON images (folder_uri, size)',
+        );
       }
       // v3 → v4: 最近開いた画像履歴テーブルを追加
       if (from < 4) {
@@ -67,6 +99,54 @@ class AppDatabase extends _$AppDatabase {
       if (from < 6) {
         await m.createTable(folderViewerSettings);
       }
+      // v6 → v7: コレクション管理テーブルの追加
+      if (from < 7) {
+        await m.createTable(collections);
+        await m.createTable(collectionImages);
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_collection_images_collection_sort '
+          'ON collection_images (collection_id, sort_order)',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_collection_images_entry '
+          'ON collection_images (entry_id)',
+        );
+      }
+    },
+    beforeOpen: (details) async {
+      // マイグレーション不整合の修復:
+      // user_version が更新済みだがテーブル作成に失敗したケースに対応する。
+      // Drift は onUpgrade 呼び出し前に user_version を書き換えるため、
+      // 途中でクラッシュするとテーブルが存在しないまま再度 onUpgrade が
+      // スキップされる問題を修復する。
+      await customStatement('''
+        CREATE TABLE IF NOT EXISTS collections (
+          id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL UNIQUE,
+          sort_order INTEGER NOT NULL DEFAULT 0,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL,
+          CHECK (LENGTH(name) >= 1 AND LENGTH(name) <= 50)
+        )
+      ''');
+      await customStatement('''
+        CREATE TABLE IF NOT EXISTS collection_images (
+          id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+          collection_id INTEGER NOT NULL REFERENCES collections (id) ON DELETE CASCADE,
+          entry_id TEXT NOT NULL,
+          sort_order INTEGER NOT NULL DEFAULT 0,
+          added_at INTEGER NOT NULL,
+          UNIQUE (collection_id, entry_id)
+        )
+      ''');
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_collection_images_collection_sort '
+        'ON collection_images (collection_id, sort_order)',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_collection_images_entry '
+        'ON collection_images (entry_id)',
+      );
     },
   );
 
@@ -85,13 +165,16 @@ class AppDatabase extends _$AppDatabase {
     required String name,
     required String platformType,
   }) async {
-    final existing = await (select(recentFolders)
-          ..where((t) => t.uri.equals(uri))
-          ..limit(1))
-        .getSingleOrNull();
+    final existing =
+        await (select(recentFolders)
+              ..where((t) => t.uri.equals(uri))
+              ..limit(1))
+            .getSingleOrNull();
 
     if (existing != null) {
-      await (update(recentFolders)..where((t) => t.id.equals(existing.id))).write(
+      await (update(
+        recentFolders,
+      )..where((t) => t.id.equals(existing.id))).write(
         RecentFoldersCompanion(
           name: Value(name),
           lastOpenedAt: Value(DateTime.now()),
@@ -149,7 +232,6 @@ class AppDatabase extends _$AppDatabase {
   /// 指定 EntryId の最近開いた画像を削除する
   Future<int> deleteRecentImageByEntryId(String entryId) =>
       (delete(recentImages)..where((t) => t.entryId.equals(entryId))).go();
-
 
   // --- AppSettings クエリ ---
 
@@ -260,15 +342,15 @@ class AppDatabase extends _$AppDatabase {
     final asc = sort.isAscending;
     query.orderBy([
       (t) => switch (sort.field) {
-            SortField.name =>
-              asc ? OrderingTerm.asc(t.name) : OrderingTerm.desc(t.name),
-            SortField.date =>
-              asc ? OrderingTerm.asc(t.modified) : OrderingTerm.desc(t.modified),
-            SortField.size =>
-              asc ? OrderingTerm.asc(t.size) : OrderingTerm.desc(t.size),
-            SortField.type =>
-              asc ? OrderingTerm.asc(t.extension) : OrderingTerm.desc(t.extension),
-          }
+        SortField.name =>
+          asc ? OrderingTerm.asc(t.name) : OrderingTerm.desc(t.name),
+        SortField.date =>
+          asc ? OrderingTerm.asc(t.modified) : OrderingTerm.desc(t.modified),
+        SortField.size =>
+          asc ? OrderingTerm.asc(t.size) : OrderingTerm.desc(t.size),
+        SortField.type =>
+          asc ? OrderingTerm.asc(t.extension) : OrderingTerm.desc(t.extension),
+      },
     ]);
 
     return query.watch();
@@ -300,15 +382,15 @@ class AppDatabase extends _$AppDatabase {
     final asc = sort.isAscending;
     query.orderBy([
       (t) => switch (sort.field) {
-            SortField.name =>
-              asc ? OrderingTerm.asc(t.name) : OrderingTerm.desc(t.name),
-            SortField.date =>
-              asc ? OrderingTerm.asc(t.modified) : OrderingTerm.desc(t.modified),
-            SortField.size =>
-              asc ? OrderingTerm.asc(t.size) : OrderingTerm.desc(t.size),
-            SortField.type =>
-              asc ? OrderingTerm.asc(t.extension) : OrderingTerm.desc(t.extension),
-          }
+        SortField.name =>
+          asc ? OrderingTerm.asc(t.name) : OrderingTerm.desc(t.name),
+        SortField.date =>
+          asc ? OrderingTerm.asc(t.modified) : OrderingTerm.desc(t.modified),
+        SortField.size =>
+          asc ? OrderingTerm.asc(t.size) : OrderingTerm.desc(t.size),
+        SortField.type =>
+          asc ? OrderingTerm.asc(t.extension) : OrderingTerm.desc(t.extension),
+      },
     ]);
 
     query.limit(pageSize, offset: page * pageSize);
@@ -346,23 +428,25 @@ class AppDatabase extends _$AppDatabase {
     await batch((batch) {
       batch.insertAll(
         images,
-        list.map((item) => ImagesCompanion.insert(
-          entryId: item.entryId,
-          uri: item.uri,
-          folderUri: item.folderUri,
-          name: item.name,
-          extension: item.extension,
-          modified: item.modified,
-          size: item.size,
-          mimeType: item.mimeType,
-          width: Value(item.width),
-          height: Value(item.height),
-          exifDateTime: Value(item.exifDateTime),
-          exifCamera: Value(item.exifCamera),
-          exifGpsLatitude: Value(item.exifGpsLatitude),
-          exifGpsLongitude: Value(item.exifGpsLongitude),
-          indexedAt: DateTime.now(),
-        )),
+        list.map(
+          (item) => ImagesCompanion.insert(
+            entryId: item.entryId,
+            uri: item.uri,
+            folderUri: item.folderUri,
+            name: item.name,
+            extension: item.extension,
+            modified: item.modified,
+            size: item.size,
+            mimeType: item.mimeType,
+            width: Value(item.width),
+            height: Value(item.height),
+            exifDateTime: Value(item.exifDateTime),
+            exifCamera: Value(item.exifCamera),
+            exifGpsLatitude: Value(item.exifGpsLatitude),
+            exifGpsLongitude: Value(item.exifGpsLongitude),
+            indexedAt: DateTime.now(),
+          ),
+        ),
         mode: InsertMode.insertOrReplace,
       );
     });
@@ -388,19 +472,25 @@ class AppDatabase extends _$AppDatabase {
 
   /// EXIF 情報が未解析（かつ特定のフォルダ内）の画像を取得する
   Future<List<ImageTableData>> getImagesMissingExif(String folderUri) =>
-      (select(images)
-            ..where((t) =>
+      (select(images)..where(
+            (t) =>
                 t.folderUri.equals(folderUri) &
                 t.exifDateTime.isNull() &
                 t.exifCamera.isNull() &
                 t.exifGpsLatitude.isNull() &
-                t.exifGpsLongitude.isNull()))
+                t.exifGpsLongitude.isNull(),
+          ))
           .get();
 
   /// 同期時に指定したフォルダ内のアクティブでない（削除された）画像を消す
-  Future<void> deleteImagesNotIn(String folderUri, List<String> activeEntryIds) async {
-    await (delete(images)
-          ..where((t) => t.folderUri.equals(folderUri) & t.entryId.isNotIn(activeEntryIds)))
+  Future<void> deleteImagesNotIn(
+    String folderUri,
+    List<String> activeEntryIds,
+  ) async {
+    await (delete(images)..where(
+          (t) =>
+              t.folderUri.equals(folderUri) & t.entryId.isNotIn(activeEntryIds),
+        ))
         .go();
   }
 
@@ -409,14 +499,18 @@ class AppDatabase extends _$AppDatabase {
       (delete(images)..where((t) => t.folderUri.equals(folderUri))).go();
 
   /// 指定 EntryId の画像メタデータを取得する
-  Future<ImageTableData?> getImageByEntryId(String entryId) =>
-      (select(images)..where((t) => t.entryId.equals(entryId))).getSingleOrNull();
+  Future<ImageTableData?> getImageByEntryId(String entryId) => (select(
+    images,
+  )..where((t) => t.entryId.equals(entryId))).getSingleOrNull();
 
   // --- FolderViewerSettings クエリ ---
 
   /// 指定フォルダの設定を取得する
-  Future<FolderViewerSettingTableData?> getFolderViewerSetting(String folderUri) =>
-      (select(folderViewerSettings)..where((t) => t.folderUri.equals(folderUri))).getSingleOrNull();
+  Future<FolderViewerSettingTableData?> getFolderViewerSetting(
+    String folderUri,
+  ) => (select(
+    folderViewerSettings,
+  )..where((t) => t.folderUri.equals(folderUri))).getSingleOrNull();
 
   /// フォルダ設定を保存する（Upsert）
   Future<void> upsertFolderViewerSetting({
@@ -424,15 +518,14 @@ class AppDatabase extends _$AppDatabase {
     required String displayMode,
     required bool isRightToLeft,
     required bool hasCoverPage,
-  }) =>
-      into(folderViewerSettings).insertOnConflictUpdate(
-        FolderViewerSettingsCompanion.insert(
-          folderUri: folderUri,
-          displayMode: Value(displayMode),
-          isRightToLeft: Value(isRightToLeft),
-          hasCoverPage: Value(hasCoverPage),
-        ),
-      );
+  }) => into(folderViewerSettings).insertOnConflictUpdate(
+    FolderViewerSettingsCompanion.insert(
+      folderUri: folderUri,
+      displayMode: Value(displayMode),
+      isRightToLeft: Value(isRightToLeft),
+      hasCoverPage: Value(hasCoverPage),
+    ),
+  );
 
   /// 画像の解像度（幅・高さ）を更新する
   Future<void> updateImageSize({
@@ -441,14 +534,10 @@ class AppDatabase extends _$AppDatabase {
     required int height,
   }) async {
     await (update(images)..where((t) => t.entryId.equals(entryId))).write(
-      ImagesCompanion(
-        width: Value(width),
-        height: Value(height),
-      ),
+      ImagesCompanion(width: Value(width), height: Value(height)),
     );
   }
 }
-
 
 /// データベースファイルへの接続を開く
 QueryExecutor _openConnection() {
