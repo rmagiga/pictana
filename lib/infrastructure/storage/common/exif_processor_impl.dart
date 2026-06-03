@@ -2,8 +2,8 @@
 //
 // バイトデータから EXIF Orientation タグを解析し、
 // 回転角度を返す実装クラス。
+import 'dart:isolate';
 import 'package:exif/exif.dart';
-import 'package:flutter/foundation.dart';
 import 'package:pictana/domain/repositories/exif_processor.dart';
 import 'package:pictana/domain/value_objects/exif_rotation.dart';
 
@@ -304,7 +304,7 @@ class ExifProcessorImpl implements ExifProcessor {
 
   @override
   Future<ExifMetadata> extractMetadata(List<int> bytes) async {
-    return compute(_extractMetadataInIsolate, bytes);
+    return Isolate.run(() => _extractMetadataInIsolate(bytes));
   }
 
   static Future<ExifMetadata> _extractMetadataInIsolate(List<int> bytes) async {

@@ -261,11 +261,12 @@ class FavoriteListSection extends ConsumerWidget {
       items: [
         const PopupMenuItem<String>(
           value: 'delete',
-          child: ListTile(
-            leading: Icon(Icons.delete_outline),
-            title: Text('お気に入りから削除'),
-            contentPadding: EdgeInsets.zero,
-            visualDensity: VisualDensity.compact,
+          child: Row(
+            children: [
+              Icon(Icons.delete_outline),
+              SizedBox(width: 12),
+              Text('お気に入りから削除'),
+            ],
           ),
         ),
       ],

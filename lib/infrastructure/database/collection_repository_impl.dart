@@ -360,21 +360,26 @@ class CollectionRepositoryImpl implements CollectionRepository {
     final totalEntries = entryIdStrings.length;
 
     final result = <int, bool>{};
+    for (final id in collectionIds) {
+      result[id] = false;
+    }
 
-    for (final collectionId in collectionIds) {
-      // 該当コレクションに所属している対象画像の数をカウント
-      final countExpr = _db.collectionImages.id.count();
-      final query = _db.selectOnly(_db.collectionImages)
-        ..addColumns([countExpr])
-        ..where(
-          _db.collectionImages.collectionId.equals(collectionId) &
-              _db.collectionImages.entryId.isIn(entryIdStrings),
-        );
-      final row = await query.getSingle();
-      final memberCount = row.read(countExpr) ?? 0;
+    final countExpr = _db.collectionImages.id.count();
+    final query = _db.selectOnly(_db.collectionImages)
+      ..addColumns([_db.collectionImages.collectionId, countExpr])
+      ..where(
+        _db.collectionImages.collectionId.isIn(collectionIds) &
+            _db.collectionImages.entryId.isIn(entryIdStrings),
+      )
+      ..groupBy([_db.collectionImages.collectionId]);
 
-      // 全画像が所属していれば true
-      result[collectionId] = memberCount == totalEntries;
+    final rows = await query.get();
+    for (final row in rows) {
+      final collectionId = row.read(_db.collectionImages.collectionId);
+      final count = row.read(countExpr) ?? 0;
+      if (collectionId != null) {
+        result[collectionId] = count == totalEntries;
+      }
     }
 
     return result;

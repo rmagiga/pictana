@@ -19,7 +19,13 @@ final class ViewerControllerProvider
   /// ビューアの状態操作と通知を行うコントローラー
   ViewerControllerProvider._({
     required ViewerControllerFamily super.from,
-    required ({int initialIndex, int totalCount}) super.argument,
+    required ({
+      int initialIndex,
+      int totalCount,
+      String? folderUri,
+      int? collectionId,
+    })
+    super.argument,
   }) : super(
          retry: null,
          name: r'viewerControllerProvider',
@@ -61,7 +67,7 @@ final class ViewerControllerProvider
   }
 }
 
-String _$viewerControllerHash() => r'0f999ddc91d6800e72fbddc949652b7d758a3983';
+String _$viewerControllerHash() => r'98d076a38864309455d57c7d52be8a8cbea998fc';
 
 /// ビューアの状態操作と通知を行うコントローラー
 
@@ -72,7 +78,12 @@ final class ViewerControllerFamily extends $Family
           ViewerState,
           ViewerState,
           ViewerState,
-          ({int initialIndex, int totalCount})
+          ({
+            int initialIndex,
+            int totalCount,
+            String? folderUri,
+            int? collectionId,
+          })
         > {
   ViewerControllerFamily._()
     : super(
@@ -88,8 +99,15 @@ final class ViewerControllerFamily extends $Family
   ViewerControllerProvider call({
     required int initialIndex,
     required int totalCount,
+    String? folderUri,
+    int? collectionId,
   }) => ViewerControllerProvider._(
-    argument: (initialIndex: initialIndex, totalCount: totalCount),
+    argument: (
+      initialIndex: initialIndex,
+      totalCount: totalCount,
+      folderUri: folderUri,
+      collectionId: collectionId,
+    ),
     from: this,
   );
 
@@ -100,11 +118,25 @@ final class ViewerControllerFamily extends $Family
 /// ビューアの状態操作と通知を行うコントローラー
 
 abstract class _$ViewerController extends $Notifier<ViewerState> {
-  late final _$args = ref.$arg as ({int initialIndex, int totalCount});
+  late final _$args =
+      ref.$arg
+          as ({
+            int initialIndex,
+            int totalCount,
+            String? folderUri,
+            int? collectionId,
+          });
   int get initialIndex => _$args.initialIndex;
   int get totalCount => _$args.totalCount;
+  String? get folderUri => _$args.folderUri;
+  int? get collectionId => _$args.collectionId;
 
-  ViewerState build({required int initialIndex, required int totalCount});
+  ViewerState build({
+    required int initialIndex,
+    required int totalCount,
+    String? folderUri,
+    int? collectionId,
+  });
   @$mustCallSuper
   @override
   void runBuild() {
@@ -122,6 +154,8 @@ abstract class _$ViewerController extends $Notifier<ViewerState> {
       () => build(
         initialIndex: _$args.initialIndex,
         totalCount: _$args.totalCount,
+        folderUri: _$args.folderUri,
+        collectionId: _$args.collectionId,
       ),
     );
   }

@@ -45,7 +45,7 @@ final class FavoriteListProvider
   FavoriteList create() => FavoriteList();
 }
 
-String _$favoriteListHash() => r'ffbd5a857cc21329954d52bfd7b71e44a6601fef';
+String _$favoriteListHash() => r'3553f4916794e488e54235b5845f0f0aab9c6c20';
 
 /// お気に入りフォルダ一覧を管理する Provider
 ///

@@ -2,9 +2,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../application/usecases/viewer/folder_viewer_settings_usecase.dart';
 import '../../application/usecases/viewer/get_viewer_pages_usecase.dart';
 import '../../domain/entities/folder_viewer_settings.dart';
+import '../../domain/entities/image_entry.dart';
 import '../widgets/viewer/viewer_display_mode.dart';
 import '../widgets/viewer/viewer_page_model.dart';
 import 'gallery_providers.dart';
+import 'collection_image_list_provider.dart';
 
 part 'viewer_controller_provider.g.dart';
 
@@ -71,7 +73,12 @@ class ViewerState {
 @riverpod
 class ViewerController extends _$ViewerController {
   @override
-  ViewerState build({required int initialIndex, required int totalCount}) {
+  ViewerState build({
+    required int initialIndex,
+    required int totalCount,
+    String? folderUri,
+    int? collectionId,
+  }) {
     final stateVal = ViewerState(
       currentIndex: initialIndex,
       totalCount: totalCount,
@@ -81,6 +88,22 @@ class ViewerController extends _$ViewerController {
       isInitialized: false,
     );
 
+    if (collectionId != null) {
+      ref.listen(collectionImageEntriesProvider(collectionId), (prev, next) {
+        next.whenData((images) {
+          final prevImages = prev?.value;
+          _updatePages(images, prevImages);
+        });
+      });
+    } else {
+      ref.listen(galleryImagesProvider, (prev, next) {
+        next.whenData((images) {
+          final prevImages = prev?.value;
+          _updatePages(images, prevImages);
+        });
+      });
+    }
+
     // 設定ロード処理をバックグラウンド実行
     Future.microtask(() => _loadSettings());
 
@@ -89,16 +112,27 @@ class ViewerController extends _$ViewerController {
 
   /// 現在のフォルダ設定と画像一覧を取得して、初期状態の pages を構築する
   Future<void> _loadSettings() async {
-    final folder = ref.read(currentFolderProvider);
-    if (folder == null) {
-      state = state.copyWith(isInitialized: true);
-      return;
-    }
+    final FolderViewerSettings settings;
+    final List<ImageEntry> images;
 
-    final settings = await ref
-        .read(getFolderViewerSettingsUseCaseProvider.notifier)
-        .execute(folder.uri);
-    final images = ref.read(galleryImagesProvider).value ?? [];
+    final colId = collectionId;
+    if (colId != null) {
+      final settingsKey = 'collection_$colId';
+      settings = await ref
+          .read(getFolderViewerSettingsUseCaseProvider.notifier)
+          .execute(settingsKey);
+      images = await ref.read(collectionImageEntriesProvider(colId).future);
+    } else {
+      final folder = ref.read(currentFolderProvider);
+      if (folder == null) {
+        state = state.copyWith(isInitialized: true);
+        return;
+      }
+      settings = await ref
+          .read(getFolderViewerSettingsUseCaseProvider.notifier)
+          .execute(folder.uri);
+      images = ref.read(galleryImagesProvider).value ?? [];
+    }
 
     final pages = ref
         .read(getViewerPagesUseCaseProvider.notifier)
@@ -113,6 +147,40 @@ class ViewerController extends _$ViewerController {
       displayMode: settings.displayMode,
       pages: pages,
       isInitialized: true,
+    );
+  }
+
+  /// 外部からの画像リスト更新時に pages と currentIndex を追従させる
+  void _updatePages(List<ImageEntry> images, List<ImageEntry>? prevImages) {
+    if (!state.isInitialized || state.folderSettings == null) return;
+
+    final pages = ref
+        .read(getViewerPagesUseCaseProvider.notifier)
+        .execute(
+          images: images,
+          displayMode: state.folderSettings!.displayMode,
+          hasCoverPage: state.folderSettings!.hasCoverPage,
+        );
+
+    int newIndex = state.currentIndex;
+    if (prevImages != null &&
+        state.currentIndex >= 0 &&
+        state.currentIndex < prevImages.length) {
+      final currentImage = prevImages[state.currentIndex];
+      final idx = images.indexWhere((img) => img.id.rawValue == currentImage.id.rawValue);
+      if (idx >= 0) {
+        newIndex = idx;
+      } else {
+        newIndex = state.currentIndex.clamp(0, images.length - 1);
+      }
+    } else {
+      newIndex = state.currentIndex.clamp(0, images.length - 1);
+    }
+
+    state = state.copyWith(
+      pages: pages,
+      totalCount: images.length,
+      currentIndex: newIndex,
     );
   }
 
@@ -148,11 +216,18 @@ class ViewerController extends _$ViewerController {
     bool? isRightToLeft,
     bool? hasCoverPage,
   }) async {
-    final folder = ref.read(currentFolderProvider);
-    if (folder == null) return;
+    final String settingsKey;
+    final colId = collectionId;
+    if (colId != null) {
+      settingsKey = 'collection_$colId';
+    } else {
+      final folder = ref.read(currentFolderProvider);
+      if (folder == null) return;
+      settingsKey = folder.uri;
+    }
 
     final currentSettings =
-        state.folderSettings ?? FolderViewerSettings(folderUri: folder.uri);
+        state.folderSettings ?? FolderViewerSettings(folderUri: settingsKey);
     final newSettings = currentSettings.copyWith(
       displayMode: displayMode ?? currentSettings.displayMode,
       isRightToLeft: isRightToLeft ?? currentSettings.isRightToLeft,
@@ -165,7 +240,13 @@ class ViewerController extends _$ViewerController {
         .execute(newSettings);
 
     // pagesを再計算
-    final images = ref.read(galleryImagesProvider).value ?? [];
+    final List<ImageEntry> images;
+    if (colId != null) {
+      images = await ref.read(collectionImageEntriesProvider(colId).future);
+    } else {
+      images = ref.read(galleryImagesProvider).value ?? [];
+    }
+
     final pages = ref
         .read(getViewerPagesUseCaseProvider.notifier)
         .execute(
@@ -184,7 +265,15 @@ class ViewerController extends _$ViewerController {
   /// 現在表示している画像が含まれるページのインデックスを取得する
   int get currentPageIndex {
     if (state.pages.isEmpty) return 0;
-    final images = ref.read(galleryImagesProvider).value ?? [];
+    
+    final List<ImageEntry> images;
+    final colId = collectionId;
+    if (colId != null) {
+      images = ref.read(collectionImageEntriesProvider(colId)).value ?? [];
+    } else {
+      images = ref.read(galleryImagesProvider).value ?? [];
+    }
+
     if (images.isEmpty || state.currentIndex >= images.length) return 0;
 
     final currentImage = images[state.currentIndex];
@@ -203,8 +292,14 @@ class ViewerController extends _$ViewerController {
     final targetPage = state.pages[pageIndex];
     if (targetPage.entries.isEmpty) return;
 
-    // 代表画像として、ページ内の最初の画像のインデックスを特定して遷移する
-    final images = ref.read(galleryImagesProvider).value ?? [];
+    final List<ImageEntry> images;
+    final colId = collectionId;
+    if (colId != null) {
+      images = ref.read(collectionImageEntriesProvider(colId)).value ?? [];
+    } else {
+      images = ref.read(galleryImagesProvider).value ?? [];
+    }
+
     final targetImage = targetPage.entries.first;
     final index = images.indexWhere(
       (img) => img.id.rawValue == targetImage.id.rawValue,

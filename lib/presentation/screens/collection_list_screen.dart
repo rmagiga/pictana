@@ -263,7 +263,7 @@ class CollectionListScreen extends ConsumerWidget {
 
   /// コレクション画像一覧画面へ遷移 (Requirement 6.6)
   void _navigateToImageList(BuildContext context, Collection collection) {
-    context.go('/collection-images/${collection.id}');
+    context.go('/gallery?collectionId=${collection.id}');
   }
 
   /// 新規コレクション作成ダイアログを表示 (Requirement 6.3)
@@ -373,44 +373,47 @@ class _CollectionListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return ListTile(
-      // 選択状態の視覚的フィードバック
-      selected: isSelected,
-      selectedTileColor: theme.colorScheme.primaryContainer.withValues(
-        alpha: 0.3,
-      ),
-      // サムネイル / チェックマーク (Requirement 6.1)
-      leading: isEditMode
-          ? _buildEditModeLeading(theme)
-          : _buildThumbnail(theme),
-      // コレクション名（最大50文字、省略記号付き）(Requirement 6.1)
-      title: Text(
-        collection.name.value,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      // 画像数 + 更新日時 (Requirement 6.1)
-      subtitle: Text(
-        '${collection.imageCount}枚 ・ ${_formatDateTime(collection.updatedAt)}',
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        // 選択状態の視覚的フィードバック
+        selected: isSelected,
+        selectedTileColor: theme.colorScheme.primaryContainer.withValues(
+          alpha: 0.3,
         ),
+        // サムネイル / チェックマーク (Requirement 6.1)
+        leading: isEditMode
+            ? _buildEditModeLeading(theme)
+            : _buildThumbnail(theme),
+        // コレクション名（最大50文字、省略記号付き）(Requirement 6.1)
+        title: Text(
+          collection.name.value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        // 画像数 + 更新日時 (Requirement 6.1)
+        subtitle: Text(
+          '${collection.imageCount}枚 ・ ${_formatDateTime(collection.updatedAt)}',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        // ドラッグハンドル: 編集モード中かつ選択されたアイテムのみ (Requirement 7.3)
+        trailing: isEditMode && isSelected
+            ? ReorderableDragStartListener(
+                index: index,
+                child: const Icon(Icons.drag_handle),
+              )
+            : isEditMode
+            ? const SizedBox(width: 24)
+            : ReorderableDragStartListener(
+                index: index,
+                child: const Icon(Icons.drag_handle),
+              ),
+        onTap: onTap,
+        // 長押し: 500ms で編集モード開始 (Requirement 7.1)
+        onLongPress: onLongPress,
       ),
-      // ドラッグハンドル: 編集モード中かつ選択されたアイテムのみ (Requirement 7.3)
-      trailing: isEditMode && isSelected
-          ? ReorderableDragStartListener(
-              index: index,
-              child: const Icon(Icons.drag_handle),
-            )
-          : isEditMode
-          ? const SizedBox(width: 24)
-          : ReorderableDragStartListener(
-              index: index,
-              child: const Icon(Icons.drag_handle),
-            ),
-      onTap: onTap,
-      // 長押し: 500ms で編集モード開始 (Requirement 7.1)
-      onLongPress: onLongPress,
     );
   }
 

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/utils/image_size_parser.dart';
 import '../../../domain/entities/image_entry.dart';
@@ -30,13 +29,20 @@ class ImageSizeResolveUseCase extends _$ImageSizeResolveUseCase {
 
       await Future.wait(chunk.map((image) async {
         try {
-          // compute を用いてファイル解析を別Isolateで実行し、UIのメインスレッドを保護する
-          final size = await compute(_parseImageSize, image.uri);
+          // ヘッダーパースは非同期I/Oメインで極めて軽量なため、Isolateを使わず直接実行する
+          final size = await ImageSizeParser.parseFile(image.uri);
           if (size != null) {
             await db.updateImageSize(
               entryId: image.id.rawValue,
               width: size.width,
               height: size.height,
+            );
+          } else {
+            // 解析失敗（非対応形式や破損）の場合もダミー値を書き込んで再スキャンを防ぐ
+            await db.updateImageSize(
+              entryId: image.id.rawValue,
+              width: -1,
+              height: -1,
             );
           }
         } catch (_) {
@@ -45,9 +51,4 @@ class ImageSizeResolveUseCase extends _$ImageSizeResolveUseCase {
       }));
     }
   }
-}
-
-/// compute で実行するためのトップレベル関数
-Future<ImageSize?> _parseImageSize(String filePath) async {
-  return ImageSizeParser.parseFile(filePath);
 }

@@ -29,11 +29,8 @@ class FavoriteList extends _$FavoriteList {
   ///
   /// お気に入りの登録・解除後に呼び出して一覧を最新状態に更新する。
   Future<void> refresh() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final useCase = _createUseCase();
-      return useCase.execute();
-    });
+    ref.invalidateSelf();
+    await future;
   }
 
   /// GetFavoritesUseCase のインスタンスを生成する

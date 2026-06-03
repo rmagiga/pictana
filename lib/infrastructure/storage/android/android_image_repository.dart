@@ -125,7 +125,13 @@ class AndroidImageRepository implements ImageRepository {
 
     } catch (e) {
       appLogger.e('AndroidImageRepository getImages エラー: ${folder.uri}', error: e);
-      rethrow;
+      if (e is AppException) {
+        rethrow;
+      }
+      throw StorageDisconnectedException(
+        message: '${folder.name} の画像一覧取得に失敗しました',
+        cause: e,
+      );
     }
   }
 

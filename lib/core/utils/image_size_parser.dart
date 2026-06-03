@@ -27,7 +27,7 @@ class ImageSizeParser {
       final initialReadSize = length < 4096 ? length : 4096;
       final bytes = await raf.read(initialReadSize);
 
-      return parseBytes(bytes, raf: raf);
+      return await parseBytes(bytes, raf: raf);
     } catch (_) {
       return null;
     } finally {
@@ -36,7 +36,7 @@ class ImageSizeParser {
   }
 
   /// バイト配列から画像サイズを解析する
-  static ImageSize? parseBytes(Uint8List bytes, {RandomAccessFile? raf}) {
+  static Future<ImageSize?> parseBytes(Uint8List bytes, {RandomAccessFile? raf}) async {
     if (bytes.length < 8) return null;
 
     // 1. PNG 判定
@@ -71,7 +71,7 @@ class ImageSizeParser {
 
     // 4. JPEG 判定
     if (bytes[0] == 0xFF && bytes[1] == 0xD8) {
-      return _parseJpeg(bytes, raf: raf);
+      return await _parseJpeg(bytes, raf: raf);
     }
 
     return null;
@@ -118,16 +118,16 @@ class ImageSizeParser {
       }
     } else if (format == 'VP8X') {
       // Extended WebP
-      if (bytes.length < 26) return null;
-      // 20-22バイト目（24ビット）が幅 - 1、23-25バイト目（24ビット）が高さ - 1 (Little Endian)
-      final width = _readUint24LE(bytes, 20) + 1;
-      final height = _readUint24LE(bytes, 23) + 1;
+      if (bytes.length < 30) return null;
+      // 24-26バイト目（24ビット）が幅 - 1、27-29バイト目（24ビット）が高さ - 1 (Little Endian)
+      final width = _readUint24LE(bytes, 24) + 1;
+      final height = _readUint24LE(bytes, 27) + 1;
       return ImageSize(width, height);
     }
     return null;
   }
 
-  static ImageSize? _parseJpeg(Uint8List initialBytes, {RandomAccessFile? raf}) {
+  static Future<ImageSize?> _parseJpeg(Uint8List initialBytes, {RandomAccessFile? raf}) async {
     var bytes = initialBytes;
     var offset = 2; // SOI (0xFFD8) の後から開始
 
@@ -139,12 +139,12 @@ class ImageSizeParser {
         try {
           // 現在の読み込み済みサイズからさらに追加で4KB読み込む
           final currentPos = bytes.length;
-          final fileLen = raf.lengthSync();
+          final fileLen = await raf.length();
           if (currentPos >= fileLen) return null;
 
           final additionalSize = fileLen - currentPos < 4096 ? fileLen - currentPos : 4096;
-          raf.setPositionSync(currentPos);
-          final newBytes = raf.readSync(additionalSize);
+          await raf.setPosition(currentPos);
+          final newBytes = await raf.read(additionalSize);
           if (newBytes.isEmpty) return null;
 
           final builder = BytesBuilder()

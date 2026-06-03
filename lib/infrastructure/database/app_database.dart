@@ -503,6 +503,10 @@ class AppDatabase extends _$AppDatabase {
     images,
   )..where((t) => t.entryId.equals(entryId))).getSingleOrNull();
 
+  /// 指定した複数の EntryId の画像メタデータを一括取得する
+  Future<List<ImageTableData>> getImagesByEntryIds(List<String> entryIds) =>
+      (select(images)..where((t) => t.entryId.isIn(entryIds))).get();
+
   // --- FolderViewerSettings クエリ ---
 
   /// 指定フォルダの設定を取得する

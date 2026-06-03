@@ -59,7 +59,7 @@ final class FavoriteToggleProvider
   }
 }
 
-String _$favoriteToggleHash() => r'b0f44b758accfd8c8f3f80777385fd5ed57395c1';
+String _$favoriteToggleHash() => r'400d5dbdb976928ec6a5da8ad82b11e99698411e';
 
 /// お気に入りトグル操作を管理する Provider
 ///

@@ -11,15 +11,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../application/usecases/gallery/search_controller.dart';
+import '../../application/usecases/settings/thumbnail_size_setting.dart';
 import '../../application/usecases/storage/storage_monitor.dart';
 import '../../core/logging/app_logger.dart';
 import '../../domain/entities/entry_id.dart';
 import '../../domain/entities/image_entry.dart';
 import '../../domain/entities/storage_monitor_state.dart';
+import '../../domain/value_objects/thumbnail_size_option.dart';
 import '../../router/app_router.dart';
+import '../providers/collection_image_list_provider.dart';
+import '../providers/collection_list_provider.dart';
 import '../providers/gallery_providers.dart';
 import '../providers/grid_column_settings_provider.dart';
 import '../providers/storage_providers.dart';
@@ -32,6 +35,9 @@ import '../widgets/gallery/search_bar_widget.dart';
 import '../widgets/image_grid_tile.dart';
 import '../widgets/sort_menu.dart';
 import '../widgets/storage_disconnect_banner.dart';
+import '../widgets/gallery/density_slider_panel.dart';
+import '../widgets/gallery/empty_result_message.dart';
+import '../widgets/gallery/skeleton_grid.dart';
 
 /// ギャラリーグリッド画面
 ///
@@ -39,7 +45,9 @@ import '../widgets/storage_disconnect_banner.dart';
 /// SearchController Provider の filteredImages を反映する。
 /// 検索結果 0 件時は「検索結果がありません」メッセージを表示する。
 class GalleryGridScreen extends HookConsumerWidget {
-  const GalleryGridScreen({super.key});
+  const GalleryGridScreen({this.collectionId, super.key});
+
+  final int? collectionId;
 
   /// フォルダ選択ダイアログを起動し、選択後にギャラリーを切り替える
   Future<void> _selectFolder(BuildContext context, WidgetRef ref) async {
@@ -65,11 +73,31 @@ class GalleryGridScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final folder = ref.watch(currentFolderProvider);
-    final imagesAsync = ref.watch(galleryImagesProvider);
-    final countAsync = ref.watch(galleryImageCountProvider);
+    final isCollection = collectionId != null;
+    final folder = isCollection ? null : ref.watch(currentFolderProvider);
+    final imagesAsync = isCollection
+        ? ref.watch(collectionImageEntriesProvider(collectionId!))
+        : ref.watch(galleryImagesProvider);
+    
+    // コレクション名を取得（コレクションモードの AppBar 表示用）
+    final collectionsAsync = ref.watch(collectionListProvider);
+    final collectionName = collectionsAsync.when(
+      data: (collections) {
+        final match = collections.where((c) => c.id == collectionId);
+        return match.isNotEmpty ? match.first.name.value : 'コレクション';
+      },
+      loading: () => 'コレクション',
+      error: (_, _) => 'コレクション',
+    );
+
+    final countAsync = isCollection
+        ? AsyncValue.data(imagesAsync.value?.length ?? 0)
+        : ref.watch(galleryImageCountProvider);
     final searchFilterState = ref.watch(searchControllerProvider);
-    final isSyncing = ref.watch(gallerySyncStateProvider);
+    final isSyncing = isCollection ? false : ref.watch(gallerySyncStateProvider);
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final theme = Theme.of(context);
 
     // 高速スクロール用 ScrollController
     final scrollController = useScrollController();
@@ -81,16 +109,18 @@ class GalleryGridScreen extends HookConsumerWidget {
     // 自動スクロール済みフラグ
     final hasAutoScrolled = useRef(false);
 
-    // フォルダ変更時に自動スクロールフラグをリセット
+    // フォルダ・コレクション変更時に自動スクロールフラグをリセット
     useEffect(() {
       hasAutoScrolled.value = false;
       return null;
-    }, [folder?.uri]);
+    }, [folder?.uri, collectionId]);
 
     // 続き位置の取得
-    final resumePositionAsync = folder != null
-        ? ref.watch(folderResumePositionProvider(folder.uri))
-        : const AsyncValue<String?>.data(null);
+    final resumePositionAsync = isCollection
+        ? ref.watch(folderResumePositionProvider('collection_$collectionId'))
+        : (folder != null
+            ? ref.watch(folderResumePositionProvider(folder.uri))
+            : const AsyncValue<String?>.data(null));
     final resumeEntryId = resumePositionAsync.value;
 
     // 画像ロード完了時、1回だけ続き位置までスクロールする
@@ -107,7 +137,10 @@ class GalleryGridScreen extends HookConsumerWidget {
         Future.microtask(() {
           if (scrollController.hasClients) {
             final settings = ref.read(gridColumnSettingsProvider);
-            final crossAxisCount = settings.currentColumns;
+            final thumbnailSize = ref.read(thumbnailSizeSettingProvider);
+            final crossAxisCount = ((screenWidth - 8) / (thumbnailSize.px + 4))
+                .floor()
+                .clamp(settings.minColumns, settings.maxColumns);
             final row = index ~/ crossAxisCount;
             final tileHeight =
                 (scrollController.position.viewportDimension / crossAxisCount) +
@@ -120,7 +153,7 @@ class GalleryGridScreen extends HookConsumerWidget {
         });
       }
       return null;
-    }, [resumeEntryId, imagesAsync.value]);
+    }, [resumeEntryId, imagesAsync.value, screenWidth]);
 
     // 再接続後の再読み込み中フラグ
     final isReloading = useState(false);
@@ -190,7 +223,10 @@ class GalleryGridScreen extends HookConsumerWidget {
           // 自動スクロール
           if (scrollController.hasClients) {
             final settings = ref.read(gridColumnSettingsProvider);
-            final crossAxisCount = settings.currentColumns;
+            final thumbnailSize = ref.read(thumbnailSizeSettingProvider);
+            final crossAxisCount = ((screenWidth - 8) / (thumbnailSize.px + 4))
+                .floor()
+                .clamp(settings.minColumns, settings.maxColumns);
             final row = index ~/ crossAxisCount;
             // タイルの高さと余白（4.0）を考慮
             final tileHeight =
@@ -204,12 +240,13 @@ class GalleryGridScreen extends HookConsumerWidget {
 
           // ビューアを起動
           if (context.mounted) {
-            context.push('${AppRoutes.imageViewer}/$index');
+            final collectionParam = isCollection ? '?collectionId=$collectionId' : '';
+            context.push('${AppRoutes.imageViewer}/$index$collectionParam');
           }
         });
       }
       return null;
-    }, [pendingEntryId, imagesAsync.value]);
+    }, [pendingEntryId, imagesAsync.value, screenWidth]);
 
     // Scaffold より外側の context でシステムナビゲーションバーの高さを取得する
     // （Scaffold の body 内では viewPadding.bottom が 0 になるため）
@@ -224,7 +261,11 @@ class GalleryGridScreen extends HookConsumerWidget {
             isSelectionMode.value = false;
             selectedEntryIds.value = {};
           } else {
-            context.go(AppRoutes.storageSelection);
+            if (isCollection) {
+              context.go(AppRoutes.collectionList);
+            } else {
+              context.go(AppRoutes.storageSelection);
+            }
           }
         }
       },
@@ -243,7 +284,8 @@ class GalleryGridScreen extends HookConsumerWidget {
           final targetImage = images[index];
           return FloatingActionButton.extended(
             onPressed: () {
-              context.push('${AppRoutes.imageViewer}/$index');
+              final collectionParam = isCollection ? '?collectionId=$collectionId' : '';
+              context.push('${AppRoutes.imageViewer}/$index$collectionParam');
             },
             icon: const Icon(Icons.play_arrow),
             label: Text('続きから読む (${targetImage.name})'),
@@ -259,14 +301,14 @@ class GalleryGridScreen extends HookConsumerWidget {
             : AppBar(
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back),
-                  tooltip: 'フォルダ選択に戻る',
-                  onPressed: () => context.go(AppRoutes.storageSelection),
+                  tooltip: isCollection ? 'コレクション一覧に戻る' : 'フォルダ選択に戻る',
+                  onPressed: () => context.go(isCollection ? AppRoutes.collectionList : AppRoutes.storageSelection),
                 ),
                 title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(folder?.name ?? 'Pictana Gallery'),
+                    Text(isCollection ? collectionName : (folder?.name ?? 'Pictana Gallery')),
                     if (countAsync.value != null)
                       Text(
                         '${countAsync.value} items',
@@ -274,64 +316,75 @@ class GalleryGridScreen extends HookConsumerWidget {
                       ),
                   ],
                 ),
-                actions: [
-                  // フォルダ選択ボタン
-                  IconButton(
-                    icon: const Icon(Icons.folder_open),
-                    tooltip: 'フォルダを選択',
-                    onPressed: () => _selectFolder(context, ref),
-                  ),
-                  // お気に入りトグルボタン
-                  if (folder != null)
-                    FavoriteIndicator(uri: folder.uri, name: folder.name),
-                  // 検索アイコンボタン (Req 11.1)
-                  // 折りたたみ時のみ AppBar に表示
-                  if (!searchFilterState.isSearchBarExpanded)
-                    IconButton(
-                      icon: const Icon(Icons.search),
-                      tooltip: '検索',
-                      onPressed: () {
-                        ref
-                            .read(searchControllerProvider.notifier)
-                            .toggleSearchBar();
-                      },
-                    ),
-                  // 表示密度変更ボタン
-                  IconButton(
-                    icon: const Icon(Icons.grid_view),
-                    tooltip: '表示密度（列数）を変更',
-                    onPressed: () {
-                      showDensitySlider.value = !showDensitySlider.value;
-                    },
-                  ),
-                  // ソートメニュー
-                  const SortMenu(),
-                  // コレクション一覧ボタン
-                  IconButton(
-                    icon: const Icon(Icons.collections_bookmark_outlined),
-                    tooltip: 'コレクション',
-                    onPressed: () {
-                      context.push(AppRoutes.collectionList);
-                    },
-                  ),
-                  // 設定ボタン
-                  IconButton(
-                    icon: const Icon(Icons.settings),
-                    onPressed: () {
-                      context.push(AppRoutes.settings);
-                    },
-                  ),
-                ],
+                actions: isCollection
+                    ? [
+                        // 表示密度変更ボタン
+                        IconButton(
+                          icon: const Icon(Icons.grid_view),
+                          tooltip: '表示密度（列数）を変更',
+                          onPressed: () {
+                            showDensitySlider.value = !showDensitySlider.value;
+                          },
+                        ),
+                      ]
+                    : [
+                        // フォルダ選択ボタン
+                        IconButton(
+                          icon: const Icon(Icons.folder_open),
+                          tooltip: 'フォルダを選択',
+                          onPressed: () => _selectFolder(context, ref),
+                        ),
+                        // お気に入りトグルボタン
+                        if (folder != null)
+                          FavoriteIndicator(uri: folder.uri, name: folder.name),
+                        // 検索アイコンボタン (Req 11.1)
+                        // 折りたたみ時のみ AppBar に表示
+                        if (!searchFilterState.isSearchBarExpanded)
+                          IconButton(
+                            icon: const Icon(Icons.search),
+                            tooltip: '検索',
+                            onPressed: () {
+                              ref
+                                  .read(searchControllerProvider.notifier)
+                                  .toggleSearchBar();
+                            },
+                          ),
+                        // 表示密度変更ボタン
+                        IconButton(
+                          icon: const Icon(Icons.grid_view),
+                          tooltip: '表示密度（列数）を変更',
+                          onPressed: () {
+                            showDensitySlider.value = !showDensitySlider.value;
+                          },
+                        ),
+                        // ソートメニュー
+                        const SortMenu(),
+                        // コレクション一覧ボタン
+                        IconButton(
+                          icon: const Icon(Icons.collections_bookmark_outlined),
+                          tooltip: 'コレクション',
+                          onPressed: () {
+                            context.push(AppRoutes.collectionList);
+                          },
+                        ),
+                        // 設定ボタン
+                        IconButton(
+                          icon: const Icon(Icons.settings),
+                          onPressed: () {
+                            context.push(AppRoutes.settings);
+                          },
+                        ),
+                      ],
               ),
         body: Column(
           children: [
-            const StorageDisconnectBanner(), // USB切断時のみ表示される
+            if (!isCollection) const StorageDisconnectBanner(), // USB切断時のみ表示される（コレクションモードでは表示しない）
             if (isSyncing) const LinearProgressIndicator(minHeight: 2),
             // 表示密度調整スライダー
-            if (showDensitySlider.value) _buildDensitySliderPanel(context, ref),
+            if (showDensitySlider.value) const DensitySliderPanel(),
             // 検索バーウィジェット (Req 11.1, 11.5)
             // 展開時のみ表示
-            if (searchFilterState.isSearchBarExpanded)
+            if (!isCollection && searchFilterState.isSearchBarExpanded)
               SearchBarWidget(
                 isExpanded: true,
                 onToggle: () {
@@ -348,7 +401,7 @@ class GalleryGridScreen extends HookConsumerWidget {
               ),
             // 種類フィルターチップ (Req 12.1, 12.5)
             // 検索バーが展開されている場合のみ表示
-            if (searchFilterState.isSearchBarExpanded)
+            if (!isCollection && searchFilterState.isSearchBarExpanded)
               FilterChipsWidget(
                 selectedMimeType: searchFilterState.selectedMimeType,
                 onMimeTypeSelected: (mimeType) {
@@ -360,29 +413,63 @@ class GalleryGridScreen extends HookConsumerWidget {
             Expanded(
               child: imagesAsync.when(
                 data: (images) {
-                  // SearchController の filteredImages を適用 (Req 11.2, 12.2)
-                  final filteredImages = ref.watch(filteredImagesProvider);
-
-                  // 検索結果 0 件時のメッセージ表示 (Req 11.5, 12.5)
+                  // コレクションモードの時は検索フィルタを適用しない
+                  final filteredImages = isCollection ? images : ref.watch(filteredImagesProvider);
+ 
+                  // コレクション画像なし、または検索結果 0 件時のメッセージ表示
                   if (filteredImages.isEmpty) {
-                    return _buildEmptyResultMessage(
-                      context,
+                    if (isCollection) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.photo_library_outlined,
+                                size: 64,
+                                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                '画像が登録されていません',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'フォルダ画像一覧から画像を追加してください',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    return EmptyResultMessage(
                       isFiltered:
                           searchFilterState.query.isNotEmpty ||
                           searchFilterState.selectedMimeType != null,
                     );
                   }
-
+ 
                   return LayoutBuilder(
                     builder: (context, constraints) {
                       // ユーザー設定の現在の列数を使用
                       final settings = ref.watch(gridColumnSettingsProvider);
-                      final crossAxisCount = settings.currentColumns;
-
+                      final thumbnailSize = ref.watch(thumbnailSizeSettingProvider);
+                      final crossAxisCount = (constraints.maxWidth / (thumbnailSize.px + 4))
+                          .floor()
+                          .clamp(settings.minColumns, settings.maxColumns);
+ 
                       final gridView = GridView.builder(
                         controller: scrollController,
                         // Windows: FastScrollHandler がスクロールを制御するため
-                        // ポインターシグナルによるスクロールを無有効化 (Req 13.1)
+                        // ポインターシグナルによるスクロールを無効化 (Req 13.1)
                         physics: Platform.isWindows
                             ? const FastScrollPhysics()
                             : null,
@@ -406,7 +493,7 @@ class GalleryGridScreen extends HookConsumerWidget {
                           final isSelected = selectedEntryIds.value.contains(
                             image.id,
                           );
-
+ 
                           return _SelectableImageGridTile(
                             key: ValueKey(image.uri),
                             image: image,
@@ -430,7 +517,8 @@ class GalleryGridScreen extends HookConsumerWidget {
                                 selectedEntryIds.value = newSet;
                               } else {
                                 // 通常モード: ビューア遷移
-                                context.push('${AppRoutes.imageViewer}/$index');
+                                final collectionParam = isCollection ? '?collectionId=$collectionId' : '';
+                                context.push('${AppRoutes.imageViewer}/$index$collectionParam');
                               }
                             },
                             onLongPress: () {
@@ -444,7 +532,7 @@ class GalleryGridScreen extends HookConsumerWidget {
                         },
                       );
 
-                      // スケールジェスチャー（ピンチイン・アウト）による列数の段階的増減
+                      // スケールジェスチャー（ピンチイン・アウト）によるサムネイルサイズの段階的増減
                       final gestureWrapper = GestureDetector(
                         onScaleStart: (details) {
                           lastScaleRef.value = 1.0;
@@ -458,36 +546,36 @@ class GalleryGridScreen extends HookConsumerWidget {
                           final now = DateTime.now().millisecondsSinceEpoch;
                           if (now - lastChangeTimeRef.value < 250) return;
 
-                          // しきい値（例: 1.35倍で1列減少、0.74倍で1列増加）
-                          // 意図的にしっかり広げる/すぼめる操作をしたときのみ切り替わる値に調整
+                          // しきい値（例: 1.35倍で拡大、0.74倍で縮小）
                           const double thresholdRatio = 1.35;
-                          int targetColumns = settings.currentColumns;
+                          final currentSize = ref.read(thumbnailSizeSettingProvider);
                           final lastScale = lastScaleRef.value;
 
                           bool isChanged = false;
+                          ThumbnailSizeOption? targetSize;
+
                           if (currentScale / lastScale >= thresholdRatio) {
-                            // ピンチアウト (拡大) = 列数減少 (画像を大きく)
-                            if (targetColumns > settings.minColumns) {
-                              targetColumns--;
+                            // ピンチアウト (拡大) = サムネイルサイズを大きくする
+                            if (currentSize.index < ThumbnailSizeOption.values.length - 1) {
+                              targetSize = ThumbnailSizeOption.values[currentSize.index + 1];
                               lastScaleRef.value = currentScale;
                               isChanged = true;
                             }
                           } else if (currentScale / lastScale <=
                               1.0 / thresholdRatio) {
-                            // ピンチイン (縮小) = 列数増加 (画像を小さく)
-                            if (targetColumns < settings.maxColumns) {
-                              targetColumns++;
+                            // ピンチイン (縮小) = サムネイルサイズを小さくする
+                            if (currentSize.index > 0) {
+                              targetSize = ThumbnailSizeOption.values[currentSize.index - 1];
                               lastScaleRef.value = currentScale;
                               isChanged = true;
                             }
                           }
 
-                          if (isChanged &&
-                              targetColumns != settings.currentColumns) {
+                          if (isChanged && targetSize != null && targetSize != currentSize) {
                             lastChangeTimeRef.value = now;
                             ref
-                                .read(gridColumnSettingsProvider.notifier)
-                                .setCurrentColumns(targetColumns);
+                                .read(thumbnailSizeSettingProvider.notifier)
+                                .update(targetSize);
                           }
                         },
                         child: gridView,
@@ -505,7 +593,7 @@ class GalleryGridScreen extends HookConsumerWidget {
                     },
                   );
                 },
-                loading: () => _buildSkeletonGrid(context, ref, navBarHeight),
+                loading: () => SkeletonGrid(navBarHeight: navBarHeight),
                 error: (e, st) => Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -533,101 +621,11 @@ class GalleryGridScreen extends HookConsumerWidget {
     );
   }
 
-  /// 検索結果 0 件時のメッセージウィジェットを構築する
-  ///
-  /// [isFiltered] が true の場合は検索/フィルター適用中のメッセージを表示し、
-  /// false の場合はフォルダ内に画像がない旨のメッセージを表示する。
-  Widget _buildEmptyResultMessage(
-    BuildContext context, {
-    required bool isFiltered,
-  }) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            isFiltered ? Icons.search_off : Icons.image_not_supported_outlined,
-            size: 64,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            isFiltered ? '検索結果がありません' : '画像が見つかりません。',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          if (isFiltered) ...[
-            const SizedBox(height: 8),
-            Text(
-              '検索条件を変更してください',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
 
-  /// 初回ローディング時のスケルトングリッドを構築する (Req 4.4)
-  ///
-  /// 実際のグリッドと同じレイアウト（列数・スペーシング）で
-  /// Card 形状のダミータイルを Skeletonizer で表示する。
-  Widget _buildSkeletonGrid(
-    BuildContext context,
-    WidgetRef ref,
-    double navBarHeight,
-  ) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final settings = ref.watch(gridColumnSettingsProvider);
-        final crossAxisCount = (constraints.maxWidth / 150)
-            .floor()
-            .clamp(settings.minColumns, settings.maxColumns)
-            .toInt();
-
-        // 画面全体を覆うのに必要なアイテム数を動的に計算する
-        // タイルのアスペクト比は 1.0 (正方形) なので、高さは幅と同じ
-        final tileHeight = constraints.maxWidth / crossAxisCount;
-        final rowCount = (constraints.maxHeight / tileHeight).ceil() + 1;
-        final itemCount = crossAxisCount * rowCount;
-
-        return Skeletonizer(
-          enabled: true,
-          child: GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.only(
-              left: 4,
-              right: 4,
-              top: 4,
-              bottom: 4 + navBarHeight,
-            ),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              crossAxisSpacing: 4,
-              mainAxisSpacing: 4,
-            ),
-            itemCount: itemCount,
-            itemBuilder: (context, index) {
-              return Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: const SizedBox.expand(),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
 
   /// 選択モードの AppBar を構築する (Requirement 4.1, 13.1)
   ///
-  /// 選択件数と「コレクションに追加」アクションボタンを表示する。
+  /// 選択件数と「コレクションに追加」または「解除」アクションボタンを表示する。
   /// キャンセルボタンで選択モードを終了する。
   PreferredSizeWidget _buildSelectionModeAppBar(
     BuildContext context,
@@ -636,6 +634,7 @@ class GalleryGridScreen extends HookConsumerWidget {
     ValueNotifier<bool> isSelectionMode,
   ) {
     final selectedCount = selectedEntryIds.value.length;
+    final isCollection = collectionId != null;
 
     return AppBar(
       // キャンセルボタン
@@ -650,21 +649,101 @@ class GalleryGridScreen extends HookConsumerWidget {
       // 選択件数表示
       title: Text('$selectedCount件選択'),
       actions: [
-        // コレクションに追加ボタン (Requirement 4.1, 13.1)
-        IconButton(
-          icon: const Icon(Icons.collections_bookmark_outlined),
-          tooltip: 'コレクションに追加',
-          onPressed: selectedCount > 0
-              ? () => _onAddToCollection(
-                  context,
-                  ref,
-                  selectedEntryIds,
-                  isSelectionMode,
-                )
-              : null,
-        ),
+        if (isCollection)
+          // コレクションから解除ボタン
+          IconButton(
+            icon: const Icon(Icons.link_off),
+            tooltip: 'コレクションから解除',
+            onPressed: selectedCount > 0
+                ? () => _onRemoveFromCollection(
+                    context,
+                    ref,
+                    selectedEntryIds,
+                    isSelectionMode,
+                  )
+                : null,
+          )
+        else
+          // コレクションに追加ボタン (Requirement 4.1, 13.1)
+          IconButton(
+            icon: const Icon(Icons.collections_bookmark_outlined),
+            tooltip: 'コレクションに追加',
+            onPressed: selectedCount > 0
+                ? () => _onAddToCollection(
+                    context,
+                    ref,
+                    selectedEntryIds,
+                    isSelectionMode,
+                  )
+                : null,
+          ),
       ],
     );
+  }
+
+  /// コレクションから解除アクションを実行する
+  Future<void> _onRemoveFromCollection(
+    BuildContext context,
+    WidgetRef ref,
+    ValueNotifier<Set<EntryId>> selectedEntryIds,
+    ValueNotifier<bool> isSelectionMode,
+  ) async {
+    final entryIds = selectedEntryIds.value.toList();
+    final selectedCount = entryIds.length;
+    if (selectedCount == 0 || collectionId == null) return;
+
+    // 確認ダイアログを表示
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('画像の解除'),
+        content: Text(
+          '$selectedCount件の画像をこのコレクションから解除しますか？\n'
+          '※ 画像ファイルは削除されません',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('解除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final useCase = ref.read(removeImagesFromCollectionUseCaseProvider);
+      await useCase.execute(collectionId!, entryIds);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$selectedCount枚の画像をコレクションから解除しました'),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+
+      // 選択モードを終了する
+      isSelectionMode.value = false;
+      selectedEntryIds.value = {};
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('画像の解除に失敗しました'),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   /// コレクションに追加アクションを実行する (Requirement 4.1, 4.8, 4.10, 13.1)
@@ -699,54 +778,7 @@ class GalleryGridScreen extends HookConsumerWidget {
     }
   }
 
-  /// 表示密度調整用のスライダーパネルを構築する
-  Widget _buildDensitySliderPanel(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(gridColumnSettingsProvider);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            width: 0.5,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.zoom_in, size: 20),
-          Expanded(
-            child: Slider(
-              value: settings.currentColumns.toDouble(),
-              min: settings.minColumns.toDouble(),
-              max: settings.maxColumns.toDouble(),
-              divisions: settings.maxColumns - settings.minColumns,
-              label: '${settings.currentColumns} 列',
-              activeColor: Theme.of(context).colorScheme.primary,
-              onChanged: (val) {
-                ref
-                    .read(gridColumnSettingsProvider.notifier)
-                    .setCurrentColumns(val.toInt());
-              },
-            ),
-          ),
-          const Icon(Icons.zoom_out, size: 20),
-          const SizedBox(width: 8),
-          SizedBox(
-            width: 45,
-            child: Text(
-              '${settings.currentColumns} 列',
-              textAlign: TextAlign.end,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 }
 
 /// 選択モード対応の画像グリッドタイルウィジェット

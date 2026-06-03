@@ -70,6 +70,9 @@ class FavoriteToggle extends _$FavoriteToggle {
       // これがないと楽観的状態リセット後にフォールバック先が古い値を返す
       ref.invalidate(isFolderFavoriteProvider(uri));
 
+      // お気に入り件数プロバイダを無効化し、最新状態に更新する
+      ref.invalidate(favoriteCountProvider);
+
       // お気に入り一覧を再取得して最新状態に更新
       ref.read(favoriteListProvider.notifier).refresh();
     } on Exception catch (e) {

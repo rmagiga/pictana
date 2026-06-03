@@ -28,9 +28,10 @@ class ViewerDisplayContainer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final Widget viewer;
     switch (state.displayMode) {
       case ViewerDisplayMode.single:
-        return SinglePageViewer(
+        viewer = SinglePageViewer(
           images: images,
           state: state,
           controller: controller,
@@ -38,8 +39,9 @@ class ViewerDisplayContainer extends ConsumerWidget {
           transformationController: transformationController,
           onZoomChanged: onZoomChanged,
         );
+        break;
       case ViewerDisplayMode.double:
-        return DoublePageViewer(
+        viewer = DoublePageViewer(
           images: images,
           state: state,
           controller: controller,
@@ -47,9 +49,10 @@ class ViewerDisplayContainer extends ConsumerWidget {
           transformationController: transformationController,
           onZoomChanged: onZoomChanged,
         );
+        break;
       case ViewerDisplayMode.scroll:
         // スクロールモードは現状シングル表示にフォールバック（将来実装）
-        return SinglePageViewer(
+        viewer = SinglePageViewer(
           images: images,
           state: state,
           controller: controller,
@@ -57,6 +60,9 @@ class ViewerDisplayContainer extends ConsumerWidget {
           transformationController: transformationController,
           onZoomChanged: onZoomChanged,
         );
+        break;
     }
+
+    return ExcludeSemantics(child: viewer);
   }
 }

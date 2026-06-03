@@ -38,6 +38,7 @@ import 'package:pictana/domain/value_objects/swipe_direction.dart';
 import 'package:pictana/domain/value_objects/thumbnail_size_option.dart';
 import 'package:pictana/presentation/providers/gallery_providers.dart';
 import 'package:pictana/presentation/providers/viewer_providers.dart';
+import 'package:pictana/presentation/providers/viewer_controller_provider.dart';
 import 'package:pictana/presentation/screens/image_viewer_screen.dart';
 import 'package:pictana/presentation/widgets/viewer/ctrl_wheel_zoom_handler.dart';
 import 'package:pictana/presentation/widgets/viewer/keyboard_navigation_handler.dart';
@@ -401,6 +402,39 @@ void main() {
 
       expect(find.text('image1.jpg - image2.png'), findsOneWidget);
       expect(find.text('1 / 2'), findsOneWidget);
+    });
+
+    testWidgets('ページ遷移時に transformationController のズームがリセットされる', (tester) async {
+      await tester.pumpWidget(_createTestWidget(initialIndex: 0));
+      await tester.pumpAndSettle();
+
+      // InteractiveViewer ウィジェットを探す
+      final interactiveViewerFinder = find.byType(InteractiveViewer);
+      expect(interactiveViewerFinder, findsOneWidget);
+      final InteractiveViewer viewer = tester.widget(interactiveViewerFinder);
+      final controller = viewer.transformationController;
+      
+      expect(controller, isNotNull);
+      
+      // スケールを 2.0 に設定する
+      controller!.value = Matrix4.diagonal3Values(2.0, 2.0, 1.0);
+      expect(controller.value.getMaxScaleOnAxis(), 2.0);
+
+      // Notifier を使ってインデックスを切り替える
+      final element = tester.element(find.byType(ImageViewerScreen));
+      final container = ProviderScope.containerOf(element);
+      
+      // currentIndex を 1 に更新してページ遷移を発生させる
+      container.read(viewerControllerProvider(
+        initialIndex: 0,
+        totalCount: _createTestImages().length,
+      ).notifier).setCurrentIndex(1);
+      
+      await tester.pumpAndSettle();
+
+      // スケールが 1.0 (等倍) にリセットされていることを確認
+      expect(controller.value.getMaxScaleOnAxis(), 1.0);
+      expect(controller.value, Matrix4.identity());
     });
   });
 }
